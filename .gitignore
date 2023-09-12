@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+
+#Local debug
+build/
+utils/
+examples/
+data/
+*.bak
+*.clang-format
+*.cache

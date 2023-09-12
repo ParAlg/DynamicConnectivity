@@ -1,0 +1,2 @@
+add_subdirectory(static_connectivity)
+add_subdirectory(seq_hdt)

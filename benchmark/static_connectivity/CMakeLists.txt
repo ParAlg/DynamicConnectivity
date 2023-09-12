@@ -1,0 +1,2 @@
+add_executable(static_connectivity static_connectivity.cc)
+target_link_libraries(static_connectivity PRIVATE dycon)
