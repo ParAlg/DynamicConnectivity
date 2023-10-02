@@ -40,17 +40,21 @@ declare num_batches=10
 
 declare num_queries=1000
 
-cd ../build/benchmark/seq_hdt/dynamic_graph/benchmark/
-declare data_path="../../../../../data/"
-mkdir ${data_path}seq_hdt
+declare source_dir="$(dirname $(pwd))"
+declare data_path="${source_dir}/data"
+# echo $data_path
+# echo $source_dir
 
-#echo $(pwd)
+mkdir ${data_path}/seq_hdt
+cd ${source_dir}/build/benchmark/seq_hdt/dynamic_graph/benchmark/
+
+# echo $(pwd)
 rm seq_hdt
 make seq_hdt
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./seq_hdt -b ${num_batches} -q ${num_queries} ${data_path}${graph}.bin ${data_path}seq_hdt/${graph}.query
+  ${numactl} ./seq_hdt -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_hdt/${graph}.out
   echo
 done
 

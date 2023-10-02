@@ -45,17 +45,17 @@ declare data_path="${source_dir}/data"
 # echo $data_path
 # echo $source_dir
 
-mkdir ${data_path}/static_connectivity
-cd ${source_dir}/build/benchmark/static_connectivity/
+mkdir ${data_path}/seq_localtree
+cd ${source_dir}/build/benchmark/seq_localtree/
 
 
 #echo $(pwd)
-rm static_connectivity
-make static_connectivity
+rm seq_localtree
+make seq_localtree
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./static_connectivity -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/static_connectivity/${graph}.query
+  ${numactl} ./seq_localtree -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
   echo
 done
 

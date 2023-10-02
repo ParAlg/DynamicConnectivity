@@ -1,0 +1,2 @@
+add_executable(seq_localtree seq_localtree.cc)
+target_link_libraries(seq_localtree PRIVATE dycon)
