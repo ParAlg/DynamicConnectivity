@@ -1,3 +1,4 @@
 add_subdirectory(static_connectivity)
 add_subdirectory(seq_hdt)
 add_subdirectory(seq_localtree)
+add_subdirectory(seq_cf)

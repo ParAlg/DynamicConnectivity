@@ -90,9 +90,9 @@ int main(int argc, char** argv) {
   for (size_t i = 0; i < num_batches; i++)
     for (size_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
-      faq << Ans_del[i][j];
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  //     faq << Ans_del[i][j];
   faq.close();
   return 0;
 }

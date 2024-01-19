@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <boost/stacktrace.hpp>
+// #include <boost/stacktrace.hpp>
 
 // If boolean `cond` is false, prints `msg` to stderr and terminates the
 // program.

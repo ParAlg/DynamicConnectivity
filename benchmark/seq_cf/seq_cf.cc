@@ -1,4 +1,3 @@
-#include "cluster_forest.hpp"
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <parlay/internal/get_time.h>
@@ -47,20 +46,19 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
 
   t.start();
-  cluster_forest CF(n);
+
   t.next("initialization");
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
-      CF.insert(u, v);
+
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
     t.next("Insert batch #" + std::to_string(i));
     for (size_t j = 0; j < queries_ins[i].size(); j++) {
       // todo here
-      Ans_ins[i][j] = CF.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
