@@ -66,6 +66,26 @@ else()
   endif()
 endif()
 
+option(DOWNLOAD_PAM "Download and use a local copy of PAM rather than looking for an installed version")
+if(DOWNLOAD_PAM)
+  message(STATUS "Downloading a local copy of PAM")
+  # Download and configure PAM
+  include(FetchContent)
+  FetchContent_Declare(pam
+    GIT_REPOSITORY  https://github.com/cmuparlay/PAM.git
+    GIT_TAG         master
+  )
+  FetchContent_GetProperties(pam)
+  if(NOT pam_POPULATED)
+    FetchContent_Populate(pam)
+    add_subdirectory(${pam_SOURCE_DIR} EXCLUDE_FROM_ALL)
+  endif()
+  target_link_libraries(dycon INTERFACE pam)
+else()
+  find_package(pam REQUIRED)
+  target_link_libraries(dycon INTERFACE pam)
+endif()
+
 # Link against jemalloc
 #find_library(JEMALLOC_LIB jemalloc)
 #if(NOT JEMALLOC_LIB)
