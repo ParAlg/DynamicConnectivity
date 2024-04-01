@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
       Ans_ins[i][j] = CF.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
+    CF.print_sizes();
   }
 
   for (size_t i = 0; i < num_batches; i++) {

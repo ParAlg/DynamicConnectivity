@@ -19,22 +19,51 @@ class cluster_forest {
       node = localTreeNode::makeUp(node, std::log2(n));
     }
   }
-  void insert(size_t u, size_t v) {
-    auto Cu = localTreeNode::getRoot(V[u]);
-    auto Cv = localTreeNode::getRoot(V[v]);
-    if (V[u]->insert(v, 0)) localTreeNode::updateBitMap(V[u], 0, 1, 0);
-    if (V[v]->insert(u, 0)) localTreeNode::updateBitMap(V[v], 0, 1, 0);
-    if (Cu == Cv) return;
-    localTreeNode::Merge(Cu, Cv);
-  }
+  void insert(size_t u, size_t v);
   bool is_connected(size_t u, size_t v) { return (localTreeNode::getRoot(V[u]) == localTreeNode::getRoot(V[v])); }
   void remove(size_t u, size_t v);
+  void print_sizes();
 
  private:
   // std::vector<localTree*> CC;
   std::vector<leaf *> V;
   size_t n;
 };
+
+void cluster_forest::print_sizes() {
+  std::set<localTreeNode*> visited_roots;
+  for (size_t i = 0; i < n; i++) {
+    auto root = localTreeNode::getRoot(V[i]);
+    if (visited_roots.find(root) == visited_roots.end()) {
+      std::cout << root->get_cluster_graph_size() << " ";
+      visited_roots.insert(root);
+    }
+  }
+}
+
+inline void cluster_forest::insert(size_t u, size_t v) {
+  // Insert the edge at the top level
+  auto Cu = localTreeNode::getRoot(V[u]);
+  auto Cv = localTreeNode::getRoot(V[v]);
+  if (V[u]->insert(v, 0)) localTreeNode::updateBitMap(V[u], 0, 1, 0);
+  if (V[v]->insert(u, 0)) localTreeNode::updateBitMap(V[v], 0, 1, 0);
+  if (Cu == Cv) return;
+  localTreeNode::Merge(Cu, Cv);
+  // Repeatedly push it down until it is blocked
+  size_t i = Cu->getLevel()-1;
+  Cu = localTreeNode::getLevelNode(V[u], i);
+  Cv = localTreeNode::getLevelNode(V[v], i);
+  while(Cu->getClusterSize() + Cv->getClusterSize() < 1<<(--i)) {
+    localTreeNode::Merge(Cu, Cv);
+    if (V[u]->remove(v, i)) localTreeNode::updateBitMap(V[u], 1, 0, i);
+    if (V[u]->insert(v, i + 1)) localTreeNode::updateBitMap(V[u], 0, 1, i + 1);
+    if (V[v]->remove(u, i)) localTreeNode::updateBitMap(V[v], 1, 0, i);
+    if (V[v]->insert(u, i + 1)) localTreeNode::updateBitMap(V[v], 0, 1, i + 1);
+    Cu = localTreeNode::getLevelNode(V[u], i);
+    Cv = localTreeNode::getLevelNode(V[v], i);
+  }
+}
+
 // case 2
 // Get parent of Cu
 // Get grandparent of Cu

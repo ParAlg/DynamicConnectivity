@@ -37,7 +37,7 @@ class rankTree {
   static rankTree* getLeftMostLeaf(rankTree* p);
   static rankTree* getNextLeaf(rankTree* p);
 
- private:
+//  private:
   rankTree* lchild;
   rankTree* rchild;
   rankTree* parent;

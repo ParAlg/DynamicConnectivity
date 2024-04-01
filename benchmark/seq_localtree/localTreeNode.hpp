@@ -31,6 +31,8 @@ class localTreeNode {
   static void removeChild(localTreeNode* F, localTreeNode* S);
   static void updateGrandParent(localTreeNode* GP, localTreeNode* P, localTreeNode* PSib);
 
+  int get_cluster_graph_size();
+
  private:
   std::vector<rankTree*> rTrees;
   std::bitset<64> edgemap;
@@ -41,6 +43,22 @@ class localTreeNode {
   // because when we are merging node, we only merge rank trees. The parent will be invalid if we don't also update the
   // children of the cluster node But this introduces extra running time.
 };
+
+static int get_cluster_graph_size_dfs(rankTree* node) {
+  if (!node->lchild && !node->rchild) return 1;
+  int total = 0;
+  if (node->lchild) total += get_cluster_graph_size_dfs(node->lchild);
+  if (node->rchild) total += get_cluster_graph_size_dfs(node->rchild);
+  return total;
+}
+
+int localTreeNode::get_cluster_graph_size() {
+  int num_leaves = 0;
+  for (auto rank_tree_root : rTrees)
+    num_leaves += get_cluster_graph_size_dfs(rank_tree_root);
+  return num_leaves;
+}
+
 inline localTreeNode* localTreeNode::getRoot(leaf* v) {
   auto rTree = static_cast<rankTree*>(v->getParent());
   auto lTree = static_cast<localTreeNode*>(rankTree::getRoot(rTree)->getNode());
