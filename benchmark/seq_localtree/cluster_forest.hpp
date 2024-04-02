@@ -4,21 +4,7 @@
 #include "localTreeNode.hpp"
 class cluster_forest {
  public:
-  cluster_forest(size_t _n) : n(_n) {
-    V.resize(n);
-    // for (auto &it : V) {
-    for (size_t i = 0; i < V.size(); i++) {
-      // 3 new, 4 assignment
-      V[i] = new leaf(i);
-      auto p = new rankTree();
-
-      V[i]->linkToRankTree(static_cast<void *>(p));    // Leaf link to rank tree
-      p->setLeaf(static_cast<void *>(V[i]));           // rank tree link to leaf
-      auto node = new localTreeNode(p, std::log2(n));  // add rank tree to local tree
-      p->setNode(static_cast<void *>(node));           // rank tree link to local tree node
-      node = localTreeNode::makeUp(node, std::log2(n));
-    }
-  }
+  cluster_forest(size_t _n);
   void insert(size_t u, size_t v);
   bool is_connected(size_t u, size_t v) { return (localTreeNode::getRoot(V[u]) == localTreeNode::getRoot(V[v])); }
   void remove(size_t u, size_t v);
@@ -28,6 +14,8 @@ class cluster_forest {
   // std::vector<localTree*> CC;
   std::vector<leaf *> V;
   size_t n;
+  // Helper functions
+  size_t size_const(size_t level);
 };
 
 void cluster_forest::print_sizes() {
@@ -41,6 +29,22 @@ void cluster_forest::print_sizes() {
   }
 }
 
+inline cluster_forest::cluster_forest(size_t _n) : n(_n) {
+  V.resize(n);
+  // for (auto &it : V) {
+  for (size_t i = 0; i < V.size(); i++) {
+    // 3 new, 4 assignment
+    V[i] = new leaf(i);
+    auto p = new rankTree();
+
+    V[i]->linkToRankTree(static_cast<void *>(p));    // Leaf link to rank tree
+    p->setLeaf(static_cast<void *>(V[i]));           // rank tree link to leaf
+    auto node = new localTreeNode(p, std::log2(n));  // add rank tree to local tree
+    p->setNode(static_cast<void *>(node));           // rank tree link to local tree node
+    node = localTreeNode::makeUp(node, std::log2(n));
+  }
+}
+
 inline void cluster_forest::insert(size_t u, size_t v) {
   // Insert the edge at the top level
   auto Cu = localTreeNode::getRoot(V[u]);
@@ -50,10 +54,10 @@ inline void cluster_forest::insert(size_t u, size_t v) {
   if (Cu == Cv) return;
   localTreeNode::Merge(Cu, Cv);
   // Repeatedly push it down until it is blocked
-  size_t i = Cu->getLevel()-1;
+  size_t i = 0;
   Cu = localTreeNode::getLevelNode(V[u], i);
   Cv = localTreeNode::getLevelNode(V[v], i);
-  while(Cu->getClusterSize() + Cv->getClusterSize() < 1<<(--i)) {
+  while(Cu->getClusterSize() + Cv->getClusterSize() <= size_const(i)) {
     localTreeNode::Merge(Cu, Cv);
     if (V[u]->remove(v, i)) localTreeNode::updateBitMap(V[u], 1, 0, i);
     if (V[u]->insert(v, i + 1)) localTreeNode::updateBitMap(V[u], 0, 1, i + 1);
@@ -306,4 +310,8 @@ inline void cluster_forest::remove(size_t u, size_t v) {
   // if so, we find a replacement edge. Decide which edges need to be pushed.
   // If we reach the two case. Decide which edges need to be pushed.
   // If no replacement edge found, go back to i-1 level.
+}
+
+size_t cluster_forest::size_const(size_t level) {
+  return n/(1<<level);
 }
