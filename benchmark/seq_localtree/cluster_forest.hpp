@@ -55,14 +55,15 @@ inline void cluster_forest::insert(size_t u, size_t v) {
   localTreeNode::Merge(Cu, Cv);
   // Repeatedly push it down until it is blocked
   size_t i = 0;
-  Cu = localTreeNode::getLevelNode(V[u], i);
-  Cv = localTreeNode::getLevelNode(V[v], i);
-  while(Cu->getClusterSize() + Cv->getClusterSize() <= size_const(i)) {
+  Cu = localTreeNode::getLevelNode(V[u], i+1);
+  Cv = localTreeNode::getLevelNode(V[v], i+1);
+  while(Cu->getClusterSize() + Cv->getClusterSize() <= size_const(++i)) {
+    std::cout << "Level " << i << " merge " << Cu << " " << Cv << " Root: " << localTreeNode::getRoot(V[u]) << std::endl;
     localTreeNode::Merge(Cu, Cv);
-    if (V[u]->remove(v, i)) localTreeNode::updateBitMap(V[u], 1, 0, i);
-    if (V[u]->insert(v, i + 1)) localTreeNode::updateBitMap(V[u], 0, 1, i + 1);
-    if (V[v]->remove(u, i)) localTreeNode::updateBitMap(V[v], 1, 0, i);
-    if (V[v]->insert(u, i + 1)) localTreeNode::updateBitMap(V[v], 0, 1, i + 1);
+    if (V[u]->remove(v, i-1)) localTreeNode::updateBitMap(V[u], 1, 0, i-1);
+    if (V[u]->insert(v, i)) localTreeNode::updateBitMap(V[u], 0, 1, i);
+    if (V[v]->remove(u, i-1)) localTreeNode::updateBitMap(V[v], 1, 0, i-1);
+    if (V[v]->insert(u, i)) localTreeNode::updateBitMap(V[v], 0, 1, i);
     Cu = localTreeNode::getLevelNode(V[u], i);
     Cv = localTreeNode::getLevelNode(V[v], i);
   }
