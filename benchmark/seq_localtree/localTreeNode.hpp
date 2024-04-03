@@ -11,6 +11,7 @@ class localTreeNode {
   localTreeNode(size_t l, size_t n, std::bitset<64> emap = std::bitset<64>()) :
       edgemap(emap), level(l), n_v(n), parent(nullptr) {}
   void setParent(rankTree* p) { parent = p; }
+  rankTree* getParent() { return parent; }
   static localTreeNode* getRoot(leaf* v);
   static localTreeNode* getLevelNode(leaf* v, size_t l);
   static void Merge(localTreeNode* Cu, localTreeNode* Cv);
@@ -45,7 +46,7 @@ class localTreeNode {
 };
 
 static int get_cluster_graph_size_dfs(rankTree* node) {
-  if (!node->lchild && !node->rchild) return 1;
+  if (node->leaf) return 1;
   int total = 0;
   if (node->lchild) total += get_cluster_graph_size_dfs(node->lchild);
   if (node->rchild) total += get_cluster_graph_size_dfs(node->rchild);

@@ -17,7 +17,7 @@ declare -a undir_graph=(
   # "Germany_sym"
 
   # # # k-NN
-  # "Household.lines_5_sym"
+  "Household.lines_5_sym"
   # "CHEM_5_sym"
   # "GeoLifeNoScale_2_sym"
   # "GeoLifeNoScale_5_sym"
@@ -28,7 +28,7 @@ declare -a undir_graph=(
 
   # # Synthetic
   # "grid_1000_10000_03_sym"
-  "grid_1000_10000_sym"
+  # "grid_1000_10000_sym"
   # "grid_4000_4000_03_sym"
   # "grid_4000_4000_sym"
 
