@@ -22,6 +22,8 @@ class cluster_forest {
 void cluster_forest::print_cg_sizes() {
   size_t total = 0;
   size_t num_cg = 0;
+  size_t total_es = 0;
+  size_t num_cg_es = 0;
   size_t max = 0;
   std::set<localTreeNode*> visited_cg;
   for (size_t i = 0; i < n; i++) {
@@ -32,6 +34,10 @@ void cluster_forest::print_cg_sizes() {
         size_t size = cg->get_cluster_graph_size();
         total += size;
         num_cg += 1;
+        if (size > 1) {
+          total_es += size;
+          num_cg_es += 1;
+        }
         max = std::max(max, size);
         visited_cg.insert(cg);
       }
@@ -39,7 +45,9 @@ void cluster_forest::print_cg_sizes() {
     }
   }
   std::cout << "Cluster Graph Sizes:" << std::endl;
-  std::cout << "Avg: " << (float)total/(float)num_cg << " Max: " << max << std::endl;
+  std::cout << "AVG: " << (float)total/(float)num_cg;
+  std::cout << " AVG_EXCL_SING: " << (float)total_es/(float)num_cg_es;
+  std::cout << " MAX: " << max << std::endl;
 }
 
 inline cluster_forest::cluster_forest(size_t _n) : n(_n) {
