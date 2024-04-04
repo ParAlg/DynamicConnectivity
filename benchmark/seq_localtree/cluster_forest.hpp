@@ -10,6 +10,7 @@ class cluster_forest {
   void remove(size_t u, size_t v);
   // Statistic gathering helpers
   void print_cg_sizes();
+  void print_leaf_depths();
 
  private:
   // std::vector<localTree*> CC;
@@ -48,6 +49,30 @@ void cluster_forest::print_cg_sizes() {
   std::cout << "AVG: " << (float)total/(float)num_cg;
   std::cout << " AVG_EXCL_SING: " << (float)total_es/(float)num_cg_es;
   std::cout << " MAX: " << max << std::endl;
+}
+
+void cluster_forest::print_leaf_depths() {
+  size_t total = 0;
+  size_t max = 0;
+  for (size_t i = 0; i < n; i++) {
+    size_t depth = 0;
+    auto rTree = static_cast<rankTree*>(V[i]->getParent());
+    while (rTree) {
+      depth++;
+      while (rTree->parent) {
+        rTree = rTree->parent;
+        depth++;
+      }
+      auto lTree = static_cast<localTreeNode*>(rTree->getNode());
+      rTree = static_cast<rankTree*>(lTree->getParent());
+    }
+    total += depth;
+    max = std::max(max, depth);
+  }
+  std::cout << "Cluster Forest Leaf Depths:" << std::endl;
+  std::cout << "AVG: " << (float)total/(float)n;
+  std::cout << " MAX: " << max;
+  std::cout << " LOG2(N): " << log2(n) << std::endl;
 }
 
 inline cluster_forest::cluster_forest(size_t _n) : n(_n) {

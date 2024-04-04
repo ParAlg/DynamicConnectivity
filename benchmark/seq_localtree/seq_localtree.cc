@@ -63,24 +63,26 @@ int main(int argc, char** argv) {
     t.next("Answer queries #" + std::to_string(i));
     std::cout << std::endl;
     CF.print_cg_sizes();
+    CF.print_leaf_depths();
     std::cout << std::endl;
   }
 
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
-      long u = batches_del[i][j].first;
-      long v = batches_del[i][j].second;
-      CF.remove(u, v);
-    }
-    t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
-      Ans_del[i][j] = CF.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-    }
-    t.next("Answer queries #" + std::to_string(i));
-    std::cout << std::endl;
-    CF.print_cg_sizes();
-    std::cout << std::endl;
-  }
+  // for (size_t i = 0; i < num_batches; i++) {
+  //   for (size_t j = 0; j < batches_del[i].size(); j++) {
+  //     long u = batches_del[i][j].first;
+  //     long v = batches_del[i][j].second;
+  //     CF.remove(u, v);
+  //   }
+  //   t.next("Delete batch #" + std::to_string(i));
+  //   for (size_t j = 0; j < queries_del[i].size(); j++) {
+  //     Ans_del[i][j] = CF.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+  //   }
+  //   t.next("Answer queries #" + std::to_string(i));
+  //   std::cout << std::endl;
+  //   CF.print_cg_sizes();
+  //   CF.print_leaf_depths();
+  //   std::cout << std::endl;
+  // }
 
   std::ofstream faq;
   faq.open(Out);
