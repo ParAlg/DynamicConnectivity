@@ -263,7 +263,7 @@ struct graph_utils {
       abort();
     }
     ifs.close();
-    // std::cout << num_vertices << std::endl << num_edges << std::endl << sizes << std::endl;
+    std::cout << num_vertices << std::endl << num_edges << std::endl << sizes << std::endl;
     auto edges = parlay::tabulate(num_edges, [&](vertex i) { return (vertex)edge[i]; });
     return parlay::tabulate(num_vertices, [&](vertex i) {
       return parlay::filter(parlay::to_sequence(edges.cut(offset[i], offset[i + 1])), [=](auto v) { return i < v; });

@@ -1,0 +1,8 @@
+add_executable(test_arrleaf test_leaf.cc)
+target_link_libraries(test_arrleaf PRIVATE dycon)
+add_executable(test_cg test_cg.cc)
+target_link_libraries(test_cg PRIVATE dycon)
+add_executable(test_arr test_arr.cc)
+target_link_libraries(test_arr PRIVATE dycon)
+add_executable(seq_arr seq_arr.cc)
+target_link_libraries(seq_arr PRIVATE dycon)
