@@ -2,19 +2,19 @@
 declare -a undir_graph=(
   # Social
 
-  "com-orkut_sym"
-  "soc-LiveJournal1_sym"
-  "twitter_sym"
-  "friendster_sym"
+  # "com-orkut_sym"
+  # "soc-LiveJournal1_sym"
+  # "twitter_sym"
+  # "friendster_sym"
 
   # # Web
-  "sd_arc_sym"
+  # "sd_arc_sym"
 
 
   # # Road
 
-  "RoadUSA_sym"
-  "Germany_sym"
+  # "RoadUSA_sym"
+  # "Germany_sym"
 
   # # k-NN
   "Household.lines_5_sym"
