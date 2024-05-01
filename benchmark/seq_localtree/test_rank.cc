@@ -3,89 +3,111 @@
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 #include <iostream>
-void test_basic(size_t n = 10) {}
-void abandon1() {
-  //  { auto test_decomposetion = [](rankTree *t) {
-  //     std::cout << "test decomposition" << std::endl;
-  //     auto ans = rankTree::decompose(rankTree::getRoot(t));
-  //     for (size_t i = 0; i < ans.size(); i++)
-  //       std::cout << ans[i]->getRank() << std::endl;
-  //   };
-
-  //   auto test_remove = [&](rankTree *t) {
-  //     std::cout << "before remove" << std::endl;
-  //     auto ans = rankTree::decompose(t);
-  //     for (size_t i = 0; i < ans.size(); i++)
-  //       std::cout << ans[i]->getRank() << std::endl;
-  //     std::cout << "after remove " << parlay::hash64(ans[0]->getRank()) % ans.size() << "th with rank "
-  //               << ans[parlay::hash64(ans[0]->getRank()) % ans.size()]->getRank() << std::endl;
-  //     ans = rankTree::remove(ans[parlay::hash64(ans[0]->getRank()) % ans.size()]);
-
-  //     for (size_t i = 0; i < ans.size(); i++)
-  //       std::cout << ans[i]->getRank() << std::endl;
-  //     std::cout << std::endl << std::endl;
-  //   };
-  //   for (auto it : ans2)
-  //     test_remove(it);}
+class test_rankTree : public rankTree {
+ public:
+  // using arr = parlay::sequence<test_rankTree *>;
+  using arr = parlay::sequence<rankTree *>;
+  // static arr convertFromBase(arr &A);
+  // static arr convertToBase(arr &A);
+  static arr testBuildFromSequence(arr &_A);
+  static arr testRankTreesGen(size_t n);
+  static arr testDecompose(arr &A);
+  static arr testDecompose(rankTree *T);
+  static bool testEqualRanks(arr &A, arr &B);
+  static arr testRemove(rankTree *T);
+  static arr testMerge(arr &A, arr &B);
+  static arr appendSort(arr &A, arr &B);
+  static rankTree *getRoot(rankTree *T) { return rankTree::testGetRoot(T); }
+  static arr testRemove(arr &A, rankTree *T);
+};
+// using arr = test_rankTree::arr;
+using arr = test_rankTree::arr;
+// arr test_rankTree::convertToBase(arr &A) {
+//   arr B;
+//   B.reserve(A.size());
+//   parlay::parallel_for(0, A.size(), [&](size_t i) { B[i] = reinterpret_cast<rankTree *>(A[i]); });
+//   return B;
+// }
+// arr test_rankTree::convertFromBase(arr &A) {
+//   arr B;
+//   B.reserve(A.size());
+//   parlay::parallel_for(0, A.size(), [&](size_t i) { B[i] = reinterpret_cast<test_rankTree *>(A[i]); });
+//   return B;
+// }
+arr test_rankTree::testRankTreesGen(size_t n) {
+  return rankTree::testRankTreesGen(n);
+}
+arr test_rankTree::testBuildFromSequence(arr &_A) {
+  auto A = _A;
+  return rankTree::testBuildFromSequence(A);
+}
+arr test_rankTree::testDecompose(rankTree *T) {
+  return rankTree::testDecompose(T);
+}
+arr test_rankTree::testDecompose(arr &A) {
+  arr B;
+  for (size_t i = 0; i < A.size(); i++) {
+    auto C = rankTree::testDecompose(A[i]);
+    rankTree::testRankInc(C, "decompose not increasing");
+    B.append(C);
+  }
+  return testSortByRank(B);
+}
+bool test_rankTree::testEqualRanks(arr &A, arr &B) {
+  return rankTree::testEqualRanks(A, B);
+}
+arr test_rankTree::testRemove(rankTree *T) {
+  return rankTree::testRemove(T);
+}
+arr test_rankTree::testMerge(arr &A, arr &B) {
+  return rankTree::testMerge(A, B);
+}
+arr test_rankTree::appendSort(arr &A, arr &B) {
+  auto C = A;
+  C.append(B);
+  return rankTree::testSortByRank(C);
+}
+arr test_rankTree::testRemove(arr &A, rankTree *T) {
+  return rankTree::testRemove(A, T);
 }
 int main() {
-  size_t n = 50000;
-  std::vector<rankTree *> A(n);
-  parlay::parallel_for(0, n, [&](size_t i) { A[i] = new rankTree(parlay::hash64(i) % parlay::log2_up(n)); });
-  auto comp = [&](const rankTree *T1, const rankTree *T2) { return T1->getRank() < T2->getRank(); };
-  parlay::sort_inplace(A, comp);
-  for (size_t i = 0; i < n - 1; i++)
-    ASSERT_MSG(A[i]->getRank() <= A[i + 1]->getRank(), "sort rank fail");
-  std::cout << "test rank tree generation" << std::endl;
-  // for (size_t i = 0; i < n; i++)
-  //   std::cout << A[i]->getRank() << std::endl;
-  std::cout << "test building rank trees with distinct rank from a bunch of rank trees" << std::endl;
-  auto ans1 = rankTree::buildFromSequence(A);
+  size_t n = 100000;
+  size_t m = 50000;
 
-  // for (size_t i = 0; i < ans1.size(); i++)
-  //   std::cout << ans1[i]->getRank() << std::endl;
-  for (size_t i = 0; i < ans1.size() - 1; i++)
-    ASSERT_MSG(ans1[i]->getRank() < ans1[i + 1]->getRank(), "not distinct rank trees");
+  auto A = test_rankTree::testRankTreesGen(n);
+  auto ATrees = test_rankTree::testBuildFromSequence(A);
+  auto AFlatten = test_rankTree::testDecompose(ATrees);
+  ASSERT_MSG(test_rankTree::testEqualRanks(A, AFlatten) == true, "decompose fail");
 
-  std::vector<rankTree *> B(n);
-  parlay::parallel_for(0, n, [&](size_t i) { B[i] = new rankTree(parlay::hash64_2(i) % parlay::log2_up(n)); });
-  parlay::sort_inplace(B, comp);
-  for (size_t i = 0; i < n - 1; i++)
-    ASSERT_MSG(B[i]->getRank() <= B[i + 1]->getRank(), "sort rank fail");
-  std::cout << "test rank tree generation" << std::endl;
-  // for (size_t i = 0; i < n; i++)
-  //   std::cout << B[i]->getRank() << std::endl;
-  std::cout << "test building rank trees with distinct rank from a bunch of rank trees" << std::endl;
-  auto ans2 = rankTree::buildFromSequence(B);
-  // for (size_t i = 0; i < ans2.size(); i++)
-  //   std::cout << ans2[i]->getRank() << std::endl;
-  for (size_t i = 0; i < ans2.size() - 1; i++)
-    ASSERT_MSG(ans2[i]->getRank() < ans2[i + 1]->getRank(), "not distinct rank trees");
+  auto B = test_rankTree::testRankTreesGen(m);
+  auto BTrees = test_rankTree::testBuildFromSequence(B);
+  auto BFlatten = test_rankTree::testDecompose(BTrees);
+  ASSERT_MSG(test_rankTree::testEqualRanks(B, BFlatten) == true, "decompose fail");
 
-  std::cout << "test merging two sequences of rank trees" << std::endl;
-  auto ans3 = rankTree::Merge(ans1, ans2, nullptr);
-  for (size_t i = 0; i < ans3.size(); i++)
-    std::cout << ans3[i]->getRank() << std::endl;
-  for (size_t i = 0; i < ans3.size() - 1; i++)
-    ASSERT_MSG(ans3[i]->getRank() < ans3[i + 1]->getRank(), "not distinct rank trees");
+  auto CTrees = test_rankTree::testMerge(ATrees, BTrees);
+  auto CFlatten = test_rankTree::testDecompose(CTrees);
+  auto C = test_rankTree::appendSort(A, B);
+  ASSERT_MSG(test_rankTree::testEqualRanks(C, CFlatten) == true, "merge fail");
 
-  for (auto it : ans3) {
-    auto splay = rankTree::decompose(it);
-    std::vector<size_t> counts(parlay::log2_up(n) + 1);
-    counts.assign(parlay::log2_up(n), 0);
-    for (auto i : splay)
-      counts[i->getRank()]++;
-    size_t p = parlay::hash64(splay.size()) % splay.size();
-    counts[splay[p]->getRank()]--;
-    std::vector<size_t> match(parlay::log2_up(n) + 1);
-    match.assign(parlay::log2_up(n), 0);
-    auto removed = rankTree::remove(splay[p], nullptr);
-    for (auto i : removed) {
-      auto q = rankTree::decompose(i);
-      for (auto j : q)
-        match[j->getRank()]++;
-    }
-    parlay::parallel_for(0, counts.size(), [&](size_t i) { ASSERT_MSG(counts[i] == match[i], "remove fail"); });
+  for (size_t i = 0; i < CTrees.size(); i++) {
+    auto root = CTrees[i];
+    auto rFlatten = test_rankTree::testDecompose(test_rankTree::getRoot(root));
+    auto p = parlay::hash64(4396) % rFlatten.size();
+    auto it = rFlatten.begin() + p;
+    auto DTrees = test_rankTree::testRemove(*it);
+    rFlatten.erase(it);
+    auto DFlatten = test_rankTree::testDecompose(DTrees);
+    ASSERT_MSG(test_rankTree::testEqualRanks(rFlatten, DFlatten) == true, "remove decompose fail");
+  }
+
+  auto E = test_rankTree::testRankTreesGen(n + m);
+  for (size_t i = 0; i < 50; i++) {
+    auto ETrees = test_rankTree::testBuildFromSequence(E);
+    auto it = E.begin() + parlay::hash64(i) % E.size();
+    ETrees = test_rankTree::testRemove(ETrees, *it);
+    E.erase(it);
+    auto EFlatten = test_rankTree::testDecompose(ETrees);
+    ASSERT_MSG(test_rankTree::testEqualRanks(EFlatten, E) == true, "remove from rank forest fail");
   }
   return 0;
 }

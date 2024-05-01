@@ -1,4 +1,4 @@
-#include "cluster_forest.hpp"
+#include "SCCWN.hpp"
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <parlay/internal/get_time.h>
@@ -43,43 +43,46 @@ int main(int argc, char** argv) {
   auto queries_del = utils::generate_CC_queries(num_batches, batches_del, n, num_queries);
   Ans Ans_del(num_batches);
   parlay::parallel_for(0, num_batches, [&](size_t i) { Ans_del[i].resize(batches_del[i].size()); });
-
   parlay::internal::timer t;
-
+  std::ofstream fins, fdel;
   t.start();
-  cluster_forest CF(n);
-  t.next("initialization");
+  SCCWN F(n);
+  F.lmax = std::ceil(std::log2(n));
+  F.verbose = false;
+  assert(F.lmax < 64);
+  if (!F.verbose) t.next("initialization");
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
-      CF.insert(u, v);
+      F.insert(u, v);
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
-    t.next("Insert batch #" + std::to_string(i));
+    if (!F.verbose) t.next("Insert batch #" + std::to_string(i));
     for (size_t j = 0; j < queries_ins[i].size(); j++) {
       // todo here
-      Ans_ins[i][j] = CF.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
+      Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
-    t.next("Answer queries #" + std::to_string(i));
+    if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
   }
-
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
-      // todo here: delete edges
+      F.remove(u, v);
     }
-    t.next("Delete batch #" + std::to_string(i));
+    if (!F.verbose) t.next("Delete batch #" + std::to_string(i));
     for (size_t j = 0; j < queries_del[i].size(); j++) {
       // todo here
-      // Ans_del[i][j] = graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
+      Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
 
-    t.next("Answer queries #" + std::to_string(i));
+    if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
   }
-
+  auto x = Out.find_first_of(".");
+  auto s = Out.substr(0, x);
+  // F.run_stat(s);
   std::ofstream faq;
   faq.open(Out);
   if (!faq.is_open()) {
@@ -89,9 +92,9 @@ int main(int argc, char** argv) {
   for (size_t i = 0; i < num_batches; i++)
     for (size_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  // for (size_t i = 0; i < num_batches; i++)
-  //   for (size_t j = 0; j < queries_del[i].size(); j++)
-  //     faq << Ans_del[i][j];
+  for (size_t i = 0; i < num_batches; i++)
+    for (size_t j = 0; j < queries_del[i].size(); j++)
+      faq << Ans_del[i][j];
   faq.close();
   return 0;
 }

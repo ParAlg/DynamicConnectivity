@@ -1,5 +1,6 @@
 #pragma once
 #include "assert.hpp"
+#include <cassert>
 #include <set>
 #include <map>
 #include <bitset>
@@ -20,7 +21,7 @@ class leaf {
   // using incident_edges = std::map<size_t, std::set<size_t>>;
   // using edge_lists = std::pair<size_t, std::set<size_t>>;
 
-  leaf(size_t _id = 0) : E(), parent(nullptr), edgemap(), size(0), id(_id) {}
+  leaf(size_t _id = 0, void *p = nullptr) : E(), parent(p), edgemap(), size(0), id(_id) {}
   bool insert(size_t e, size_t l);
   bool remove(size_t e, size_t l);
   size_t getLevel(size_t e);
@@ -32,6 +33,7 @@ class leaf {
   size_t getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator> getLevelIterator(size_t l);
+  std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
 
  private:
   std::map<size_t, std::set<size_t>> E;
@@ -46,11 +48,11 @@ inline void leaf::linkToRankTree(void *p) {
 inline bool leaf::insert(size_t e, size_t l) {
   auto &E = this->E;
   // find if there is level l incident edges
-  // std::cout << "inserting " << e << " to level " << l << std::endl;
   size++;
   auto it = E.find(l);
   if (it != E.end()) {
     // insert to grouped BBST
+    assert(it->second.find(e) == it->second.end());
     it->second.insert(e);
   } else {
     // insert to a new group
@@ -61,10 +63,17 @@ inline bool leaf::insert(size_t e, size_t l) {
     return true;
   }
   return false;
-  // std::cout << "after insertion, has " << this->E.size() << "levels, total number of edges is "
-  //           << (this->E.find(l))->second.size() << std::endl;
+}
+inline std::tuple<bool, size_t, size_t> leaf::fetchEdge(size_t l) {
+  auto &E = this->E;
+  auto it = E.find(l);
+  if (it == E.end()) return std::make_tuple(false, 0, 0);
+  auto v = it->second.begin();
+  auto e = std::make_tuple(true, id, *v);
+  return e;
 }
 inline bool leaf::remove(size_t e, size_t l) {
+  this->size--;
   auto &E = this->E;
   auto it = E.find(l);
   ASSERT_MSG(it != E.end(), "remove from wrong edge level");

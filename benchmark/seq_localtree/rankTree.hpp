@@ -1,59 +1,61 @@
 #include "assert.hpp"
-#include <iostream>
-#include <set>
-#include <map>
-#include <vector>
+#include "stats.hpp"
+#include <parlay/primitives.h>
+#include <parlay/sequence.h>
 #include <bitset>
-#include <queue>
-#include <deque>
-typedef enum { VERTEX, NODE } MODE;
+class localTree;
 class rankTree {
  public:
-  // This is the rank tree data structure descriped in Section3.4
-  // If a rank tree node is leaf or the rank tree only contains
-  // a root node, then the content of this node should be the cluster
-  // in next level or the leaf in the whole cluster tree which is the
-  // vertex of the graph
-  rankTree(size_t r, void* _Node, void* _leaf, std::bitset<64> _emap) :
-      rank(r), lchild(nullptr), rchild(nullptr), parent(nullptr), Node(_Node), leaf(_leaf), edgemap(_emap) {}
-  // Used in the constructor of cluster forest
-  rankTree(size_t r = 0) : rank(r), lchild(nullptr), rchild(nullptr), parent(nullptr) {}
+  rankTree(size_t r, class localTree* _Node, class localTree* _des, std::bitset<64> _emap) :
+      rank(r), lchild(nullptr), rchild(nullptr), parent(nullptr), Node(_Node), descendant(_des), edgemap(_emap) {}
+  // rankTree(size_t r = 0) : rank(r), lchild(nullptr), rchild(nullptr), parent(nullptr), leaf(nullptr), edgemap(0) {}
   rankTree(rankTree* T1, rankTree* T2);
-  void setLeaf(void* p) { leaf = p; }
-  void setNode(void* p) { Node = p; }
-  bool isleaf() { return !lchild && !rchild; }
-  bool checkLevelEdge(size_t l) { return edgemap[l]; }
-  void* getLeaf() { return leaf; }
-  void* getNode() { return Node; }
-  size_t getRank() const { return rank; }
-  static rankTree* getRoot(rankTree* T);
-  static std::vector<rankTree*> remove(rankTree* T, void* node);
-  static std::vector<rankTree*> decompose(rankTree* T);
-  static std::vector<rankTree*> buildFromSequence(std::vector<rankTree*>& rTrees);
-  static std::vector<rankTree*> build(std::vector<rankTree*>& rTrees, void* node);
-  static std::vector<rankTree*> Merge(std::vector<rankTree*>& r1, std::vector<rankTree*>& r2, void* node);
-  // static std::bitset<64> updateBitMap(std::vector<rankTree*>& rTrees);
-  static rankTree* updateBitMap(rankTree* r, bool nval, size_t l);
-  static rankTree* getLeftMostLeaf(rankTree* p);
-  static rankTree* getNextLeaf(rankTree* p);
+  using arr = parlay::sequence<rankTree*>;
 
  private:
+  friend class localTree;
   rankTree* lchild;
   rankTree* rchild;
   rankTree* parent;
   std::bitset<64> edgemap;
-  // The leaf may be a node or vertex
-  void* leaf;
-  // This is a pointer to the node containing this rank tree
-  void* Node;
   size_t rank;
+  // pointer to the local tree node whose father is this rank tree node
+  localTree* descendant;
+  // This is a pointer to the local tree node containing this rank tree
+  localTree* Node;
+
+  //
+  bool isleaf() { return !lchild && !rchild; }
+  void setRank(size_t i) { rank = i; }
+  size_t getRank() { return rank; }
+  static arr decompose(rankTree* T, bool clear);
+  static arr decompose(arr& rTrees, bool clear);
+  static arr sortByRank(arr& rTrees);
+  static arr buildFromSequence(arr& rTrees, localTree* node);
+  static arr remove(rankTree* T, localTree* node);
+  static arr remove(arr& rTrees, rankTree* T, localTree* node);
+  static arr build(arr& rTrees, localTree* node);
+  static arr insertRankTree(arr& rTrees, rankTree* T, localTree* node);
+  static arr Merge(arr& r1, arr& r2, localTree* node);
+  static rankTree* getRoot(rankTree* T);
+  static localTree* updateBitMapByTree(rankTree* T, std::bitset<64> nval);
+  static void updateBitMap(rankTree* T, std::bitset<64> oval, std::bitset<64> nval);
+  static rankTree* fetchLeaf(rankTree* T, size_t l);
+  static std::bitset<64> getEdgeMap(arr& A);
+
+ protected:
+  static rankTree* testGetRoot(rankTree* T) { return getRoot(T); }
+  static void testRankDistinct(arr& A, std::string msg);
+  static void testRankInc(arr& A, std::string msg);
+  static arr testRankTreesGen(size_t n);
+  static arr testBuildFromSequence(arr& A);
+  static arr testDecompose(rankTree* T);
+  static arr testSortByRank(arr& A);
+  static bool testEqualRanks(arr& A, arr& B);
+  static arr testRemove(rankTree* T, localTree* node);
+  static arr testRemove(arr& rTrees, rankTree* T, localTree* node);
+  static arr testMerge(arr& A, arr& B, localTree* node);
 };
-inline rankTree* rankTree::getRoot(rankTree* T) {
-  while (T->parent) {
-    T = T->parent;
-  }
-  return T;
-}
 inline rankTree::rankTree(rankTree* T1, rankTree* T2) {
   ASSERT_MSG(T1->rank == T2->rank, "cannot pair two rankTrees with different rank");
   this->rank = T1->rank + 1;
@@ -68,42 +70,74 @@ inline rankTree::rankTree(rankTree* T1, rankTree* T2) {
   this->rchild = T2;
   T1->parent = this;
   T2->parent = this;
-};
-inline std::vector<rankTree*> rankTree::decompose(rankTree* T) {
-  // We don't know how many children a cluster node can have, so this will break the logn limit.
-  std::queue<rankTree*> BFS;
-  std::vector<rankTree*> rTrees;
-  rankTree* root = T;
-
-  BFS.push(root);
-  while (!BFS.empty()) {
-    // If we reach leaf and the leaf is different from b;
-    root = BFS.front();
-    // std::cout << "root: " << root << std::endl;
-    BFS.pop();
-    if (!root->lchild && !root->rchild) {
-      rTrees.push_back(root);
-      continue;
+}
+inline rankTree::arr rankTree::decompose(rankTree* T, bool clear = false) {
+  rankTree::arr rTrees;
+  std::queue<rankTree*> Q;
+  auto root = T;
+  Q.push(root);
+  while (!Q.empty()) {
+    root = Q.front();
+    stats::memUsage += sizeof(rankTree);
+    Q.pop();
+    if (root->isleaf()) {
+      rTrees.emplace_back(root);
+    } else {
+      // internal node in rankTree should have two children
+      Q.push(root->lchild);
+      Q.push(root->rchild);
+      if (clear) delete root;
     }
-    if (root->lchild) BFS.push(root->lchild);
-    if (root->rchild) BFS.push(root->rchild);
-    // delete root;
   }
-  // the rank trees are in decreasing order, we need to reverse it.
   for (size_t i = 0; i < rTrees.size() / 2; i++)
     std::swap(rTrees[i], rTrees[rTrees.size() - i - 1]);
-  // std::cout << "rTrees size " << rTrees.size() << std::endl;
   return rTrees;
 }
-// In section 3.6 We delete the path from b to the root of Tb,
-// thereby partitioning this rank tree  to O(logn) smaller sorted rank trees.
-// No need to modify the pointer to local tree node because it only involves one node.
-
-inline std::vector<rankTree*> rankTree::remove(rankTree* T, void* node) {
-  std::vector<rankTree*> rTrees;
-  rTrees.reserve(32);
-  // std::cout << "address of T " << T << std::endl;
-  // std::cout << "address of T->parent " << T->parent << std::endl;
+inline rankTree::arr rankTree::decompose(arr& rTrees, bool clear = false) {
+  if (rTrees.empty()) return rTrees;
+  arr A;
+  for (size_t i = 0; i < rTrees.size(); i++) {
+    auto B = decompose(rTrees[i], clear);
+    A.append(B);
+  }
+  return sortByRank(A);
+}
+inline rankTree::arr rankTree::buildFromSequence(arr& rTrees, localTree* node = nullptr) {
+  arr Seq;
+  size_t p = 0;
+  while (p < rTrees.size()) {
+    if (p == rTrees.size() - 1) {
+      rTrees[p]->parent = nullptr;
+      rTrees[p]->Node = node;
+      Seq.push_back(rTrees[p]);
+      // std::cout << "push " << p << std::endl;
+      break;
+    }
+    size_t counter = 1;
+    while ((p + counter) < rTrees.size() && rTrees[p + counter]->rank == rTrees[p]->rank)
+      counter++;
+    // std::cout << "number of equal rank trees " << counter << std::endl;
+    if (counter % 2 == 1) {
+      rTrees[p]->parent = nullptr;
+      rTrees[p]->Node = node;
+      Seq.push_back(rTrees[p]);
+      p++;
+      counter--;
+    }
+    for (size_t i = 0; i < counter; i += 2) {
+      rTrees[p + i + 1] = new rankTree(rTrees[p + i], rTrees[p + i + 1]);
+    }
+    for (size_t i = 0; i < counter / 2; i++) {
+      rTrees[(p + counter) - i - 1] = rTrees[(p + counter) - i * 2 - 1];
+      // std::cout << "move from " << (p + counter) - i * 2 - 1 << " to " << (p + counter) - i - 1 << std::endl;
+    }
+    p += counter / 2;
+    // std::cout << " Merge next time happens at" << p << std::endl;
+  }
+  return Seq;
+}
+inline rankTree::arr rankTree::remove(rankTree* T, localTree* node) {
+  arr rTrees;
   auto p = T->parent;
   while (p) {
     if (p->lchild == T) {
@@ -121,46 +155,37 @@ inline std::vector<rankTree*> rankTree::remove(rankTree* T, void* node) {
     p = p->parent;
   }
   delete T;
-  // std::cout << "rankTree alive " << rTrees.size() << std::endl;
-  return build(rTrees, node);
+  return rTrees;
 }
-inline std::vector<rankTree*> rankTree::buildFromSequence(std::vector<rankTree*>& rTrees) {
-  std::vector<rankTree*> Seq;
-  Seq.reserve(rTrees.size());
-  size_t p = 0;
-  while (p < rTrees.size()) {
-    if (p == rTrees.size() - 1) {
-      rTrees[p]->parent = nullptr;
-      Seq.push_back(rTrees[p]);
-      // std::cout << "push " << p << std::endl;
+inline rankTree::arr rankTree::remove(arr& rTrees, rankTree* T, localTree* node) {
+  auto root = getRoot(T);
+  for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
+    if (*it == root) {
+      rTrees.erase(it);
       break;
     }
-    size_t counter = 1;
-    while ((p + counter) < rTrees.size() && rTrees[p + counter]->rank == rTrees[p]->rank)
-      counter++;
-    // std::cout << "number of equal rank trees " << counter << std::endl;
-    if (counter % 2 == 1) {
-      rTrees[p]->parent = nullptr;
-      Seq.push_back(rTrees[p]);
-      p++;
-      counter--;
-    }
-    for (size_t i = 0; i < counter; i += 2) {
-      rTrees[p + i + 1] = new rankTree(rTrees[p + i], rTrees[p + i + 1]);
-    }
-    for (size_t i = 0; i < counter / 2; i++) {
-      rTrees[(p + counter) - i - 1] = rTrees[(p + counter) - i * 2 - 1];
-      // std::cout << "move from " << (p + counter) - i * 2 - 1 << " to " << (p + counter) - i - 1 << std::endl;
-    }
-    p += counter / 2;
-    // std::cout << " Merge next time happens at" << p << std::endl;
   }
-  return Seq;
+  auto remain = rankTree::remove(T, node);
+  return rankTree::Merge(rTrees, remain, node);
 }
-inline std::vector<rankTree*> rankTree::build(std::vector<rankTree*>& rTrees, void* node) {
-  std::vector<rankTree*> Seq;
+inline rankTree::arr rankTree::insertRankTree(arr& rTrees, rankTree* T, localTree* node) {
+  for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
+    if ((*it)->rank >= T->rank) {
+      rTrees.insert(it, T);
+      return build(rTrees, node);
+    }
+  }
+  rTrees.push_back(T);
+  return build(rTrees, node);
+}
+inline rankTree::arr rankTree::sortByRank(arr& rTrees) {
+  auto comp = [&](const rankTree* T1, const rankTree* T2) { return T1->rank < T2->rank; };
+  parlay::sort_inplace(rTrees, comp);
+  return rTrees;
+}
+inline rankTree::arr rankTree::build(arr& rTrees, localTree* node) {
+  arr Seq;
   if (!rTrees.size()) return Seq;
-  Seq.reserve(rTrees.size());
   for (size_t i = 0; i < rTrees.size() - 1; i++) {
     if (rTrees[i]->rank == rTrees[i + 1]->rank)
       rTrees[i + 1] = new rankTree(rTrees[i], rTrees[i + 1]);
@@ -180,9 +205,8 @@ inline std::vector<rankTree*> rankTree::build(std::vector<rankTree*>& rTrees, vo
 // Need to modify the pointers to local tree node from r2 to the node from r1
 // because we don't update the node pointer of each leaf in r2. Only the root of
 // each rankTree stores the correct pointer to its local tree node
-inline std::vector<rankTree*> rankTree::Merge(std::vector<rankTree*>& r1, std::vector<rankTree*>& r2, void* node) {
-  std::vector<rankTree*> Seq;
-  Seq.reserve(r1.size() + r2.size());
+inline rankTree::arr rankTree::Merge(arr& r1, arr& r2, localTree* node) {
+  arr Seq;
   size_t p = 0, q = 0;
   while (p < r1.size() || q < r2.size()) {
     if (p == r1.size()) {
@@ -217,42 +241,109 @@ inline std::vector<rankTree*> rankTree::Merge(std::vector<rankTree*>& r1, std::v
   }
   return build(Seq, node);
 }
-// inline std::bitset<64> rankTree::updateBitMap(std::vector<rankTree*>& rTrees) {
-//   std::bitset<64> Ans;
-//   Ans.reset();
-//   for (auto it : rTrees)
-//     Ans |= it->edgemap;
-//   return Ans;
-// }
-
-// Update bitmap from leaf to root
-// If no update need, we return nullptr, otherwise we return the root of the rankTree
-// Which means we need go to level - 1 to keep updating
-inline rankTree* rankTree::updateBitMap(rankTree* r, bool nval, size_t l) {
-  r->edgemap[l] = nval;
-  while (r->parent) {
-    bool oldval = r->parent->edgemap[l];
-    bool lval = (r->parent->lchild != nullptr) ? r->parent->lchild->edgemap[l] : false;
-    bool rval = (r->parent->rchild != nullptr) ? r->parent->rchild->edgemap[l] : false;
+inline rankTree* rankTree::getRoot(rankTree* T) {
+  while (T->parent)
+    T = T->parent;
+  return T;
+}
+// if no need to go up, return nullptr
+// if reach the root, then return the node this root points to
+inline localTree* rankTree::updateBitMapByTree(rankTree* T, std::bitset<64> nval) {
+  if (!T) return nullptr;
+  T->edgemap = nval;
+  while (T->parent) {
+    auto oldval = T->parent->edgemap;
+    auto lval = (T->parent->lchild != nullptr) ? T->parent->lchild->edgemap : 0;
+    auto rval = (T->parent->rchild != nullptr) ? T->parent->rchild->edgemap : 0;
     // no need to go up
     if (oldval == (lval | rval)) return nullptr;
-    r->parent->edgemap[l] = nval;
-    r = r->parent;
+    // std::cout << "old " << oldval << " new " << nval << " lval " << lval << " rval" << rval << std::endl;
+    T->parent->edgemap = lval | rval;
+    T = T->parent;
   }
-  // r exp to be the root of the rankTree.
-  return r;
+  assert(T->Node);
+  return T->Node;
 }
-inline rankTree* rankTree::getNextLeaf(rankTree* p) {
-  if (!p || !p->parent) return nullptr;
-  if (p == p->parent->lchild && p->parent->rchild)
-    return getLeftMostLeaf(p->parent->rchild);
-  else
-    return getNextLeaf(p->parent);
-  return nullptr;
+inline rankTree* rankTree::fetchLeaf(rankTree* T, size_t l) {
+  while (!T->isleaf()) {
+    if (T->lchild->edgemap[l] == 1)
+      T = T->lchild;
+    else if (T->rchild->edgemap[l] == 1)
+      T = T->rchild;
+    assert(T->edgemap[l] == 1);
+  }
+  return T;
 }
-inline rankTree* rankTree::getLeftMostLeaf(rankTree* p) {
-  if (!p->lchild && !p->rchild) return p;
-  while (p->lchild || p->rchild)
-    p = (p->lchild) ? p->lchild : p->rchild;
-  return p;
+inline std::bitset<64> rankTree::getEdgeMap(arr& A) {
+  std::bitset<64> b = 0;
+  for (size_t i = 0; i < A.size(); i++)
+    b = b | A[i]->edgemap;
+  return b;
+}
+inline void rankTree::updateBitMap(rankTree* T, std::bitset<64> oval, std::bitset<64> nval) {}
+
+inline void rankTree::testRankDistinct(arr& A, std::string msg = "rank not distince") {
+  for (size_t i = 0; i < A.size() - 1; i++)
+    ASSERT_MSG(A[i]->rank != A[i + 1]->rank, msg);
+}
+inline void rankTree::testRankInc(arr& A, std::string msg = "rank not increasing") {
+  for (size_t i = 0; i < A.size() - 1; i++)
+    ASSERT_MSG(A[i]->rank <= A[i + 1]->rank, msg);
+}
+inline rankTree::arr rankTree::testRankTreesGen(size_t n) {
+  arr A(n);
+  parlay::parallel_for(
+      0, n, [&](size_t i) { A[i] = new rankTree(parlay::hash64(i) % parlay::log2_up(n), nullptr, nullptr, 0); });
+  A = testSortByRank(A);
+  testRankInc(A, "sort rank fail");
+  std::cout << "test rank tree generation" << std::endl;
+  // for (size_t i = 0; i < n; i++)
+  //   std::cout << A[i]->getRank() << std::endl;
+  return A;
+}
+inline rankTree::arr rankTree::testBuildFromSequence(arr& A) {
+  std::cout << "test building rank trees of distinct rank from a bunch of rank trees" << std::endl;
+  auto B = buildFromSequence(A);
+  // for (size_t i = 0; i < B.size(); i++)
+  //   std::cout << B[i]->getRank() << std::endl;
+  testRankDistinct(B, "not distinct rank trees");
+  return B;
+}
+inline rankTree::arr rankTree::testDecompose(rankTree* T) {
+  return decompose(T);
+}
+inline rankTree::arr rankTree::testSortByRank(arr& A) {
+  sortByRank(A);
+
+  // for (size_t i = 0; i < A.size(); i++)
+  //   std::cout << A[i]->rank << ",";
+  // std::cout << std::endl;
+
+  return A;
+}
+inline bool rankTree::testEqualRanks(arr& A, arr& B) {
+  ASSERT_MSG(A.size() == B.size(), "Decompose Size expected to be same");
+  // for (size_t i = 0; i < A.size(); i++)
+  //   std::cout << A[i]->rank << "," << B[i]->rank << std::endl;
+  parlay::parallel_for(0, A.size(), [&](size_t i) {
+    ASSERT_MSG(A[i]->rank == B[i]->rank, "rank should be the same after decomposing");
+  });
+  return true;
+}
+inline rankTree::arr rankTree::testRemove(rankTree* T, localTree* node = nullptr) {
+  std::cout << "test removing  leaf from a rank tree" << std::endl;
+  auto A = remove(T, nullptr);
+  testRankDistinct(A, "remove not generate distinct rank trees");
+  testRankInc(A, "remove not generate increasing rank trees");
+  return A;
+}
+inline rankTree::arr rankTree::testMerge(arr& A, arr& B, localTree* node = nullptr) {
+  std::cout << "test merging two sequences of rank trees" << std::endl;
+  auto C = Merge(A, B, node);
+  testRankDistinct(C, "merge does not generate distinct rank trees");
+  testRankInc(C, "merge does not generate rank trees in increasing order");
+  return C;
+}
+inline rankTree::arr rankTree::testRemove(arr& rTrees, rankTree* T, localTree* node = nullptr) {
+  return rankTree::remove(rTrees, T, node);
 }
