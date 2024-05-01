@@ -10,7 +10,7 @@ class SCCWN {
     std::copy(Nodes.begin(), Nodes.end(), std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
   }
-  void printSearch(size_t found, size_t nRu, size_t nEu, size_t nRv, size_t nEv, size_t level) {
+  void printSearch(size_t found, size_t nRu, size_t nEu, size_t nCu, size_t nRv, size_t nEv, size_t nCv, size_t level) {
     std::cout << found << " " << nRu << " " << nEu << " " << nRv << " " << nEv << " " << level << std::endl;
   }
 
@@ -136,7 +136,7 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
             placeEdges(Ev, l - 1);
           }
-          if (verbose) printSearch(1, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+          if (verbose) printSearch(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
           return;
         } else {
           if (Hu.find(Cuv) == Hu.end()) {
@@ -195,7 +195,7 @@ inline void SCCWN::remove(size_t u, size_t v) {
         Cv = CP;
         CP = GP;
         l = CP ? CP->getLevel() : 0;
-        if (verbose) printSearch(0, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+        if (verbose) printSearch(0, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
         break;
       }
       auto ev = fetchEdge(Qv, l);
@@ -235,7 +235,7 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
             placeEdges(Ev, l - 1);
           }
-          if (verbose) printSearch(1, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+          if (verbose) printSearch(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
           return;
         } else {
           if (Hv.find(Cuv) == Hv.end()) {
@@ -295,7 +295,7 @@ inline void SCCWN::remove(size_t u, size_t v) {
         Cv = _CP;
         CP = GP;
         l = CP ? CP->getLevel() : 0;
-        if (verbose) printSearch(0, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+        if (verbose) printSearch(0, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
         break;
       }
     }
