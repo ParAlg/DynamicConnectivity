@@ -11,7 +11,8 @@ class SCCWN {
     std::cout << "\n\n";
   }
   void printSearch(size_t found, size_t nRu, size_t nEu, size_t nCu, size_t nRv, size_t nEv, size_t nCv, size_t level) {
-    std::cout << found << " " << nRu << " " << nEu << " " << nRv << " " << nEv << " " << level << std::endl;
+    std::cout << found << " " << nRu << " " << nEu << " " << nCu << " " << nRv << " " << nEv << " " << nCv << " "
+              << level << std::endl;
   }
 
  public:
