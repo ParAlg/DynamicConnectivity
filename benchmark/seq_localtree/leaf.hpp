@@ -32,6 +32,17 @@ class leaf {
   size_t getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator> getLevelIterator(size_t l);
+  uint64_t space() {
+    uint64_t space = 0;
+    space += sizeof(std::map<size_t, std::set<size_t>>);
+    space += E.size() * (sizeof(size_t) + sizeof(std::set<size_t>));
+    for (auto entry : E)
+      space += entry.second.size() * sizeof(size_t);
+    space += sizeof(void*);
+    space += sizeof(std::bitset<64>);
+    space += 2 * sizeof(size_t);
+    return space;
+  }
 
  private:
   std::map<size_t, std::set<size_t>> E;

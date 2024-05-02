@@ -34,6 +34,16 @@ class localTreeNode {
 
   int get_cluster_graph_size();
 
+  int64_t space() {
+    int64_t space = 0;
+    space += sizeof(std::vector<rankTree*>);
+    space += rTrees.size() * sizeof(rankTree*);
+    space += sizeof(std::bitset<64>);
+    space += 2*sizeof(size_t);
+    space += sizeof(rankTree*);
+    return space;
+  }
+
  private:
   std::vector<rankTree*> rTrees;
   std::bitset<64> edgemap;

@@ -28,6 +28,9 @@ int main(int argc, char** argv) {
   auto E = parlay::random_shuffle(parlay::remove_duplicates(utils::to_edges(G)));
   vertex m = E.size();
 
+  std::cout << "n=" << n << std::endl;
+  std::cout << "m=" << m << std::endl;
+
   auto batch_size = parlay::tabulate(num_batches + 1, [&](size_t i) { return m / num_batches * i; });
   batch_size[num_batches] = m;
 
@@ -49,6 +52,7 @@ int main(int argc, char** argv) {
   t.start();
   cluster_forest CF(n);
   t.next("initialization");
+  std::cout << std::endl << "Space: " << CF.space() << std::endl << std::endl;
   
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
@@ -61,10 +65,11 @@ int main(int argc, char** argv) {
       Ans_ins[i][j] = CF.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
-    std::cout << std::endl;
-    CF.print_cg_sizes();
-    CF.print_leaf_depths();
-    std::cout << std::endl;
+    std::cout << std::endl << "Space: " << CF.space() << std::endl << std::endl;
+    // std::cout << std::endl;
+    // CF.print_cg_sizes();
+    // CF.print_leaf_depths();
+    // std::cout << std::endl;
   }
 
   // for (size_t i = 0; i < num_batches; i++) {

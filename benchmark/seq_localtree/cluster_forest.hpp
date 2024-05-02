@@ -11,6 +11,7 @@ class cluster_forest {
   // Statistic gathering helpers
   void print_cg_sizes();
   void print_leaf_depths();
+  int64_t space();
 
  private:
   // std::vector<localTree*> CC;
@@ -75,6 +76,53 @@ void cluster_forest::print_leaf_depths() {
   std::cout << " LOG2(N): " << log2(n) << std::endl;
 }
 
+int64_t cluster_forest::space() {
+  int64_t space = 0;
+  space += sizeof(std::vector<leaf*>);
+  space += V.size() * sizeof(leaf*);
+  space += sizeof(size_t);
+  std::set<rankTree*> visited_rnodes;
+  std::set<localTreeNode*> visited_lnodes;
+  for (auto leaf : V) {
+    bool continueloop = false;
+    space += leaf->space();
+    auto rTree = static_cast<rankTree*>(leaf->getParent());
+    visited_rnodes.insert(rTree);
+    while (rTree->parent) {
+      rTree = rTree->parent;
+      if (visited_rnodes.find(rTree) != visited_rnodes.end()) {
+        continueloop = true;
+        break;
+      }
+      visited_rnodes.insert(rTree);
+    }
+    if (continueloop) continue;
+    auto lTree = static_cast<localTreeNode*>(rTree->getNode());
+    if (visited_lnodes.find(lTree) != visited_lnodes.end()) continue;
+    visited_lnodes.insert(lTree);
+    while (lTree->getParent()) {
+      rTree = static_cast<rankTree*>(lTree->getParent());
+      visited_rnodes.insert(rTree);
+      while (rTree->parent) {
+        rTree = rTree->parent;
+        if (visited_rnodes.find(rTree) != visited_rnodes.end()) {
+          continueloop = true;
+          break;
+        }
+        visited_rnodes.insert(rTree);
+      }
+      if (continueloop) break;
+      lTree = static_cast<localTreeNode*>(rTree->getNode());
+      if (visited_lnodes.find(lTree) != visited_lnodes.end()) break;
+      visited_lnodes.insert(lTree);
+    }
+  }
+  space += visited_rnodes.size() * sizeof(rankTree);
+  for (auto lTree : visited_lnodes)
+    space += lTree->space();
+  return space;
+}
+
 inline cluster_forest::cluster_forest(size_t _n) : n(_n) {
   V.resize(n);
   // for (auto &it : V) {
@@ -89,7 +137,6 @@ inline cluster_forest::cluster_forest(size_t _n) : n(_n) {
     p->setNode(static_cast<void *>(node));           // rank tree link to local tree node
     node = localTreeNode::makeUp(node, std::log2(n));
   }
-  std::cout << "n=" << n << std::endl; 
 }
 
 inline void cluster_forest::insert(size_t u, size_t v) {
