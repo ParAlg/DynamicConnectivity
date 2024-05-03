@@ -17,7 +17,7 @@ declare -a undir_graph=(
   "Germany_sym"
 
   # # k-NN
-  "Household.lines_5_sym"
+  "Household_lines_5_sym"
   "CHEM_5_sym"
   "GeoLifeNoScale_2_sym"
   "GeoLifeNoScale_5_sym"
@@ -55,7 +55,8 @@ make seq_localtree
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./seq_localtree -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out > ${data_path}/seq_localtree/${graph}.info
+  mkdir ${data_path}/seq_localtree/${graph}
+  ${numactl} ./seq_localtree -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
   echo
 done
 

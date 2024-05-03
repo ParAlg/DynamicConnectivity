@@ -48,9 +48,8 @@ int main(int argc, char** argv) {
   t.start();
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
-  F.verbose = false;
   assert(F.lmax < 64);
-  if (!F.verbose) t.next("initialization");
+  t.next("initialization");
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
@@ -59,12 +58,12 @@ int main(int argc, char** argv) {
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
-    if (!F.verbose) t.next("Insert batch #" + std::to_string(i));
+    t.next("Insert batch #" + std::to_string(i));
     for (size_t j = 0; j < queries_ins[i].size(); j++) {
       // todo here
       Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
-    if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
+    t.next("Answer queries #" + std::to_string(i));
   }
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_del[i].size(); j++) {
@@ -72,17 +71,17 @@ int main(int argc, char** argv) {
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
-    if (!F.verbose) t.next("Delete batch #" + std::to_string(i));
+    t.next("Delete batch #" + std::to_string(i));
     for (size_t j = 0; j < queries_del[i].size(); j++) {
       // todo here
       Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
 
-    if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
+    t.next("Answer queries #" + std::to_string(i));
   }
   auto x = Out.find_first_of(".");
   auto s = Out.substr(0, x);
-  // F.run_stat(s);
+  F.run_stat(s);
   std::ofstream faq;
   faq.open(Out);
   if (!faq.is_open()) {

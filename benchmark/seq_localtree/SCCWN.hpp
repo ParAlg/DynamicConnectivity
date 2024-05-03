@@ -10,15 +10,10 @@ class SCCWN {
     std::copy(Nodes.begin(), Nodes.end(), std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
   }
-  void printSearch(size_t found, size_t nRu, size_t nEu, size_t nCu, size_t nRv, size_t nEv, size_t nCv, size_t level) {
-    std::cout << found << " " << nRu << " " << nEu << " " << nCu << " " << nRv << " " << nEv << " " << nCv << " "
-              << level << std::endl;
-  }
 
  public:
   size_t n;
   static size_t lmax;
-  static bool verbose;
   parlay::sequence<localTree *> leaves;
   SCCWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
   ~SCCWN() { run_stat("./", false, true, false); };
@@ -28,7 +23,6 @@ class SCCWN {
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
 };
 inline size_t SCCWN::lmax = 63;
-inline bool SCCWN::verbose = false;
 inline void SCCWN::insert(size_t u, size_t v) {
   if (leaves[u] == nullptr) leaves[u] = new localTree(u);
   if (leaves[v] == nullptr) leaves[v] = new localTree(v);
@@ -137,7 +131,10 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
             placeEdges(Ev, l - 1);
           }
-          if (verbose) printSearch(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+
+          Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+          Rstat.push_back(std::move(info));
+
           return;
         } else {
           if (Hu.find(Cuv) == Hu.end()) {
@@ -196,7 +193,10 @@ inline void SCCWN::remove(size_t u, size_t v) {
         Cv = CP;
         CP = GP;
         l = CP ? CP->getLevel() : 0;
-        if (verbose) printSearch(0, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+
+        Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+        Rstat.push_back(std::move(info));
+
         break;
       }
       auto ev = fetchEdge(Qv, l);
@@ -236,7 +236,10 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
             placeEdges(Ev, l - 1);
           }
-          if (verbose) printSearch(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+
+          Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+          Rstat.push_back(std::move(info));
+
           return;
         } else {
           if (Hv.find(Cuv) == Hv.end()) {
@@ -296,7 +299,10 @@ inline void SCCWN::remove(size_t u, size_t v) {
         Cv = _CP;
         CP = GP;
         l = CP ? CP->getLevel() : 0;
-        if (verbose) printSearch(0, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+
+        Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+        Rstat.push_back(std::move(info));
+
         break;
       }
     }
@@ -334,6 +340,15 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false, bool cle
     }
   });
   if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
+  if (stat) {
+    parlay::sort_inplace(Rstat, [&](const Radius &a, const Radius &b) { return a.level > b.level; });
+    std::ofstream fradius;
+    fradius.open(filepath + ".rad");
+    for (auto it : Rstat)
+      fradius << it.found << " " << it.nRu << " " << it.nEu << " " << it.nCu << " " << it.nRv << " " << it.nEv << " "
+              << it.nCv << " " << it.level << std::endl;
+    fradius.close();
+  }
 }
 inline void SCCWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l) {
   for (auto it : edges) {

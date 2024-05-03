@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
       long v = batches_ins[i][j].second;
       // std::cout << u << " " << v << std::endl;
       F.insert(u, v);
+      F.checkEdgeBlocked(u, v);
       // todo here: add edges to graph
     }
     t.next("Insert batch #" + std::to_string(i));
@@ -64,6 +65,9 @@ int main(int argc, char** argv) {
     }
     t.next("Answer queries #" + std::to_string(i));
   }
+  auto x = Out.find_first_of(".");
+  auto s = Out.substr(0, x);
+  F.run_stat(s);
 
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_del[i].size(); j++) {
