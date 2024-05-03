@@ -17,7 +17,7 @@ declare -a undir_graph=(
   # "Germany_sym"
 
   # # k-NN
-  "Household.lines_5_sym"
+  "Household_lines_5_sym"
   # "CHEM_5_sym"
   # "GeoLifeNoScale_2_sym"
   # "GeoLifeNoScale_5_sym"
@@ -55,6 +55,7 @@ make seq_arr
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
+  mkdir ${data_path}/seq_arr/${graph}
   ${numactl} ./seq_arr -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_arr/${graph}.out
   echo
 done

@@ -1,8 +1,8 @@
 #include "assert.hpp"
 #include "leaf.hpp"
+#include "stats.hpp"
 #include <bitset>
 #include <parlay/primitives.h>
-#include <fstream>
 class cluster_graph {
  public:
   class child {
@@ -15,33 +15,34 @@ class cluster_graph {
         host(h), descent(d), edgemap(b), size(s){};
   };
   using children = parlay::sequence<child*>;
+  friend class stats;
+  // class stat {
+  //  public:
+  //   class info_per_node {
+  //    public:
+  //     size_t size;
+  //     size_t NumChild;
+  //     info_per_node(size_t s, size_t n) : size(s), NumChild(n) {}
+  //   };
+  //   parlay::sequence<std::pair<size_t, info_per_node>> info;
 
-  class stat {
-   public:
-    class info_per_node {
-     public:
-      size_t size;
-      size_t NumChild;
-      info_per_node(size_t s, size_t n) : size(s), NumChild(n) {}
-    };
-    parlay::sequence<std::pair<size_t, info_per_node>> info;
+  // void printStat(size_t i) {
+  // size_t threshold = 5;
+  // parlay::sort_inplace(info, [&](std::pair<size_t, info_per_node> a, std::pair<size_t, info_per_node> b) {
+  //   return a.first > b.first;
+  // });
+  // if (info[0].first < threshold) return;
+  // std::ofstream fout;
+  // fout.open("orkut/" + std::to_string(i) + ".txt");
+  // for (auto& it : info) {
+  //   if (it.first < threshold) break;
+  //   fout << it.first << " " << it.second.size << " " << it.second.NumChild << std::endl;
+  // }
 
-    void printStat(size_t i) {
-      size_t threshold = 5;
-      parlay::sort_inplace(info, [&](std::pair<size_t, info_per_node> a, std::pair<size_t, info_per_node> b) {
-        return a.first > b.first;
-      });
-      if (info[0].first < threshold) return;
-      std::ofstream fout;
-      fout.open("orkut/" + std::to_string(i) + ".txt");
-      for (auto& it : info) {
-        if (it.first < threshold) break;
-        fout << it.first << " " << it.second.size << " " << it.second.NumChild << std::endl;
-      }
-
-      fout.close();
-    }
-  };
+  // fout.close();
+  // }
+  // }
+  // ;
 
   cluster_graph(size_t l = 0, size_t sz = 0, std::bitset<64> b = 0, size_t nc = 0) :
       level(l), size(sz), edgemap(b), NumChild(nc), parent(nullptr), lf(nullptr), nodes() {}
@@ -76,12 +77,16 @@ class cluster_graph {
   static size_t getSize(cluster_graph* v) { return v->size; }
   static void updateToTop(cluster_graph* src, cluster_graph* dest, size_t incre);
   static cluster_graph* pushDown(parlay::sequence<cluster_graph*>& pu, cluster_graph* v);
-  static void cleanTopDown(cluster_graph* v, bool clear, stat* st, bool flag, bool verbose);
+  static void cleanTopDown(cluster_graph* v, bool clear, parlay::sequence<stats>& st, bool flag, bool verbose);
+  static cluster_graph* getAncestor(cluster_graph* v, size_t l);
+  static size_t getEdgeLevel(cluster_graph* v, size_t u) {
+    if (v->lf) return v->lf->getLevel(u);
+    return UINT64_MAX;
+  }
   static void sortChild(cluster_graph* v) {
     parlay::sort_inplace(v->nodes, [&](child* l, child* r) { return l->size < r->size; });
   }
   static cluster_graph* getParent(cluster_graph* v) {
-    // ASSERT_MSG(v->parent != nullptr, "no parent");
     if (!v || v->parent == nullptr) return nullptr;
     return v->parent->host;
   }
@@ -127,12 +132,6 @@ inline cluster_graph::children cluster_graph::mergeChildren(children& l, childre
 }
 // update bitmap within a node
 inline std::bitset<64> cluster_graph::updateBitMap(children& nodes) {
-  // auto f = [](const child*& l, const child*& r) {
-  //   child t(nullptr, nullptr, 0, 0);
-  //   return t;
-  // };
-  // child t(nullptr, nullptr, 0, 0);
-  // return parlay::reduce(nodes, parlay::binary_op(f, t));
   return parlay::reduce(parlay::tabulate(nodes.size(), [&](size_t i) { return nodes[i]->edgemap; }),
                         parlay::bit_or<std::bitset<64>>());
 }
@@ -198,6 +197,14 @@ inline cluster_graph* cluster_graph::getRoot(cluster_graph* v) {
   }
   return v;
 }
+inline cluster_graph* cluster_graph::getAncestor(cluster_graph* v, size_t l) {
+  while (v->parent) {
+    auto p = v->parent->host;
+    if (p->level == l) return v;
+    v = p;
+  }
+  return v;  // shouldn't reach here
+}
 inline bool cluster_graph::notViolateSize(cluster_graph* u, cluster_graph* v) {
   size_t l = std::max(u->level, v->level);
   if (u->size + v->size < (2 << l)) return true;
@@ -208,15 +215,15 @@ inline void cluster_graph::insertChild(cluster_graph::child* ch, cluster_graph* 
 
   ASSERT_MSG(cg->size <= (1 << cg->level), "violate size during insertChild");
   cg->NumChild++;
-  for (auto it = cg->nodes.begin(); it < cg->nodes.end(); it++) {
-    if ((*it)->size >= ch->size) {
-      cg->nodes.insert(it, ch);
-      cg->edgemap = updateBitMap(cg->nodes);
-      return;
-    }
-  }
+  // for (auto it = cg->nodes.begin(); it < cg->nodes.end(); it++) {
+  //   if ((*it)->size >= ch->size) {
+  //     cg->nodes.insert(it, ch);
+  //     cg->edgemap = updateBitMap(cg->nodes);
+  //     return;
+  //   }
+  // }
   cg->nodes.emplace_back(ch);
-  cg->edgemap = updateBitMap(cg->nodes);
+  // cg->edgemap = updateBitMap(cg->nodes);
 }
 inline void cluster_graph::deleteChild(cluster_graph::child* ch, cluster_graph* cg) {
   cg->size = cg->size - ch->size;
@@ -226,7 +233,7 @@ inline void cluster_graph::deleteChild(cluster_graph::child* ch, cluster_graph* 
     if (*it == ch) {
       delete ch;
       cg->nodes.erase(it);
-      cg->edgemap = updateBitMap(cg->nodes);
+      // cg->edgemap = updateBitMap(cg->nodes);
 
       return;
     }
@@ -262,71 +269,12 @@ inline cluster_graph* cluster_graph::createFromTwo(cluster_graph* u, cluster_gra
   parent->nodes.push_back(c2);
   return parent;
 }
-inline size_t cluster_graph::pushDownToBeChild(parlay::sequence<cluster_graph*>& pu, cluster_graph* v,
-                                               cluster_graph* dest) {
-  ASSERT_MSG((*pu.rbegin())->level >= v->level, "u is not belong to higher tree");
-  ASSERT_MSG(v->size + (*pu.rbegin())->size <= (1 << (*pu.rbegin())->level), "no need to push down");
-  size_t level = 0;
-  auto p = pu.begin();  // leaf
-  // ASSERT_MSG(*p != nullptr, "Should at least level 2, otherwise impossible to unblock");
-  // u v is blocked, p v is unblocked
-
-  // if (!isBlocked(*u, v)) {
-  //   // cleanTopDown(*u, false, nullptr, false, true);
-  //   // std::cout << "\n\n";
-  //   // cleanTopDown(v, false, nullptr, false, true);
-  // }
-  while (isBlocked(*p, v, (*p)->level)) {
-    ASSERT_MSG(p != nullptr, "left should be higher than right, always blocked");
-    p++;
-  }
-  auto u = p - 1;
-  // while (isBlocked(*p, v)) {
-  //   u = p;
-  //   p++;
-  // }
-  ASSERT_MSG(!isBlocked(*p, v, (*p)->level), "unblocked (*p,v)");
-  ASSERT_MSG(isBlocked(*u, v, (*u)->level), "blocked (*u,v)");
-  // make sure p's size is correct then go up to update
-  if ((*p)->level - (*u)->level == 1) {
-    // no compression case 3
-    // just insert
-    // v bocomes sibling of u
-    auto ch = new child(*p, v, v->edgemap, v->size);
-    v->parent = ch;
-    insertChild(ch, *p);
-    level = (*p)->level;
-    // we don't cut down u so incre  just v
-    // updateToTop(*p, dest, v->size);
-  } else {
-    // compression case 4
-    // first delete the compressed path. Then generate a new path
-    // std::cout << "compression case 4\n";
-    // we cut u and link v so the incre has to be u+v
-    level = compressPath(*u, v, *p);
-    // auto cu = *u;
-    // auto cv = v;
-
-    // deleteChild(cu->parent, *p);
-    // if (cu->level < cv->level) std::swap(cu, cv);
-    // auto np = createFromTwo(cu, cv);
-    // // np will be a new child of p
-    // auto ch = new child(*p, np, np->edgemap, np->size);
-    // np->parent = ch;
-    // if (np->level == (*p)->level) {
-    //   std::cout << (*p)->level << " " << cu->level << " " << cv->level << "stuck here\n";
-    // }
-    // insertChild(ch, *p);
-    // level = np->level;
-  }
-
-  return level;
-}
-inline void cluster_graph::cleanTopDown(cluster_graph* v, bool clear, stat* st, bool runStat, bool verbose) {
+inline void cluster_graph::cleanTopDown(cluster_graph* v, bool clear, parlay::sequence<stats>& st, bool runStat,
+                                        bool verbose) {
   // ASSERT_MSG(v->nodes.size() == v->NumChild, "node children container wrong");
   // ASSERT_MSG(v->size <= (1 << v->level), "node size violate");
   if (v->lf && clear) delete v->lf;
-
+  stats::memUsage += sizeof(cluster_graph) + v->NumChild * sizeof(child) + v->NumChild * sizeof(child*);
   if (verbose) {
     std::cout << "freeing " << v << " at level " << v->level << " with size " << v->size << std::endl;
     for (size_t i = 0; i < v->NumChild; i++)
@@ -334,8 +282,8 @@ inline void cluster_graph::cleanTopDown(cluster_graph* v, bool clear, stat* st, 
     std::cout << "\n\n";
   }
   if (runStat) {
-    cluster_graph::stat::info_per_node t(v->size, v->NumChild);
-    st->info.emplace_back(std::make_pair(v->level, std::move(t)));
+    stats info(v->level, v->size, v->NumChild);
+    st.push_back(std::move(info));
   }
   size_t count = 0;
   for (size_t i = 0; i < v->nodes.size(); i++) {
@@ -351,49 +299,9 @@ inline void cluster_graph::cleanTopDown(cluster_graph* v, bool clear, stat* st, 
     delete v;
   }
 }
-inline size_t cluster_graph::compressPath(cluster_graph* u, cluster_graph* v, cluster_graph* p) {
-  ASSERT_MSG(p->size <= (1 << p->level), "wrong before compress");
-  ASSERT_MSG(p->size + v->size <= (1 << p->level), "pv blocked");
-  ASSERT_MSG(u->size == u->parent->size, "parent size wrong");
-  size_t su = u->size;
-  size_t sv = v->size;
-  size_t sp = p->size;
-  size_t incre = v->size;
-  deleteChild(u->parent, p);
-  ASSERT_MSG(p->size == sp - su, "delete u from p wrong");
-  if (u->level < v->level) std::swap(u, v);
-  auto np = createFromTwo(u, v);
-  ASSERT_MSG(np->size == sv + su, "create from uv wrong");
-  auto ch = new child(p, np, np->edgemap, np->size);
-  np->parent = ch;
-  if (np->size + p->size > (1 << p->level)) {
-    cleanTopDown(u, false, nullptr, false, true);
-    std::cout << "np->size = " << np->size << " np->level = " << np->level << " p->size = " << p->size
-              << " p->level = " << p->level << std::endl;
-    cleanTopDown(v, false, nullptr, false, true);
-  }
-  ASSERT_MSG(np->size + p->size <= (1 << p->level), "compress wrong");
-  insertChild(ch, p);
-  // if (p->parent) p->parent->size += incre;
-  return np->level;
-}
 // Add v as a child of p
 inline void cluster_graph::addChild(cluster_graph* p, cluster_graph* v) {
   auto c = new child(p, v, v->edgemap, v->size);
   v->parent = c;
   insertChild(c, p);
 }
-inline void cluster_graph::updateToTop(cluster_graph* src, cluster_graph* dest, size_t incre) {}
-//   inline void cluster_graph::updateToTop(cluster_graph* src, cluster_graph* dest, size_t incre) {
-//   // size info for src is correct, need to update above
-//   if (!src || src == dest) return;
-//   while (src != dest) {
-//     ASSERT_MSG(src->parent != nullptr, "src should link to a child node");
-//     ASSERT_MSG(src->parent->host != nullptr, "src should link to a parent node");
-//     if (!src->parent) break;
-//     src->parent->size += incre;
-//     src = src->parent->host;
-//     src->size += incre;
-//     parlay::sort_inplace(src->nodes, [&](child* a, child* b) { return a->size < b->size; });
-//   }
-// }

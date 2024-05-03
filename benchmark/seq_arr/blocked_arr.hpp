@@ -1,5 +1,6 @@
 #include "cluster_graph.hpp"
 #include <parlay/alloc.h>
+#include <fstream>
 class blocked_arr {
  public:
   parlay::sequence<cluster_graph *> leaves;
@@ -7,22 +8,22 @@ class blocked_arr {
   void insert(size_t u, size_t v);
 
   bool is_connected(size_t u, size_t v);
-  void statistic(bool clear, bool stat, bool verbose);
-  void run_stat() { statistic(false, true, false); }
+
+  void run_stat(std::string filepath = "./", bool verbose = false) { statistic(filepath, false, true, verbose); }
   static void printCG(parlay::sequence<cluster_graph *> &path);
-  ~blocked_arr() { statistic(true, true, false); }
+  void statistic(std::string filepath, bool clear, bool stat, bool verbose);
+  void checkEdgeBlocked(size_t u, size_t v);
+  ~blocked_arr() { statistic("./", true, false, false); }
 
  private:
   struct pathblock {
     char x[960];
   };
-  void insert_bk(size_t u, size_t v);
   using pathAllocator = parlay::type_allocator<pathblock>;
   static cluster_graph **alloc() { return (cluster_graph **)pathAllocator::alloc(); }
   static void dealloc(cluster_graph **p) { pathAllocator::free((pathblock *)p); }
   static void updateToTop(cluster_graph *src, cluster_graph *dest, size_t inc);
   static size_t pushDown(cluster_graph **path, size_t Len, cluster_graph *v);
-  static cluster_graph *pushDown_bk(parlay::sequence<cluster_graph *> &p, cluster_graph *v);
   static size_t compressPath(cluster_graph *cu, cluster_graph *cv, cluster_graph *cp);
   void insertEdge(size_t u, size_t v, size_t l);
   static cluster_graph *merge(cluster_graph **pu, cluster_graph **pv, size_t uLen, size_t vLen);
@@ -84,9 +85,6 @@ inline void blocked_arr::insert(size_t u, size_t v) {
     }
     if (cluster_graph::isBlocked(pu[uLen - 1], pv[vLen - 1], cluster_graph::getLevel(pu[uLen - 1]))) {
       if (cluster_graph::getLevel(lca) - cluster_graph::getLevel(pu[uLen - 1]) > 1) {
-        if (cluster_graph::getSize(lca) > (1 << cluster_graph::getLevel(lca))) {
-          cluster_graph::cleanTopDown(lca, false, nullptr, false, true);
-        }
         ASSERT_MSG(cluster_graph::getSize(lca) <= (1 << cluster_graph::getLevel(lca)), "lca size wrong");
         cluster_graph::cutChild(pu[uLen - 1], lca);
         cluster_graph::cutChild(pv[vLen - 1], lca);
@@ -171,165 +169,12 @@ inline cluster_graph *blocked_arr::merge(cluster_graph **pu, cluster_graph **pv,
   updateToTop(cp, root, incre);
   return np;
 }
-inline void blocked_arr::insert_bk(size_t u, size_t v) {
-  auto g = [&](size_t x) {
-    if (leaves[x] == nullptr) {
-      leaves[x] = new cluster_graph(0, x, 1);  // level 0 with size 1
-    }
-    parlay::sequence<cluster_graph *> path;
-    // cluster_graph::getRootPath(leaves[x], path);  // get path from leaf to root
-    return path;
-  };
-  parlay::sequence<cluster_graph *> pu, pv;
-  parlay::par_do([&]() { pu = g(u); }, [&]() { pv = g(v); });
-  if (cluster_graph::getLevel(*pu.rbegin()) < cluster_graph::getLevel(*pv.rbegin())) {
-    // make sure u is the one with higher or equal level
-    std::swap(u, v);
-    std::swap(pu, pv);
-  }
-  auto iu = pu.rbegin();
-  auto iv = pv.rbegin();
-  // std::cout << "u = " << u << " v = " << v << std::endl;
-  if (*iu != *iv) {  // not connected
-    if (cluster_graph::isBlocked(*iu, *iv, cluster_graph::getLevel(*iu))) {
-      // case 1 2
-      // insert edge (u,v) at level parent->level
-      // std::cout << "unconnected 1\n";
-      auto parent = cluster_graph::createFromTwo(*iu, *iv);
-      insertEdge(u, v, cluster_graph::getLevel(*iu) + 1);
-    } else {
-      // start from the leaf of u, go upper until meet a unblocked node, insert v as child
-      // std::cout << "not connect case 3 4\n";
-      // std::cout << "45\n";
-      // std::cout << " &pu = " << *iu << " with level " << (*iu)->getLevel() << " &v = " << *iv << " with level "
-      //           << (*iv)->getLevel() << std::endl;
-      // if no compression, then add n(v) to the size of parent,update to root
-      // if compression, delete u from p
-      // parent of *iv has correct size and ch->size;
-      auto cv = *iv;
-      auto cu = pushDown_bk(pu, cv);
-      auto cp = cluster_graph::getParent(cu);
-      // cu cv block at lcu, cp cv unblock at lcp cu cv may block at lcv
-      auto incre = cluster_graph::getSize(cv);
-      size_t level = 0;
-      if (cluster_graph::getLevel(cp) - cluster_graph::getLevel(cu) == 1) {
-        // std::cout << "unconnected 2\n";
-        ASSERT_MSG(cluster_graph::getLevel(cp) > cluster_graph::getLevel(cv), "connect cv as cp's child wrong");
-        cluster_graph::addChild(cp, cv);
-        level = cluster_graph::getLevel(cp);
-
-      } else {
-        // std::cout << "unconnected 3\n";
-        cluster_graph::cutChild(cu, cp);
-        if (cluster_graph::getLevel(cu) < cluster_graph::getLevel(cv)) std::swap(cu, cv);
-        level = compressPath(cu, cv, cp);
-      }
-      // update to root *(pu.rbegin())
-      updateToTop(cp, *iu, incre);
-      insertEdge(u, v, level);
-    }
-  } else {  // u,v  connected
-    // find lca(u,v) and put it into lca
-    // std::cout << " &u = " << *iu << " &v = " << *iv << " &parent = " << parent << std::endl;
-    cluster_graph *lca = nullptr;
-    while (*iu == *iv) {
-      lca = *iu;
-      iu++;
-      iv++;
-    }
-    // std::cout << " &u = " << *iu << " with level " << (*iu)->getLevel() << " &v = " << *iv << " with level "
-    //           << (*iv)->getLevel() << " &parent = " << parent << " with level " << parent->getLevel() << std::endl;
-    if (cluster_graph::getLevel(*iu) < cluster_graph::getLevel(*iv)) {
-      // we want to *iu to be higher level so we cut *iv
-      std::swap(u, v);
-      std::swap(pu, pv);
-      std::swap(iu, iv);
-    }
-
-    if (cluster_graph::isBlocked(*iu, *iv, cluster_graph::getLevel(*iu))) {
-      // std::cout << "connected 3\n";
-      // blocked edge goes up
-      if (cluster_graph::getLevel(lca) - cluster_graph::getLevel(*iu) == 1) {
-        // no compression
-        // std::cout << "connected no compress\n";
-        std::cout << "connected 1\n";
-        insertEdge(u, v, cluster_graph::getLevel(lca));
-      } else {
-        // compression
-        // delete *iu, create new tree from iu iv and plug into parent's children
-
-        // avoid double decre
-        // if (cluster_graph::getParent(*iv) != lca) cluster_graph::decreSize(lca, cluster_graph::getSize(*iv));
-        cluster_graph::cutChild(*iv, lca);
-        auto cv = *iv;
-        // std::cout << " &u = " << *pu.rbegin() << " with level " << cluster_graph::getLevel(*pu.rbegin())
-        //           << " with size " << cluster_graph::getSize(*pu.rbegin()) << " &v = " << *iv << " with level "
-        //           << cluster_graph::getLevel(*iv) << " with size " << cluster_graph::getSize(*iv)
-        //           << " &parent = " << lca << " with level " << cluster_graph::getLevel(lca) << " with size "
-        //           << cluster_graph::getSize(lca) << std::endl;
-        size_t level;
-        auto cu = pushDown_bk(pu, cv);
-        // cp might be lca or not
-        // since l(lca) - l(cu) > 1, need to create a new parent between cu and lca
-        auto cp = cluster_graph::getParent(cu);
-        ASSERT_MSG(cluster_graph::getLevel(cp) > cluster_graph::getLevel(cu), "!lcp>lcu");
-        auto incre = cluster_graph::getSize(cv);
-        if (cluster_graph::getLevel(cp) - cluster_graph::getLevel(cu) == 1) {
-          std::cout << "connected 2\n";
-          cluster_graph::addChild(cp, cv);
-          level = cluster_graph::getLevel(cp);
-        } else {
-          std::cout << "connected 3\n";
-          level = compressPath(cu, cv, cp);
-        }
-        updateToTop(cp, lca, incre);
-        insertEdge(u, v, level);
-        // auto l = cluster_graph::compressPath(*iu, *iv, lca);
-        // leaves[u]->insertToLeaf(v, l);
-        // leaves[v]->insertToLeaf(u, l);
-        // auto src = cluster_graph::getParent(cluster_graph::getParent(*iv));
-        // if (src) cluster_graph::updateToTop(src, parent, cluster_graph::getSize(*iv));
-        // update to lca parent
-      }
-    } else {
-      std::cout << "connected4\n";
-      cluster_graph::cutChild(*iv, lca);
-      size_t level;
-      auto cv = *iv;
-      auto cu = pushDown_bk(pu, cv);
-      auto cp = cluster_graph::getParent(cu);
-      auto incre = cluster_graph::getSize(cv);
-      if (cluster_graph::getLevel(cp) - cluster_graph::getLevel(cu) == 1) {
-        cluster_graph::addChild(cp, cv);
-        level = cluster_graph::getLevel(cp);
-      } else {
-        level = compressPath(cu, cv, cp);
-      }
-      updateToTop(cp, lca, incre);
-      insertEdge(u, v, level);
-    }
-    // else {
-    //   // unblocked edge goes down
-    //   //  delete *iv, link to the path of *iu
-    //   // cut from leaf to *iu;
-    //   //  p = lca(u,v)
-    //   //  std::cout << "connected compress\n";
-    //   // u v not block
-    //   cluster_graph::cutChild(*iv, lca);
-    //   auto l = cluster_graph::pushDownToBeChild(pu, *iv, parent);
-    //   auto src = cluster_graph::getParent(cluster_graph::getParent(*iv));
-    //   if (src) cluster_graph::updateToTop(src, parent, cluster_graph::getSize(*iv));
-    //   leaves[u]->insertToLeaf(v, l);
-    //   leaves[v]->insertToLeaf(u, l);
-    //   // update to lca parent
-    // }
-  }
-}
 inline void blocked_arr::printCG(parlay::sequence<cluster_graph *> &path) {
   std::copy(path.begin(), path.end(), std::ostream_iterator<cluster_graph *>(std::cout, ","));
   std::cout << "\n\n";
 }
-inline void blocked_arr::statistic(bool clear, bool stat, bool verbose) {
+inline void blocked_arr::statistic(std::string filepath = "./", bool clear = false, bool stat = false,
+                                   bool verbose = false) {
   parlay::sequence<cluster_graph *> roots(leaves.size(), nullptr);
   parlay::parallel_for(0, leaves.size(), [&](size_t i) {
     if (leaves[i]) roots[i] = cluster_graph::getRoot(leaves[i]);
@@ -338,21 +183,21 @@ inline void blocked_arr::statistic(bool clear, bool stat, bool verbose) {
   if (verbose) printCG(roots);
   roots = parlay::remove_duplicates(roots);
   if (verbose) printCG(roots);
-  parlay::sequence<cluster_graph::stat *> st(roots.size());
-  parlay::parallel_for(0, roots.size(), [&](size_t i) { st[i] = new cluster_graph::stat(); });
-  // parlay::parallel_for(0, roots.size(), [&](size_t i) {
-  //   if (roots[i]) cluster_graph::cleanTopDown(roots[i], clear, st[i], stat, verbose);
-  // });
-  for (size_t i = 0; i < roots.size(); i++)
-    if (roots[i]) cluster_graph::cleanTopDown(roots[i], clear, st[i], stat, verbose);
-  if (stat) {
-    for (size_t i = 0; i < st.size(); i++)
-      if (!st[i]->info.empty()) st[i]->printStat(i);
-  }
   parlay::parallel_for(0, roots.size(), [&](size_t i) {
-    st[i]->info.clear();
-    delete st[i];
+    if (roots[i]) {
+      std::ofstream fout;
+      if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
+      parlay::sequence<stats> st;
+      cluster_graph::cleanTopDown(roots[i], clear, st, stat, verbose);
+      if (stat) {
+        parlay::sort_inplace(st, [&](stats x, stats y) { return x.level > y.level; });
+        for (auto it : st)
+          fout << it.level << " " << it.fanout << " " << " " << it.size << std::endl;
+        fout.close();
+      }
+    }
   });
+  if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
 }
 inline bool blocked_arr::is_connected(size_t u, size_t v) {
   ASSERT_MSG(leaves[u] != nullptr, "no such vertex");
@@ -372,22 +217,6 @@ inline size_t blocked_arr::pushDown(cluster_graph **path, size_t Len, cluster_gr
              "(path[i],v) expected to be blocked");
   return i;
 }
-inline cluster_graph *blocked_arr::pushDown_bk(parlay::sequence<cluster_graph *> &p, cluster_graph *v) {
-  ASSERT_MSG(cluster_graph::getLevel(*p.rbegin()) >= cluster_graph::getLevel(v), "u is not belong to higher tree");
-
-  auto u = p.begin();
-  while (cluster_graph::isBlocked(*u, v, cluster_graph::getLevel(*u))) {
-    if (*(u + 1) == nullptr) {
-      cluster_graph::cleanTopDown(*u, false, nullptr, false, true);
-      cluster_graph::cleanTopDown(v, false, nullptr, false, true);
-    }
-    u++;
-    ASSERT_MSG(*u != nullptr, "left should be higher than right, always blocked");
-  }
-  ASSERT_MSG(!cluster_graph::isBlocked(*u, v, cluster_graph::getLevel(*u)), "unblocked (*p,v)");
-  ASSERT_MSG(cluster_graph::isBlocked(*(u - 1), v, cluster_graph::getLevel(*(u - 1))), "blocked (*u,v)");
-  return *(u - 1);
-}
 inline void blocked_arr::insertEdge(size_t u, size_t v, size_t l) {
   leaves[u]->insertToLeaf(v, l);
   leaves[v]->insertToLeaf(u, l);
@@ -400,7 +229,8 @@ inline void blocked_arr::updateToTop(cluster_graph *src, cluster_graph *dest, si
       cluster_graph::increSize(p, incre);
       if (cluster_graph::getSize(p) > (1 << cluster_graph::getLevel(p))) {
         std::cout << p << "," << src << "," << dest << "," << incre << std::endl;
-        cluster_graph::cleanTopDown(cluster_graph::getRoot(p), false, nullptr, false, true);
+        parlay::sequence<stats> tmp;
+        cluster_graph::cleanTopDown(cluster_graph::getRoot(p), false, tmp, false, true);
       }
       ASSERT_MSG(cluster_graph::getSize(p) <= (1 << cluster_graph::getLevel(p)), "cannot incre");
       cluster_graph::sortChild(p);
@@ -412,23 +242,12 @@ inline void blocked_arr::updateToTop(cluster_graph *src, cluster_graph *dest, si
     p = cluster_graph::getParent(p);
   }
 }
-inline size_t blocked_arr::compressPath(cluster_graph *cu, cluster_graph *cv, cluster_graph *cp) {
-  if (cluster_graph::getLevel(cp) - cluster_graph::getLevel(cv) <= 1) {
-    cluster_graph::cleanTopDown(cluster_graph::getRoot(cp), false, nullptr, false, true);
-    cluster_graph::cleanTopDown(cluster_graph::getRoot(cv), false, nullptr, false, true);
-    cluster_graph::cleanTopDown(cu, false, nullptr, false, true);
-  }
-  cluster_graph::deleteFromParent(cu, cp);
-
-  auto np = cluster_graph::createFromTwo(cu, cv);
-  cluster_graph::addChild(cp, np);
-
-  // if (cluster_graph::getLevel(cp) <= cluster_graph::getLevel(np)) {
-  //   cluster_graph::cleanTopDown(cp, false, nullptr, false, true);
-  //   cluster_graph::cleanTopDown(cu, false, nullptr, false, true);
-  //   cluster_graph::cleanTopDown(cluster_graph::getRoot(cp), false, nullptr, false, true);
-  // }
-
-  ASSERT_MSG(cluster_graph::getLevel(cp) > cluster_graph::getLevel(np), "lcp<=lnp");
-  return cluster_graph::getLevel(np);
+inline void blocked_arr::checkEdgeBlocked(size_t u, size_t v) {
+  ASSERT_MSG(cluster_graph::getEdgeLevel(leaves[u], v) == cluster_graph::getEdgeLevel(leaves[v], u),
+             "edge inserted to diff level");
+  auto Cu = cluster_graph::getAncestor(leaves[u], cluster_graph::getEdgeLevel(leaves[u], v));
+  auto Cv = cluster_graph::getAncestor(leaves[v], cluster_graph::getEdgeLevel(leaves[v], u));
+  ASSERT_MSG(cluster_graph::getParent(Cu) == cluster_graph::getParent(Cv), "CuCv not in same cluster graph");
+  ASSERT_MSG(cluster_graph::isBlocked(Cu, Cv, std::max(cluster_graph::getLevel(Cu), cluster_graph::getLevel(Cv))),
+             "expect to be blocked");
 }

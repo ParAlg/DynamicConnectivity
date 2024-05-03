@@ -17,7 +17,7 @@ declare -a undir_graph=(
   "Germany_sym"
 
   # k-NN
-  "Household.lines_5_sym"
+  "Household_lines_5_sym"
   "CHEM_5_sym"
   "GeoLifeNoScale_2_sym"
   "GeoLifeNoScale_5_sym"
