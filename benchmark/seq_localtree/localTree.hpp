@@ -54,10 +54,27 @@ class localTree {
   static void traverseTopDown(localTree* root, bool clear, bool verbose, bool stat, parlay::sequence<stats>& info);
   static std::tuple<bool, size_t, size_t> fetchEdge(localTree* root, size_t l);
   static localTree* getIfSingleton(localTree* r);
+  int get_cluster_graph_size();
 };
 inline localTree::~localTree() {
   if (vertex) delete vertex;
 }
+
+static int get_cluster_graph_size_dfs(rankTree* node) {
+  if (node->isleaf()) return 1;
+  int total = 0;
+  if (node->lchild) total += get_cluster_graph_size_dfs(node->lchild);
+  if (node->rchild) total += get_cluster_graph_size_dfs(node->rchild);
+  return total;
+}
+
+int localTree::get_cluster_graph_size() {
+  int num_leaves = 0;
+  for (auto rank_tree_root : rTrees)
+    num_leaves += get_cluster_graph_size_dfs(rank_tree_root);
+  return num_leaves;
+}
+
 inline localTree* localTree::mergeNode(localTree::nodeArr& Q, size_t l) {
   auto Cv = new localTree();
   Cv->size = 0;
@@ -159,16 +176,19 @@ inline void localTree::add2Children(localTree* p, localTree* s1, localTree* s2) 
   assert(p->level > std::max(s1->level, s2->level));
   assert((1 << p->level) >= p->size);
 }
+
 inline localTree* localTree::getParent(localTree* r) {
   if (!r->parent) return nullptr;
   auto p = rankTree::getRoot(r->parent);
   return p->Node;
 }
+
 inline localTree* localTree::getRoot(localTree* r) {
   while (r->parent)
     r = getParent(r);
   return r;
 }
+
 // A level i edge connects level i-1 node Cu and Cv, return
 inline localTree* localTree::getLevelNode(localTree* r, size_t l) {
   while (r->parent) {

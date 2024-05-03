@@ -12,7 +12,7 @@ class rankTree {
   rankTree(rankTree* T1, rankTree* T2);
   using arr = parlay::sequence<rankTree*>;
 
- private:
+//  private:
   friend class localTree;
   rankTree* lchild;
   rankTree* rchild;

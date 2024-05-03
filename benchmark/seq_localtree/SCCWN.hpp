@@ -21,14 +21,50 @@ class SCCWN {
   static bool verbose;
   parlay::sequence<localTree *> leaves;
   SCCWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
-  ~SCCWN() { run_stat("./", false, true, false); };
+  // ~SCCWN() { run_stat("./", true, false, false); };
   void insert(size_t u, size_t v);
   bool is_connected(size_t u, size_t v);
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
+  void print_cg_sizes();
 };
 inline size_t SCCWN::lmax = 63;
-inline bool SCCWN::verbose = false;
+inline bool SCCWN::verbose = true;//false;
+
+void SCCWN::print_cg_sizes() {
+  size_t total = 0;
+  size_t num_cg = 0;
+  size_t total_es = 0;
+  size_t num_cg_es = 0;
+  size_t max = 0;
+  std::set<localTree*> visited_cg;
+  for (size_t i = 0; i < n; i++) {
+    if (leaves[i] == nullptr) continue;
+    auto lTree = localTree::getParent(leaves[i]);
+    while (lTree) {
+      auto cg = lTree;
+      if (visited_cg.find(cg) == visited_cg.end()) {
+        size_t size = cg->get_cluster_graph_size();
+        total += size;
+        num_cg += 1;
+        if (size > 1) {
+          total_es += size;
+          num_cg_es += 1;
+        }
+        max = std::max(max, size);
+        visited_cg.insert(cg);
+      }
+      lTree = localTree::getParent(lTree);
+    }
+  }
+  std::cout << "Cluster Graph Sizes:" << std::endl;
+  std::cout << "TOTAL SIZE: " << total;
+  std::cout << " NUM CGS: " << num_cg << std::endl;
+  std::cout << "AVG: " << (float)total/(float)num_cg;
+  std::cout << " AVG_EXCL_SING: " << (float)total_es/(float)num_cg_es;
+  std::cout << " MAX: " << max << std::endl;
+}
+
 inline void SCCWN::insert(size_t u, size_t v) {
   if (leaves[u] == nullptr) leaves[u] = new localTree(u);
   if (leaves[v] == nullptr) leaves[v] = new localTree(v);
@@ -335,12 +371,14 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false, bool cle
   });
   if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
 }
+
 inline void SCCWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l) {
   for (auto it : edges) {
     leaves[it.first]->insertToLeaf(it.second, l);
     leaves[it.second]->insertToLeaf(it.first, l);
   }
 }
+
 inline std::tuple<bool, size_t, size_t> SCCWN::fetchEdge(std::queue<localTree *> &Q, size_t l) {
   auto node = Q.front();
   auto e = localTree::fetchEdge(node, l);

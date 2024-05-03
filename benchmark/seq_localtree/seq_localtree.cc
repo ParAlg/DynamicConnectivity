@@ -22,6 +22,8 @@ int main(int argc, char** argv) {
   size_t num_batches = P.getOptionIntValue("-b", 10);
   size_t num_queries = P.getOptionIntValue("-q", 1000);
 
+  std::cout << "INITIALIZING INPUT..." << std::endl;
+
   auto G = utils::break_sym_graph_from_bin(In);
   vertex n = G.size();
 
@@ -51,7 +53,10 @@ int main(int argc, char** argv) {
   F.verbose = false;
   assert(F.lmax < 64);
   if (!F.verbose) t.next("initialization");
+
+  // DO INSERTIONS
   for (size_t i = 0; i < num_batches; i++) {
+    std::cout << "INSERTING BATCH " << i << std::endl;
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
@@ -60,41 +65,50 @@ int main(int argc, char** argv) {
       // todo here: add edges to graph
     }
     if (!F.verbose) t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
-      // todo here
-      Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
-    }
-    if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
+    // for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    //   // todo here
+    //   Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
+    // }
+    // if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
+    F.print_cg_sizes();
+    // F.run_stat("./", true, false, false);
   }
+
+  // DO DELETIONS
   for (size_t i = 0; i < num_batches; i++) {
+    std::cout << "DELETING BATCH " << i << std::endl;
     for (size_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
     if (!F.verbose) t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
-      // todo here
-      Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-    }
+    // for (size_t j = 0; j < queries_del[i].size(); j++) {
+    //   // todo here
+    //   Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+    // }
+    // if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
+    F.print_cg_sizes();
+    // F.run_stat("./", true, false, false);
+  }
 
-    if (!F.verbose) t.next("Answer queries #" + std::to_string(i));
-  }
-  auto x = Out.find_first_of(".");
-  auto s = Out.substr(0, x);
-  // F.run_stat(s);
-  std::ofstream faq;
-  faq.open(Out);
-  if (!faq.is_open()) {
-    std::cout << "cannot open output file\n";
-    std::abort();
-  }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
-      faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
-      faq << Ans_del[i][j];
-  faq.close();
-  return 0;
+
+  // DO QUERIES
+  // auto x = Out.find_first_of(".");
+  // auto s = Out.substr(0, x);
+  // // F.run_stat(s);
+  // std::ofstream faq;
+  // faq.open(Out);
+  // if (!faq.is_open()) {
+  //   std::cout << "cannot open output file\n";
+  //   std::abort();
+  // }
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_ins[i].size(); j++)
+  //     faq << Ans_ins[i][j];
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  //     faq << Ans_del[i][j];
+  // faq.close();
+  // return 0;
 }
