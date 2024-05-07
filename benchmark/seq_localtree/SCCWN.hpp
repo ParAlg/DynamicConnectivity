@@ -102,39 +102,48 @@ inline void SCCWN::remove(size_t u, size_t v) {
         if (Hv.find(Cuv) != Hv.end()) {
           if (Eu.empty()) {
             // don't push nCu+nCv may violate size
+            return;
           } else if (nCu <= nCv) {
             for (auto it : Ru)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
-            C->setLevel(l - 1);
+            size_t _v = 0;
             for (auto it : Ru) {
-              if (it->getLevel() == l - 1)
+              _v += it->getSize();
+              if (it->getLevel() > C->getLevel()) C->setLevel(it->getLevel());
+            }
+            C->setLevel(std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+            for (auto it : Ru) {
+              if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
               else
                 localTree::addChild(C, it);
             }
             localTree::addChild(CP, C);
-            placeEdges(Eu, l - 1);
+            placeEdges(Eu, C->getLevel());
             placeEdges(Ev, l);
           } else {
             for (auto it : Rv)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
-            C->setLevel(l - 1);
+            size_t _v = 0;
             for (auto it : Rv) {
-              if (it->getLevel() == l - 1)
+              _v += it->getSize();
+              if (it->getLevel() > C->getLevel()) C->setLevel(it->getLevel());
+            }
+            C->setLevel(std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+            for (auto it : Rv) {
+              if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
               else
                 localTree::addChild(C, it);
             }
             localTree::addChild(CP, C);
             placeEdges(Eu, l);
-            placeEdges(Ev, l - 1);
+            placeEdges(Ev, C->getLevel());
           }
-
           Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
           Rstat.push_back(std::move(info));
-
           return;
         } else {
           if (Hu.find(Cuv) == Hu.end()) {
@@ -149,44 +158,65 @@ inline void SCCWN::remove(size_t u, size_t v) {
         }
       } else {
         auto GP = localTree::getParent(CP);
-        localTree::deleteNode(CP);
-        localTree *_CP = new localTree();
-        _CP->setLevel(l);
+        localTree::deleteFromParent(CP);
+        localTree *_CP;
         if (Eu.empty()) {
-          localTree::deleteNode(Ru[0]);
-          localTree::addChild(_CP, Ru[0]);
+          localTree::deleteFromParent(Ru[0]);
+          _CP = Ru[0];
+          if (localTree::ifSingleton(CP) == true && CP->getMap()[l] == false) {
+            localTree::deleteFromParent(Rv[0]);
+            delete CP;
+            CP = Rv[0];
+          }
+          // localTree::addChild(_CP, Ru[0]);
         } else if (nCu <= nCv) {
           for (auto it : Ru)
-            localTree::deleteNode(it);
-          auto C = new localTree();
-          C->setLevel(l - 1);
+            localTree::deleteFromParent(it);
+          _CP = new localTree();
+          size_t _v = 0;
           for (auto it : Ru) {
-            if (it->getLevel() == l - 1)
-              localTree::merge(C, it);
-            else
-              localTree::addChild(C, it);
+            _v += it->getSize();
+            if (it->getLevel() > _CP->getLevel()) _CP->setLevel(it->getLevel());
           }
-          localTree::addChild(_CP, C);
-          placeEdges(Eu, l - 1);
+          _CP->setLevel(std::max(_CP->getLevel(), (size_t)std::ceil(std::log2(_v))));
+          for (auto it : Ru) {
+            if (it->getLevel() == _CP->getLevel())
+              localTree::merge(_CP, it);
+            else
+              localTree::addChild(_CP, it);
+          }
+          placeEdges(Eu, _CP->getLevel());
           placeEdges(Ev, l);
         } else {
+          _CP = new localTree();
+          _CP->setLevel(l);
           for (auto it : Ru)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           for (auto it : Ru)
             localTree::addChild(_CP, it);
+          auto oldMap = CP->getMap();
           for (auto it : Rv)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           auto C = new localTree();
-          C->setLevel(l - 1);
+          size_t _v = 0;
           for (auto it : Rv) {
-            if (it->getLevel() == l - 1)
+            _v += it->getSize();
+            if (it->getLevel() > C->getLevel()) C->setLevel(it->getLevel());
+          }
+          C->setLevel(std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+          for (auto it : Rv) {
+            if (it->getLevel() == C->getLevel())
               localTree::merge(C, it);
             else
               localTree::addChild(C, it);
           }
-          localTree::addChild(CP, C);
+          if (oldMap[l] == false) {
+            delete CP;
+            CP = C;
+          } else
+            localTree::addChild(CP, C);
           placeEdges(Eu, l);
-          placeEdges(Ev, l - 1);
+          placeEdges(Ev, C->getLevel());
         }
         localTree::add2Children(GP, CP, _CP);
         Cu = _CP;
@@ -209,37 +239,46 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
           } else if (nCu <= nCv) {
             for (auto it : Ru)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
-            C->setLevel(l - 1);
+            size_t _v = 0;
             for (auto it : Ru) {
-              if (it->getLevel() == l - 1)
+              _v += it->getSize();
+              if (it->getLevel() > C->getLevel()) C->setLevel(it->getLevel());
+            }
+            C->setLevel(std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+            for (auto it : Ru) {
+              if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
               else
                 localTree::addChild(C, it);
             }
             localTree::addChild(CP, C);
-            placeEdges(Eu, l - 1);
+            placeEdges(Eu, C->getLevel());
             placeEdges(Ev, l);
           } else {
             for (auto it : Rv)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
-            C->setLevel(l - 1);
+            size_t _v = 0;
             for (auto it : Rv) {
-              if (it->getLevel() == l - 1)
+              _v += it->getSize();
+              if (it->getLevel() > C->getLevel()) C->setLevel(it->getLevel());
+            }
+            C->setLevel(std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+            for (auto it : Rv) {
+              if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
               else
                 localTree::addChild(C, it);
             }
             localTree::addChild(CP, C);
             placeEdges(Eu, l);
-            placeEdges(Ev, l - 1);
+            placeEdges(Ev, C->getLevel());
           }
 
           Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
           Rstat.push_back(std::move(info));
-
           return;
         } else {
           if (Hv.find(Cuv) == Hv.end()) {
@@ -254,44 +293,60 @@ inline void SCCWN::remove(size_t u, size_t v) {
         }
       } else {
         auto GP = localTree::getParent(CP);
-        localTree::deleteNode(CP);
-        localTree *_CP = new localTree();
-        _CP->setLevel(l);
+        localTree::deleteFromParent(CP);
+        localTree *_CP;  // = new localTree();
         if (Ev.empty()) {
-          localTree::deleteNode(Rv[0]);
-          localTree::addChild(_CP, Rv[0]);
+          localTree::deleteFromParent(Rv[0]);
+          // localTree::addChild(_CP, Rv[0]);
+          _CP = Rv[0];
           placeEdges(Eu, l);
         } else if (nCv <= nCu) {
           for (auto it : Rv)
-            localTree::deleteNode(it);
-          auto C = new localTree();
-          C->setLevel(l - 1);
+            localTree::deleteFromParent(it);
+          _CP = new localTree();
+          size_t _v = 0;
           for (auto it : Rv) {
-            if (it->getLevel() == l - 1)
-              localTree::merge(C, it);
-            else
-              localTree::addChild(C, it);
+            _v += it->getSize();
+            if (it->getLevel() > _CP->getLevel()) _CP->setLevel(it->getLevel());
           }
-          localTree::addChild(_CP, C);
+          _CP->setLevel(std::max(_CP->getLevel(), (size_t)std::ceil(std::log2(_v))));
+          for (auto it : Rv) {
+            if (it->getLevel() == _CP->getLevel())
+              localTree::merge(_CP, it);
+            else
+              localTree::addChild(_CP, it);
+          }
           placeEdges(Eu, l);
-          placeEdges(Ev, l - 1);
+          placeEdges(Ev, _CP->getLevel());
         } else {
+          _CP = new localTree();
+          _CP->setLevel(l);
           for (auto it : Rv)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           for (auto it : Rv)
             localTree::addChild(_CP, it);
+          auto oldMap = CP->getMap();
           for (auto it : Ru)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           auto C = new localTree();
-          C->setLevel(l - 1);
+          size_t _v = 0;
           for (auto it : Ru) {
-            if (it->getLevel() == l - 1)
+            _v += it->getSize();
+            if (it->getLevel() > C->getLevel()) C->setLevel(it->getLevel());
+          }
+          C->setLevel(std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+          for (auto it : Ru) {
+            if (it->getLevel() == C->getLevel())
               localTree::merge(C, it);
             else
               localTree::addChild(C, it);
           }
-          localTree::addChild(CP, C);
-          placeEdges(Eu, l - 1);
+          if (oldMap[l] == false) {
+            delete CP;
+            CP = C;
+          } else
+            localTree::addChild(CP, C);
+          placeEdges(Eu, C->getLevel());
           placeEdges(Ev, l);
         }
         localTree::add2Children(GP, CP, _CP);
@@ -357,6 +412,7 @@ inline void SCCWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges
   }
 }
 inline std::tuple<bool, size_t, size_t> SCCWN::fetchEdge(std::queue<localTree *> &Q, size_t l) {
+  if (Q.empty()) return std::make_tuple(false, 0, 0);
   auto node = Q.front();
   auto e = localTree::fetchEdge(node, l);
   while (!std::get<0>(e)) {

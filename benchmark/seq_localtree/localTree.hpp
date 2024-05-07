@@ -43,7 +43,7 @@ class localTree {
   static localTree* mergeNode(nodeArr& Q, size_t l);
   static void addChild(localTree* p, localTree* son);
   static void add2Children(localTree* p, localTree* s1, localTree* s2);
-  static void deleteNode(localTree* p);
+  static void deleteFromParent(localTree* p);
   static localTree* getParent(localTree* r);
   static localTree* getRoot(localTree* r);
   static localTree* getLevelNode(localTree* r, size_t l);
@@ -54,6 +54,7 @@ class localTree {
   static void traverseTopDown(localTree* root, bool clear, bool verbose, bool stat, parlay::sequence<stats>& info);
   static std::tuple<bool, size_t, size_t> fetchEdge(localTree* root, size_t l);
   static localTree* getIfSingleton(localTree* r);
+  static bool ifSingleton(localTree* r);
 };
 inline localTree::~localTree() {
   if (vertex) delete vertex;
@@ -114,6 +115,14 @@ inline localTree* localTree::getIfSingleton(localTree* r) {
     it->Node = r;
   delete node;
   return r;
+}
+inline bool localTree::ifSingleton(localTree* r) {
+  if (!r) return false;
+  if (r->rTrees.empty()) return true;
+  if (r->rTrees.size() == 1 && r->rTrees[0]->isleaf())
+    return true;
+  else
+    return false;
 }
 inline void localTree::merge(localTree* Cu, localTree* Cv) {
   // parent level vertex
@@ -211,7 +220,7 @@ inline void localTree::deleteEdge(size_t v, size_t l) {
   this->edgemap = this->vertex->getEdgeMap();
   updateBitMap(this);
 }
-inline void localTree::deleteNode(localTree* p) {
+inline void localTree::deleteFromParent(localTree* p) {
   // remove p from its parent
   if (!p->parent) return;
   auto node = getParent(p);
