@@ -33,6 +33,8 @@
 
 #Local debug
 build/
+results/
+results.rad
 utils/
 examples/
 data/

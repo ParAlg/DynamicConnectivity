@@ -32,6 +32,7 @@ declare -a undir_graph=(
   # "grid_4000_4000_03_sym"
   # "grid_4000_4000_sym"
 
+   "twitter_sym"
 )
 
 declare numactl="numactl -i all"

@@ -22,9 +22,9 @@ class SCCWN {
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
   void print_cg_sizes();
+  int64_t space();
 };
 inline size_t SCCWN::lmax = 63;
-inline bool SCCWN::verbose = true;//false;
 
 void SCCWN::print_cg_sizes() {
   size_t total = 0;
@@ -58,6 +58,55 @@ void SCCWN::print_cg_sizes() {
   std::cout << "AVG: " << (float)total/(float)num_cg;
   std::cout << " AVG_EXCL_SING: " << (float)total_es/(float)num_cg_es;
   std::cout << " MAX: " << max << std::endl;
+}
+
+int64_t SCCWN::space() {
+  int64_t space = 0;
+  space += sizeof(std::vector<localTree*>);
+  space += leaves.size() * sizeof(localTree*);
+  space += 2*sizeof(size_t);
+  std::set<rankTree*> visited_rnodes;
+  std::set<localTree*> visited_lnodes;
+  for (localTree* leaf : leaves) {
+    if (leaf == nullptr) continue;
+    bool continueloop = false;
+    space += leaf->space();
+    space += leaf->vertex->space();
+    rankTree* rTree = leaf->parent;
+    visited_rnodes.insert(rTree);
+    while (rTree->parent) {
+      rTree = rTree->parent;
+      if (visited_rnodes.find(rTree) != visited_rnodes.end()) {
+        continueloop = true;
+        break;
+      }
+      visited_rnodes.insert(rTree);
+    }
+    if (continueloop) continue;
+    localTree* lTree = rTree->Node;
+    if (visited_lnodes.find(lTree) != visited_lnodes.end()) continue;
+    visited_lnodes.insert(lTree);
+    while (lTree->parent) {
+      rTree = lTree->parent;
+      visited_rnodes.insert(rTree);
+      while (rTree->parent) {
+        rTree = rTree->parent;
+        if (visited_rnodes.find(rTree) != visited_rnodes.end()) {
+          continueloop = true;
+          break;
+        }
+        visited_rnodes.insert(rTree);
+      }
+      if (continueloop) break;
+      lTree = rTree->Node;
+      if (visited_lnodes.find(lTree) != visited_lnodes.end()) break;
+      visited_lnodes.insert(lTree);
+    }
+  }
+  space += visited_rnodes.size() * sizeof(rankTree);
+  for (localTree* lTree : visited_lnodes)
+    space += lTree->space();
+  return space;
 }
 
 inline void SCCWN::insert(size_t u, size_t v) {

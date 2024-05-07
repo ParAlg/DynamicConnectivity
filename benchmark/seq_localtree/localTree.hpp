@@ -7,7 +7,8 @@
 class rankTree;
 class rankArr;
 class localTree {
- private:
+//  private:
+public:
   friend class rankTree;
   friend class rankArr;
   using nodeArr = parlay::sequence<localTree*>;
@@ -24,7 +25,7 @@ class localTree {
     return x->size < y->size;
   }
 
- public:
+//  public:
   localTree(size_t _id) : level(0), size(1), parent(nullptr), vertex(new leaf(_id, this)), edgemap(0) {
     rTrees.clear();
   }
@@ -55,9 +56,20 @@ class localTree {
   static std::tuple<bool, size_t, size_t> fetchEdge(localTree* root, size_t l);
   static localTree* getIfSingleton(localTree* r);
   int get_cluster_graph_size();
+  int64_t space();
 };
 inline localTree::~localTree() {
   if (vertex) delete vertex;
+}
+
+int64_t localTree::space() {
+  int64_t space = 0;
+  space += sizeof(std::vector<rankTree*>);
+  space += rTrees.size() * sizeof(rankTree*);
+  space += sizeof(std::bitset<64>);
+  space += 2*sizeof(size_t);
+  space += sizeof(rankTree*);
+  return space;
 }
 
 static int get_cluster_graph_size_dfs(rankTree* node) {

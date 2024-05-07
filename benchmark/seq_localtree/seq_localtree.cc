@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
   F.lmax = std::ceil(std::log2(n));
   assert(F.lmax < 64);
   t.next("initialization");
+  std::cout << std::endl << "Space: " << F.space() << std::endl << std::endl;
 
   // DO INSERTIONS
   for (size_t i = 0; i < num_batches; i++) {
@@ -70,6 +71,7 @@ int main(int argc, char** argv) {
     // }
     // t.next("Answer queries #" + std::to_string(i));
     F.print_cg_sizes();
+    std::cout << std::endl << "Space: " << F.space() << std::endl << std::endl;
     // F.run_stat("./", true, false, false);
   }
 
@@ -88,6 +90,7 @@ int main(int argc, char** argv) {
     // }
     // t.next("Answer queries #" + std::to_string(i));
     F.print_cg_sizes();
+    std::cout << std::endl << "Space: " << F.space() << std::endl << std::endl;
     // F.run_stat("./", true, false, false);
   }
 

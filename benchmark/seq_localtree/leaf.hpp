@@ -34,6 +34,7 @@ class leaf {
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator> getLevelIterator(size_t l);
   std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
+  int64_t space();
 
  private:
   std::map<size_t, std::set<size_t>> E;
@@ -42,6 +43,19 @@ class leaf {
   size_t id;
   size_t size;
 };
+
+int64_t leaf::space() {
+  uint64_t space = 0;
+  space += sizeof(std::map<size_t, std::set<size_t>>);
+  space += E.size() * (sizeof(size_t) + sizeof(std::set<size_t>));
+  for (auto entry : E)
+    space += entry.second.size() * sizeof(size_t);
+  space += sizeof(void*);
+  space += sizeof(std::bitset<64>);
+  space += 2 * sizeof(size_t);
+  return space;
+}
+
 inline void leaf::linkToRankTree(void *p) {
   parent = p;
 }
