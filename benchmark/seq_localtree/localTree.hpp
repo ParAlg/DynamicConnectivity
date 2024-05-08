@@ -1,3 +1,4 @@
+#pragma once
 #include "rankTree.hpp"
 #include "rankArr.hpp"
 #include "leaf.hpp"

@@ -97,7 +97,7 @@ inline void CWN::remove(size_t u, size_t v) {
             // don't push nCu+nCv may violate size
           } else if (nCu <= nCv) {
             for (auto it : Ru)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
             C->setLevel(l - 1);
             for (auto it : Ru) {
@@ -109,7 +109,7 @@ inline void CWN::remove(size_t u, size_t v) {
             placeEdges(Ev, l);
           } else {
             for (auto it : Rv)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
             C->setLevel(l - 1);
             for (auto it : Rv) {
@@ -136,15 +136,15 @@ inline void CWN::remove(size_t u, size_t v) {
         }
       } else {
         auto GP = localTree::getParent(CP);
-        localTree::deleteNode(CP);
+        localTree::deleteFromParent(CP);
         localTree *_CP = new localTree();
         _CP->setLevel(l);
         if (Eu.empty()) {
-          localTree::deleteNode(Ru[0]);
+          localTree::deleteFromParent(Ru[0]);
           localTree::addChild(_CP, Ru[0]);
         } else if (nCu <= nCv) {
           for (auto it : Ru)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           auto C = new localTree();
           C->setLevel(l - 1);
           for (auto it : Ru) {
@@ -156,11 +156,11 @@ inline void CWN::remove(size_t u, size_t v) {
           placeEdges(Ev, l);
         } else {
           for (auto it : Ru)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           for (auto it : Ru)
             localTree::addChild(_CP, it);
           for (auto it : Rv)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           auto C = new localTree();
           C->setLevel(l - 1);
           for (auto it : Rv) {
@@ -190,7 +190,7 @@ inline void CWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
           } else if (nCu <= nCv) {
             for (auto it : Ru)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
             C->setLevel(l - 1);
             for (auto it : Ru) {
@@ -203,7 +203,7 @@ inline void CWN::remove(size_t u, size_t v) {
             placeEdges(Ev, l);
           } else {
             for (auto it : Rv)
-              localTree::deleteNode(it);
+              localTree::deleteFromParent(it);
             auto C = new localTree();
             C->setLevel(l - 1);
             for (auto it : Rv) {
@@ -230,16 +230,16 @@ inline void CWN::remove(size_t u, size_t v) {
         }
       } else {
         auto GP = localTree::getParent(CP);
-        localTree::deleteNode(CP);
+        localTree::deleteFromParent(CP);
         localTree *_CP = new localTree();
         _CP->setLevel(l);
         if (Ev.empty()) {
-          localTree::deleteNode(Rv[0]);
+          localTree::deleteFromParent(Rv[0]);
           localTree::addChild(_CP, Rv[0]);
           placeEdges(Eu, l);
         } else if (nCv <= nCu) {
           for (auto it : Rv)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           auto C = new localTree();
           C->setLevel(l - 1);
           for (auto it : Rv) {
@@ -251,13 +251,13 @@ inline void CWN::remove(size_t u, size_t v) {
           placeEdges(Ev, l - 1);
         } else {
           for (auto it : Rv)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           for (auto it : Rv) {
             assert(it->getLevel() == l - 1);
             localTree::addChild(_CP, it);
           }
           for (auto it : Ru)
-            localTree::deleteNode(it);
+            localTree::deleteFromParent(it);
           auto C = new localTree();
           C->setLevel(l - 1);
           for (auto it : Ru) {
