@@ -73,6 +73,7 @@ int64_t SCCWN::space() {
     space += leaf->space();
     space += leaf->vertex->space();
     rankTree* rTree = leaf->parent;
+    if (!rTree) continue;
     visited_rnodes.insert(rTree);
     while (rTree->parent) {
       rTree = rTree->parent;

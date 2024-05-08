@@ -1,4 +1,5 @@
-#include "SCCWN.hpp"
+// #include "SCCWN.hpp"
+#include "CWN.hpp"
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <parlay/internal/get_time.h>
@@ -48,11 +49,12 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
   std::ofstream fins, fdel;
   t.start();
-  SCCWN F(n);
+  // SCCWN F(n);
+  CWN F(n);
   F.lmax = std::ceil(std::log2(n));
   assert(F.lmax < 64);
   t.next("initialization");
-  std::cout << std::endl << "Space: " << F.space() << std::endl << std::endl;
+  std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
 
   // DO INSERTIONS
   for (size_t i = 0; i < num_batches; i++) {
@@ -70,8 +72,8 @@ int main(int argc, char** argv) {
     //   Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     // }
     // t.next("Answer queries #" + std::to_string(i));
-    F.print_cg_sizes();
-    std::cout << std::endl << "Space: " << F.space() << std::endl << std::endl;
+    // std::cout << std::endl; F.print_cg_sizes();
+    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
     // F.run_stat("./", true, false, false);
   }
 
@@ -89,8 +91,8 @@ int main(int argc, char** argv) {
     //   Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     // }
     // t.next("Answer queries #" + std::to_string(i));
-    F.print_cg_sizes();
-    std::cout << std::endl << "Space: " << F.space() << std::endl << std::endl;
+    // std::cout << std::endl; F.print_cg_sizes();
+    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
     // F.run_stat("./", true, false, false);
   }
 
