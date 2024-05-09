@@ -62,6 +62,7 @@ inline rankTree::rankTree(rankTree* T1, rankTree* T2) {
   // Let the new root tree point to the same local tree node as T1T2
   this->Node = T1->Node;
   this->parent = nullptr;
+  this->descendant = nullptr;
   // Apply "or" to two bitmaps. So roots of rankTrees will have the bitmap of
   // its descending leaf. The bitmap of a local tree node will be the or of
   // at most O(logn) rank trees.
