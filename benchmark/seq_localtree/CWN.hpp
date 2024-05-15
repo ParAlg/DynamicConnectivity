@@ -18,18 +18,74 @@ class CWN {
   size_t n;
   static size_t lmax;
   static bool verbose;
+  static bool blocked_insert;
   parlay::sequence<localTree *> leaves;
   CWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
-  ~CWN() { run_stat("./", false, true, false); };
+  // ~CWN() { run_stat("./", false, true, false); };
   void insert(size_t u, size_t v);
   bool is_connected(size_t u, size_t v);
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
+  void print_cg_sizes();
+  void print_cc_sizes();
   int64_t space();
 };
 inline size_t CWN::lmax = 63;
 // 0/1 num Ru,Eu,Rv,Ev,CP->getLevel()
 inline bool CWN::verbose = false;
+inline bool CWN::blocked_insert = false;
+
+void CWN::print_cg_sizes() {
+  size_t total = 0;
+  size_t num_cg = 0;
+  size_t total_es = 0;
+  size_t num_cg_es = 0;
+  size_t max = 0;
+  std::set<localTree*> visited_cg;
+  for (size_t i = 0; i < n; i++) {
+    if (leaves[i] == nullptr) continue;
+    localTree* lTree = localTree::getParent(leaves[i]);
+    while (lTree) {
+      if (visited_cg.find(lTree) == visited_cg.end()) {
+        size_t size = lTree->get_cluster_graph_size();
+        total += size;
+        num_cg += 1;
+        if (size > 1) {
+          total_es += size;
+          num_cg_es += 1;
+        }
+        max = std::max(max, size);
+        visited_cg.insert(lTree);
+      }
+      lTree = localTree::getParent(lTree);
+    }
+  }
+  std::cout << "Cluster Graph Sizes:" << std::endl;
+  std::cout << "TOTAL SIZE: " << total;
+  std::cout << " NUM CGS: " << num_cg << std::endl;
+  std::cout << "AVG: " << (float)total/(float)num_cg;
+  std::cout << " AVG_EXCL_SING: " << (float)total_es/(float)num_cg_es;
+  std::cout << " MAX: " << max << std::endl;
+}
+
+void CWN::print_cc_sizes() {
+  size_t total = 0;
+  size_t num_cc = 0;
+  size_t max = 0;
+  std::map<localTree*, size_t> cc_sizes;
+  for (size_t i = 0; i < n; i++) {
+    if (leaves[i] == nullptr) continue;
+    auto root = localTree::getRoot(leaves[i]);
+    if (cc_sizes.find(root) == cc_sizes.end())
+      cc_sizes[root] = 1;
+    else
+      cc_sizes[root] += 1;
+    max = std::max(max, cc_sizes[root]);
+  }
+  std::cout << "Connected Component Sizes:" << std::endl;
+  std::cout << " NUM CCS: " << cc_sizes.size() << std::endl;
+  std::cout << " MAX: " << max << std::endl;
+}
 
 int64_t CWN::space() {
   int64_t space = 0;
@@ -96,11 +152,36 @@ inline void CWN::insert(size_t u, size_t v) {
   if (leaves[u] == nullptr) leaves[u] = g(u);
   if (leaves[v] == nullptr) leaves[v] = g(v);
 
-  auto Cu = localTree::getRoot(leaves[u]);
-  auto Cv = localTree::getRoot(leaves[v]);
-  if (Cu != Cv) localTree::merge(Cu, Cv);
-  leaves[u]->insertToLeaf(v, lmax);
-  leaves[v]->insertToLeaf(u, lmax);
+size_t insert_level;
+  if(this->blocked_insert) {
+    auto Cu = localTree::getRoot(leaves[u]);
+    auto Cv = localTree::getRoot(leaves[v]);
+    while(Cu == Cv || (Cu->size + Cv->size <= (1 << Cu->getLevel()))) {
+      if (Cu != Cv) {
+        localTree* p = nullptr;
+        if (Cu->parent) {
+          p = localTree::getParent(Cu);
+          localTree::deleteFromParent(Cu);
+          localTree::deleteFromParent(Cv);
+        }
+        localTree::merge(Cu, Cv);
+        if (p) localTree::addChild(p, Cu);
+      }
+      size_t level = Cu->getLevel();
+      Cu = localTree::getLevelNode(leaves[u], level);
+      Cv = localTree::getLevelNode(leaves[v], level);
+    }
+    insert_level = Cu->getLevel()+1;
+  } else {
+    auto Cu = localTree::getRoot(leaves[u]);
+    auto Cv = localTree::getRoot(leaves[v]);
+    if (Cu != Cv) localTree::merge(Cu, Cv);
+    insert_level = lmax;
+  }
+
+  // std::cout << "Did " << merge_count << " merges. Inserted (" << u << "," << v << ") at level " << insert_level << std::endl;
+  leaves[u]->insertToLeaf(v, insert_level);
+  leaves[v]->insertToLeaf(u, insert_level);
 }
 
 inline void CWN::remove(size_t u, size_t v) {

@@ -1,22 +1,43 @@
 #include "CWN.hpp"
+#include "SCCWN.hpp"
 #include <iostream>
 #include <fstream>
+void test0() {
+  size_t n = 20;
+  SCCWN F(n);
+  F.lmax = std::ceil(std::log2(n));
+  F.blocked_insert =true;
+  F.insert(1,2);
+  F.insert(3,4);
+  F.insert(5,6);
+  F.insert(7,8);
+  F.insert(1,3);
+  F.insert(5,7);
+  F.insert(1,5);
+  F.insert(1,9);
+  F.insert(1,10);
+  F.insert(9,10);
+}
 void test1() {
-  CWN F(20);
+  size_t n = 20;
+  SCCWN F(n);
+  F.lmax = std::ceil(std::log2(n));
+  F.blocked_insert = true;
   F.insert(1, 2);
   F.insert(1, 3);
   F.insert(1, 4);
   F.insert(2, 3);
   F.insert(3, 4);
   F.insert(2, 4);
-  F.remove(1, 2);
-  F.remove(1, 3);
-  F.remove(1, 4);
-  F.remove(2, 4);
-  F.run_stat("./", true);
+  F.print_cg_sizes();
+  // F.remove(1, 2);
+  // F.remove(1, 3);
+  // F.remove(1, 4);
+  // F.remove(2, 4);
+  // F.run_stat("./", true);
 }
 void test2() {  // not compression
-  CWN F(20);
+  SCCWN F(20);
   F.insert(1, 2);
   F.insert(2, 3);
   F.insert(4, 5);
@@ -29,10 +50,11 @@ void test2() {  // not compression
   F.remove(5, 3);
   F.remove(5, 6);
   F.remove(7, 5);
-  F.run_stat("./", true);
+  // F.run_stat("./", true);
 }
 void test3() {
-  CWN F(20);
+  SCCWN F(20);
+  F.blocked_insert = true;
   F.insert(1, 2);
   F.insert(3, 4);
   F.insert(1, 3);
@@ -44,8 +66,8 @@ void test3() {
   F.insert(7, 8);
   // F.remove(1, 8);
   // F.remove(3, 4);
-  F.remove(1, 3);
-  F.run_stat(".", true);
+  // F.remove(1, 3);
+  // F.run_stat(".", true);
 }
 void test4() {
   CWN F(20);
@@ -53,7 +75,7 @@ void test4() {
   F.insert(1, 3);
   F.remove(1, 2);
   F.remove(1, 3);
-  F.run_stat(".", true);
+  // F.run_stat(".", true);
 }
 void test5() {
   CWN F(20);
@@ -84,7 +106,7 @@ void test6() {
   F.remove(1, 3);
   F.remove(4, 2);
   F.remove(5, 4);
-  F.run_stat(".", true);
+  // F.run_stat(".", true);
 }
 void test7() {
   CWN F(20);
@@ -630,6 +652,7 @@ void test23() {
 //   fdel.close();
 // }
 int main() {
+  test0();
   // test1();
   // test2();
   // test3();
@@ -652,7 +675,7 @@ int main() {
   // test20();
   // test21();
   // test22();
-  test23();
+  // test23();
   // test_local();
   return 0;
 }

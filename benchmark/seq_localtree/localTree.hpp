@@ -1,3 +1,5 @@
+#pragma once
+
 #include "rankTree.hpp"
 #include "rankArr.hpp"
 #include "leaf.hpp"
@@ -122,6 +124,7 @@ inline localTree::localTree(localTree* Cu, localTree* Cv) {
   this->edgemap = Cu->edgemap | Cv->edgemap;
   assert((1 << Cu->level) >= Cu->size);
   assert((1 << Cv->level) >= Cv->size);
+  assert((1 << this->level) >= this->size);
   auto ru = new rankTree(std::log2(Cu->size), this, Cu, Cu->edgemap);
   auto rv = new rankTree(std::log2(Cv->size), this, Cv, Cv->edgemap);
   Cu->parent = ru;
@@ -255,7 +258,7 @@ inline void localTree::deleteEdge(size_t v, size_t l) {
 inline void localTree::deleteFromParent(localTree* p) {
   // remove p from its parent
   if (!p->parent) return;
-  auto node = getParent(p);
+  localTree* node = getParent(p);
   node->size -= p->size;
   auto oval = node->edgemap;
   node->rTrees = rankTree::remove(node->rTrees, p->parent, node);
