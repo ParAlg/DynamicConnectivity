@@ -1,22 +1,22 @@
 #include "CWN.hpp"
 #include "SCCWN.hpp"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 void test0() {
   size_t n = 20;
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
-  F.blocked_insert =true;
-  F.insert(1,2);
-  F.insert(3,4);
-  F.insert(5,6);
-  F.insert(7,8);
-  F.insert(1,3);
-  F.insert(5,7);
-  F.insert(1,5);
-  F.insert(1,9);
-  F.insert(1,10);
-  F.insert(9,10);
+  F.blocked_insert = true;
+  F.insert(1, 2);
+  F.insert(3, 4);
+  F.insert(5, 6);
+  F.insert(7, 8);
+  F.insert(1, 3);
+  F.insert(5, 7);
+  F.insert(1, 5);
+  F.insert(1, 9);
+  F.insert(1, 10);
+  F.insert(9, 10);
 }
 void test1() {
   size_t n = 20;
@@ -36,7 +36,7 @@ void test1() {
   // F.remove(2, 4);
   // F.run_stat("./", true);
 }
-void test2() {  // not compression
+void test2() { // not compression
   SCCWN F(20);
   F.insert(1, 2);
   F.insert(2, 3);
@@ -474,7 +474,7 @@ void test14() {
   // F.statistic(false, false, true);
   F.remove(63, 39);
 }
-void test15() {  // lp == lson
+void test15() { // lp == lson
   CWN F(20);
   F.insert(1, 2);
   F.insert(3, 4);
@@ -610,7 +610,8 @@ void test22() {
 void test23() {
   // size_t n = 64;
   size_t n = 2048;
-  CWN F(n);
+  SCCWN F(n);
+  F.blocked_insert = true;
   F.lmax = std::log2(n) + 1;
   parlay::sequence<std::pair<size_t, size_t>> e;
   for (size_t i = 1; i < n - 1; i++)
@@ -624,6 +625,7 @@ void test23() {
   for (size_t i = 0; i < ins.size(); i++)
     F.insert(ins[i].first, ins[i].second);
   // F.run_stat(".", true);
+  F.checkLevel();
   for (size_t i = 0; i < del.size(); i++) {
     F.remove(del[i].first, del[i].second);
   }
@@ -675,7 +677,7 @@ int main() {
   // test20();
   // test21();
   // test22();
-  // test23();
+  test23();
   // test_local();
   return 0;
 }
