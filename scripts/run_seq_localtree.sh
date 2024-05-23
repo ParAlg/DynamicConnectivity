@@ -18,7 +18,7 @@ declare -a undir_graph=(
 
   # # k-NN
   "Household_lines_5_sym"
-  "CHEM_5_sym"
+  # "CHEM_5_sym"
   # "GeoLifeNoScale_2_sym"
   # "GeoLifeNoScale_5_sym"
   # "GeoLifeNoScale_10_sym"
@@ -27,7 +27,7 @@ declare -a undir_graph=(
   # "Cosmo50_5_sym"
 
   # # Synthetic
-  "grid_1000_10000_03_sym"
+  # "grid_1000_10000_03_sym"
   # "grid_1000_10000_sym"
   # "grid_4000_4000_03_sym"
   # "grid_4000_4000_sym"
@@ -35,7 +35,7 @@ declare -a undir_graph=(
   #  "twitter_sym"
 )
 
-declare numactl="numactl -i all"
+declare numactl="" # "numactl -i all"
 
 declare num_batches=10
 

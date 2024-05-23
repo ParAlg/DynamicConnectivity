@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     F.lmax = std::ceil(std::log2(n));
     if (blocked_insert) F.blocked_insert = true;
     assert(F.lmax < 64);
-    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+    // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
     for (size_t i = 0; i < num_batches; i++) { // DO INSERTIONS
       std::cout << "INSERTING BATCH " << i << std::endl;
       for (size_t j = 0; j < batches_ins[i].size(); j++) {
@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
         F.insert(u, v);
       }
       t.next("Insert batch #" + std::to_string(i));
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+      // std::cout << std::endl; F.print_cg_sizes();
+      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
       // F.run_stat("./", true, false, false);
     }
     for (size_t i = 0; i < num_batches; i++) { // DO DELETIONS
@@ -82,8 +82,8 @@ int main(int argc, char** argv) {
         F.remove(u, v);
       }
       t.next("Delete batch #" + std::to_string(i));
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+      // std::cout << std::endl; F.print_cg_sizes();
+      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
       // F.run_stat("./", true, false, false);
     }
   }
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
     F.lmax = std::ceil(std::log2(n));
     if (blocked_insert) F.blocked_insert = true;
     assert(F.lmax < 64);
-    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+    // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
     for (size_t i = 0; i < num_batches; i++) { // DO INSERTIONS
       std::cout << "INSERTING BATCH " << i << std::endl;
       for (size_t j = 0; j < batches_ins[i].size(); j++) {
@@ -102,9 +102,8 @@ int main(int argc, char** argv) {
         F.insert(u, v);
       }
       t.next("Insert batch #" + std::to_string(i));
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl; F.print_cc_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+      // std::cout << std::endl; F.print_cg_sizes();
+      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
       // F.run_stat("./", true, false, false);
     }
     for (size_t i = 0; i < num_batches; i++) { // DO DELETIONS
@@ -115,8 +114,8 @@ int main(int argc, char** argv) {
         F.remove(u, v);
       }
       t.next("Delete batch #" + std::to_string(i));
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+      // std::cout << std::endl; F.print_cg_sizes();
+      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
       // F.run_stat("./", true, false, false);
     }
   }
