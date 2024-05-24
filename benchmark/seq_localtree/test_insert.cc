@@ -1,14 +1,14 @@
-#include "CWN.hpp"
+#include "SCCWN.hpp"
 #include <iostream>
 #include <fstream>
 void test1() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(1, 3);
-  F.insert(1, 4);
-  F.insert(2, 3);
-  F.insert(3, 4);
-  F.insert(2, 4);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(1, 4);
+  F.insertToBlock(2, 3);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(2, 4);
   F.remove(1, 2);
   F.remove(1, 3);
   F.remove(1, 4);
@@ -16,13 +16,13 @@ void test1() {
   F.run_stat("./", true);
 }
 void test2() {  // not compression
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(2, 3);
-  F.insert(4, 5);
-  F.insert(5, 3);
-  F.insert(5, 6);
-  F.insert(7, 5);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(2, 3);
+  F.insertToBlock(4, 5);
+  F.insertToBlock(5, 3);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 5);
   F.remove(1, 2);
   F.remove(2, 3);
   F.remove(4, 5);
@@ -32,54 +32,54 @@ void test2() {  // not compression
   F.run_stat("./", true);
 }
 void test3() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(1, 3);
-  F.insert(5, 6);
-  F.insert(1, 5);
-  F.insert(1, 7);
-  F.insert(3, 5);
-  F.insert(1, 8);
-  F.insert(7, 8);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(1, 5);
+  F.insertToBlock(1, 7);
+  F.insertToBlock(3, 5);
+  F.insertToBlock(1, 8);
+  F.insertToBlock(7, 8);
   // F.remove(1, 8);
   // F.remove(3, 4);
   F.remove(1, 3);
   F.run_stat(".", true);
 }
 void test4() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(1, 3);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(1, 3);
   F.remove(1, 2);
   F.remove(1, 3);
   F.run_stat(".", true);
 }
 void test5() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(7, 8);
-  F.insert(1, 3);
-  F.insert(5, 7);
-  F.insert(4, 6);
-  F.insert(9, 10);
-  F.insert(9, 1);
-  F.insert(10, 1);
-  F.insert(11, 2);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 7);
+  F.insertToBlock(4, 6);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(9, 1);
+  F.insertToBlock(10, 1);
+  F.insertToBlock(11, 2);
   // F.statistic(false, false, true);
-  F.insert(11, 10);
-  F.insert(5, 11);
-  F.insert(12, 2);
+  F.insertToBlock(11, 10);
+  F.insertToBlock(5, 11);
+  F.insertToBlock(12, 2);
   // F.statistic(false, false, true);
 }
 void test6() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(1, 3);
-  F.insert(5, 4);
-  F.insert(4, 2);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 4);
+  F.insertToBlock(4, 2);
   F.remove(1, 2);
   F.remove(1, 3);
   F.remove(4, 2);
@@ -87,65 +87,65 @@ void test6() {
   F.run_stat(".", true);
 }
 void test7() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(1, 3);
-  F.insert(5, 6);
-  F.insert(6, 7);
-  F.insert(3, 5);
-  F.insert(1, 8);
-  F.insert(5, 8);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(6, 7);
+  F.insertToBlock(3, 5);
+  F.insertToBlock(1, 8);
+  F.insertToBlock(5, 8);
   // F.statistic(false, false, true);
 }
 void test8() {
-  CWN F(50);
+  SCCWN F(50);
 
-  F.insert(1, 2);
-  F.insert(1, 3);
-  F.insert(1, 4);
-  F.insert(2, 3);
-  F.insert(2, 4);
-  F.insert(3, 4);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(1, 4);
+  F.insertToBlock(2, 3);
+  F.insertToBlock(2, 4);
+  F.insertToBlock(3, 4);
 
-  F.insert(5, 6);
-  F.insert(6, 7);
-  F.insert(7, 8);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(6, 7);
+  F.insertToBlock(7, 8);
 
-  F.insert(1, 5);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(10, 11);
-  F.insert(13, 14);
-  F.insert(15, 13);
-  F.insert(16, 9);
-  F.insert(13, 16);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(10, 11);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 13);
+  F.insertToBlock(16, 9);
+  F.insertToBlock(13, 16);
   // F.statistic(false, false, true);
 }
 void test9() {
-  CWN F(50);
+  SCCWN F(50);
 
-  F.insert(1, 2);
-  F.insert(1, 3);
-  F.insert(1, 4);
-  F.insert(2, 3);
-  F.insert(2, 4);
-  F.insert(3, 4);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(1, 4);
+  F.insertToBlock(2, 3);
+  F.insertToBlock(2, 4);
+  F.insertToBlock(3, 4);
 
-  F.insert(5, 6);
-  F.insert(6, 7);
-  F.insert(7, 8);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(6, 7);
+  F.insertToBlock(7, 8);
 
-  F.insert(1, 5);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(10, 11);
-  F.insert(13, 14);
-  F.insert(15, 13);
-  F.insert(16, 9);
-  F.insert(15, 16);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(10, 11);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 13);
+  F.insertToBlock(16, 9);
+  F.insertToBlock(15, 16);
   F.remove(1, 2);
   F.remove(1, 3);
   F.remove(1, 4);
@@ -170,236 +170,236 @@ void test9() {
   // F.statistic(false, false, true);
 }
 void test10() {
-  CWN F(100);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(7, 8);
-  F.insert(1, 3);
-  F.insert(5, 7);
-  F.insert(1, 5);
+  SCCWN F(100);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 7);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(13, 14);
-  F.insert(15, 16);
-  F.insert(9, 11);
-  F.insert(13, 15);
-  F.insert(9, 13);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 16);
+  F.insertToBlock(9, 11);
+  F.insertToBlock(13, 15);
+  F.insertToBlock(9, 13);
 
-  F.insert(17, 18);
-  F.insert(19, 20);
-  F.insert(21, 22);
-  F.insert(23, 24);
-  F.insert(17, 19);
-  F.insert(21, 23);
-  F.insert(17, 21);
-  F.insert(9, 17);
+  F.insertToBlock(17, 18);
+  F.insertToBlock(19, 20);
+  F.insertToBlock(21, 22);
+  F.insertToBlock(23, 24);
+  F.insertToBlock(17, 19);
+  F.insertToBlock(21, 23);
+  F.insertToBlock(17, 21);
+  F.insertToBlock(9, 17);
 
-  F.insert(1, 9);
-  F.insert(9, 25);
+  F.insertToBlock(1, 9);
+  F.insertToBlock(9, 25);
   // F.statistic(false, false, true);
-  F.insert(1, 25);
+  F.insertToBlock(1, 25);
   // F.statistic(false, false, true);
 }
 void test11() {
-  CWN F(100);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(7, 8);
-  F.insert(1, 3);
-  F.insert(5, 7);
-  F.insert(1, 5);
+  SCCWN F(100);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 7);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(13, 14);
-  F.insert(15, 16);
-  F.insert(9, 11);
-  F.insert(13, 15);
-  F.insert(9, 13);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 16);
+  F.insertToBlock(9, 11);
+  F.insertToBlock(13, 15);
+  F.insertToBlock(9, 13);
 
-  F.insert(17, 18);
-  F.insert(19, 20);
-  F.insert(21, 22);
-  F.insert(23, 24);
-  F.insert(17, 19);
-  F.insert(21, 23);
-  F.insert(17, 21);
-  F.insert(9, 17);
+  F.insertToBlock(17, 18);
+  F.insertToBlock(19, 20);
+  F.insertToBlock(21, 22);
+  F.insertToBlock(23, 24);
+  F.insertToBlock(17, 19);
+  F.insertToBlock(21, 23);
+  F.insertToBlock(17, 21);
+  F.insertToBlock(9, 17);
 
-  F.insert(1, 9);
+  F.insertToBlock(1, 9);
 
   // F.statistic(false, false, true);
-  F.insert(1, 25);
+  F.insertToBlock(1, 25);
   // F.statistic(false, false, true);
 }
 void test12() {
-  CWN F(120);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(7, 8);
-  F.insert(1, 3);
-  F.insert(5, 7);
-  F.insert(1, 5);
+  SCCWN F(120);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 7);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(9, 11);
-  F.insert(13, 14);
-  F.insert(15, 16);
-  F.insert(13, 15);
-  F.insert(9, 13);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(9, 11);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 16);
+  F.insertToBlock(13, 15);
+  F.insertToBlock(9, 13);
 
-  F.insert(17, 18);
-  F.insert(19, 20);
-  F.insert(21, 22);
-  F.insert(23, 24);
-  F.insert(21, 23);
-  F.insert(17, 20);
-  F.insert(17, 24);
+  F.insertToBlock(17, 18);
+  F.insertToBlock(19, 20);
+  F.insertToBlock(21, 22);
+  F.insertToBlock(23, 24);
+  F.insertToBlock(21, 23);
+  F.insertToBlock(17, 20);
+  F.insertToBlock(17, 24);
 
-  F.insert(25, 26);
-  F.insert(27, 28);
-  F.insert(29, 30);
-  F.insert(31, 32);
-  F.insert(25, 27);
-  F.insert(29, 31);
-  F.insert(25, 32);
+  F.insertToBlock(25, 26);
+  F.insertToBlock(27, 28);
+  F.insertToBlock(29, 30);
+  F.insertToBlock(31, 32);
+  F.insertToBlock(25, 27);
+  F.insertToBlock(29, 31);
+  F.insertToBlock(25, 32);
 
-  F.insert(1, 9);
-  F.insert(17, 25);
-  F.insert(17, 1);
+  F.insertToBlock(1, 9);
+  F.insertToBlock(17, 25);
+  F.insertToBlock(17, 1);
   // F.statistic(false, false, true);
 
-  F.insert(33, 34);
-  F.insert(35, 36);
-  F.insert(33, 35);
-  F.insert(1, 33);
+  F.insertToBlock(33, 34);
+  F.insertToBlock(35, 36);
+  F.insertToBlock(33, 35);
+  F.insertToBlock(1, 33);
   // F.statistic(false, false, true);
 
-  F.insert(37, 33);
+  F.insertToBlock(37, 33);
   // F.statistic(false, false, true);
-  F.insert(38, 33);
-  // F.statistic(false, false, true);
-
-  F.insert(39, 40);
-  F.insert(39, 1);
+  F.insertToBlock(38, 33);
   // F.statistic(false, false, true);
 
-  F.insert(39, 33);
+  F.insertToBlock(39, 40);
+  F.insertToBlock(39, 1);
+  // F.statistic(false, false, true);
+
+  F.insertToBlock(39, 33);
   // F.statistic(false, false, true);
 }
 void test13() {
-  CWN F(120);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(7, 8);
-  F.insert(1, 3);
-  F.insert(5, 7);
-  F.insert(1, 5);
+  SCCWN F(120);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 7);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(9, 11);
-  F.insert(13, 14);
-  F.insert(15, 16);
-  F.insert(13, 15);
-  F.insert(9, 13);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(9, 11);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 16);
+  F.insertToBlock(13, 15);
+  F.insertToBlock(9, 13);
 
-  F.insert(17, 18);
-  F.insert(19, 20);
-  F.insert(21, 22);
-  F.insert(23, 24);
-  F.insert(21, 23);
-  F.insert(17, 20);
-  F.insert(17, 24);
+  F.insertToBlock(17, 18);
+  F.insertToBlock(19, 20);
+  F.insertToBlock(21, 22);
+  F.insertToBlock(23, 24);
+  F.insertToBlock(21, 23);
+  F.insertToBlock(17, 20);
+  F.insertToBlock(17, 24);
 
-  F.insert(25, 26);
-  F.insert(27, 28);
-  F.insert(29, 30);
-  F.insert(31, 32);
-  F.insert(25, 27);
-  F.insert(29, 31);
-  F.insert(25, 32);
+  F.insertToBlock(25, 26);
+  F.insertToBlock(27, 28);
+  F.insertToBlock(29, 30);
+  F.insertToBlock(31, 32);
+  F.insertToBlock(25, 27);
+  F.insertToBlock(29, 31);
+  F.insertToBlock(25, 32);
   // F.statistic(false, false, true);
 
-  F.insert(1, 9);
-  F.insert(17, 25);
-  F.insert(17, 1);
+  F.insertToBlock(1, 9);
+  F.insertToBlock(17, 25);
+  F.insertToBlock(17, 1);
 
-  F.insert(33, 34);
-  F.insert(35, 36);
-  F.insert(33, 35);
-  F.insert(1, 33);
+  F.insertToBlock(33, 34);
+  F.insertToBlock(35, 36);
+  F.insertToBlock(33, 35);
+  F.insertToBlock(1, 33);
   // F.statistic(false, false, true);
 
-  F.insert(37, 33);
-  F.insert(38, 33);
+  F.insertToBlock(37, 33);
+  F.insertToBlock(38, 33);
   // F.statistic(false, false, true);
 
-  F.insert(39, 40);
-  F.insert(39, 1);
+  F.insertToBlock(39, 40);
+  F.insertToBlock(39, 1);
   // F.statistic(false, false, true);
 
-  F.insert(39, 38);
+  F.insertToBlock(39, 38);
   // F.statistic(false, false, true);
 }
 void test14() {
-  CWN F(120);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(7, 8);
-  F.insert(1, 3);
-  F.insert(5, 7);
-  F.insert(1, 5);
+  SCCWN F(120);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(1, 3);
+  F.insertToBlock(5, 7);
+  F.insertToBlock(1, 5);
 
-  F.insert(9, 10);
-  F.insert(11, 12);
-  F.insert(9, 11);
-  F.insert(13, 14);
-  F.insert(15, 16);
-  F.insert(13, 15);
-  F.insert(9, 13);
+  F.insertToBlock(9, 10);
+  F.insertToBlock(11, 12);
+  F.insertToBlock(9, 11);
+  F.insertToBlock(13, 14);
+  F.insertToBlock(15, 16);
+  F.insertToBlock(13, 15);
+  F.insertToBlock(9, 13);
 
-  F.insert(17, 18);
-  F.insert(19, 20);
-  F.insert(21, 22);
-  F.insert(23, 24);
-  F.insert(21, 23);
-  F.insert(17, 20);
-  F.insert(17, 24);
+  F.insertToBlock(17, 18);
+  F.insertToBlock(19, 20);
+  F.insertToBlock(21, 22);
+  F.insertToBlock(23, 24);
+  F.insertToBlock(21, 23);
+  F.insertToBlock(17, 20);
+  F.insertToBlock(17, 24);
 
-  F.insert(25, 26);
-  F.insert(27, 28);
-  F.insert(29, 30);
-  F.insert(31, 32);
-  F.insert(25, 27);
-  F.insert(29, 31);
-  F.insert(25, 32);
+  F.insertToBlock(25, 26);
+  F.insertToBlock(27, 28);
+  F.insertToBlock(29, 30);
+  F.insertToBlock(31, 32);
+  F.insertToBlock(25, 27);
+  F.insertToBlock(29, 31);
+  F.insertToBlock(25, 32);
   // F.statistic(false, false, true);
 
-  F.insert(1, 9);
-  F.insert(17, 25);
-  F.insert(17, 1);
+  F.insertToBlock(1, 9);
+  F.insertToBlock(17, 25);
+  F.insertToBlock(17, 1);
 
-  F.insert(33, 34);
-  F.insert(35, 36);
-  F.insert(33, 35);
-  F.insert(33, 1);
+  F.insertToBlock(33, 34);
+  F.insertToBlock(35, 36);
+  F.insertToBlock(33, 35);
+  F.insertToBlock(33, 1);
 
-  F.insert(37, 38);
-  F.insert(38, 1);
-  F.insert(39, 33);
+  F.insertToBlock(37, 38);
+  F.insertToBlock(38, 1);
+  F.insertToBlock(39, 33);
 
-  F.insert(61, 62);
-  F.insert(61, 63);
+  F.insertToBlock(61, 62);
+  F.insertToBlock(61, 63);
   // F.statistic(false, false, true);
-  F.insert(63, 39);
+  F.insertToBlock(63, 39);
   // F.statistic(false, false, true);
   F.remove(1, 2);
   F.remove(3, 4);
@@ -453,14 +453,14 @@ void test14() {
   F.remove(63, 39);
 }
 void test15() {  // lp == lson
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(5, 6);
-  F.insert(2, 6);
-  F.insert(7, 2);
-  F.insert(8, 4);
-  F.insert(3, 1);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(2, 6);
+  F.insertToBlock(7, 2);
+  F.insertToBlock(8, 4);
+  F.insertToBlock(3, 1);
   F.remove(1, 2);
   F.remove(3, 4);
   F.remove(5, 6);
@@ -471,14 +471,14 @@ void test15() {  // lp == lson
   F.run_stat(".", true);
 }
 void test16() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(2, 4);
-  F.insert(5, 6);
-  F.insert(7, 6);
-  F.insert(8, 2);
-  F.insert(3, 6);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(2, 4);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 6);
+  F.insertToBlock(8, 2);
+  F.insertToBlock(3, 6);
   F.remove(1, 2);
   F.remove(3, 4);
   F.remove(2, 4);
@@ -489,11 +489,11 @@ void test16() {
   F.run_stat(".", true);
 }
 void test17() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(3, 1);
-  F.insert(5, 2);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(3, 1);
+  F.insertToBlock(5, 2);
   F.remove(1, 2);
   F.remove(3, 4);
   F.remove(3, 1);
@@ -501,12 +501,12 @@ void test17() {
   F.run_stat(".", true);
 }
 void test18() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 2);
-  F.insert(4, 1);
-  F.insert(5, 4);
-  F.insert(6, 3);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 2);
+  F.insertToBlock(4, 1);
+  F.insertToBlock(5, 4);
+  F.insertToBlock(6, 3);
   F.remove(1, 2);
   F.remove(3, 2);
   F.remove(4, 1);
@@ -515,12 +515,12 @@ void test18() {
   F.run_stat(".", true);
 }
 void test19() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(3, 1);
-  F.insert(3, 5);
-  F.insert(4, 2);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(3, 1);
+  F.insertToBlock(3, 5);
+  F.insertToBlock(4, 2);
   F.remove(1, 2);
   F.remove(3, 4);
   F.remove(3, 1);
@@ -529,25 +529,25 @@ void test19() {
   F.run_stat(".", true);
 }
 void test20() {
-  CWN F(20);
-  F.insert(4, 3);
-  F.insert(2, 4);
-  F.insert(1, 5);
-  F.insert(3, 6);
-  F.insert(2, 3);
-  F.insert(5, 4);
+  SCCWN F(20);
+  F.insertToBlock(4, 3);
+  F.insertToBlock(2, 4);
+  F.insertToBlock(1, 5);
+  F.insertToBlock(3, 6);
+  F.insertToBlock(2, 3);
+  F.insertToBlock(5, 4);
   F.remove(4, 3);
   // F.remove(2, 4);
   F.run_stat(".", true);
 }
 void test21() {
-  CWN F(10);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(4, 2);
-  F.insert(1, 5);
-  F.insert(5, 6);
-  F.insert(7, 5);
+  SCCWN F(10);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(4, 2);
+  F.insertToBlock(1, 5);
+  F.insertToBlock(5, 6);
+  F.insertToBlock(7, 5);
   F.run_stat(".", true);
   F.remove(1, 2);
   F.run_stat(".", true);
@@ -560,15 +560,16 @@ void test21() {
   F.run_stat(".", true);
 }
 void test22() {
-  CWN F(20);
-  F.insert(1, 2);
-  F.insert(3, 4);
-  F.insert(3, 5);
-  F.insert(6, 1);
-  F.insert(7, 2);
-  F.insert(2, 8);
-  F.insert(7, 8);
-  F.insert(6, 5);
+  SCCWN F(20);
+  F.insertToBlock(1, 2);
+  F.insertToBlock(3, 4);
+  F.insertToBlock(3, 5);
+  F.insertToBlock(6, 1);
+  F.insertToBlock(7, 2);
+  F.insertToBlock(2, 8);
+  F.insertToBlock(7, 8);
+  F.insertToBlock(6, 5);
+  F.run_stat(".", true);
   F.remove(1, 2);
   F.run_stat(".", true);
   F.remove(3, 4);
@@ -588,7 +589,7 @@ void test22() {
 void test23() {
   // size_t n = 64;
   size_t n = 2048;
-  CWN F(n);
+  SCCWN F(n);
   F.lmax = std::log2(n) + 1;
   parlay::sequence<std::pair<size_t, size_t>> e;
   for (size_t i = 1; i < n - 1; i++)
@@ -598,17 +599,24 @@ void test23() {
   // for (size_t i = 0; i < ins.size(); i++)
   //   std::cout << ins[i].first << " " << ins[i].second << std::endl;
   auto ins = e.cut(0, 1000000);
-  auto del = parlay::random_shuffle(ins);
+  // auto ins = e;
   for (size_t i = 0; i < ins.size(); i++)
-    F.insert(ins[i].first, ins[i].second);
+    F.insertToBlock(ins[i].first, ins[i].second);
   // F.run_stat(".", true);
-  for (size_t i = 0; i < del.size(); i++) {
-    F.remove(del[i].first, del[i].second);
+  auto del = ins.cut(0, 500000);
+  auto db1 = parlay::random_shuffle(del);
+  for (size_t i = 0; i < db1.size(); i++) {
+    F.remove(db1[i].first, db1[i].second);
   }
+  auto ib1 = parlay::random_shuffle(db1);
+  for (size_t i = 0; i < ib1.size(); i++)
+    F.insertToBlock(ib1[i].first, ib1[i].second);
+  for (size_t i = 0; i < ins.size(); i++)
+    F.remove(ins[i].first, ins[i].second);
 }
 // void test_local() {
 //   size_t n = 2049280;
-//   CWN F(n);
+//   SCCWN F(n);
 //   F.lmax = std::log2(n) + 1;
 
 //   std::ifstream fin;
@@ -616,7 +624,7 @@ void test23() {
 //   while (!fin.eof()) {
 //     size_t x, y;
 //     fin >> x >> y;
-//     F.insert(x, y);
+//     F.insertToBlock(x, y);
 //   }
 //   fin.close();
 
@@ -636,13 +644,13 @@ int main() {
   // test4();
   // // test5();
   // test6();
-  // // test7();
-  // // test8();
-  // // test9();
-  // // test10();
-  // // test11();
-  // // test12();
-  // // test13();
+  // test7();
+  // test8();
+  // test9();
+  // test10();
+  // test11();
+  // test12();
+  // test13();
   // test14();
   // test15();
   // test16();

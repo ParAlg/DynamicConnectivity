@@ -1,4 +1,4 @@
-#include "SCCWN.hpp"
+#include "SeqBF.hpp"
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <parlay/internal/get_time.h>
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
   std::ofstream fins, fdel;
   t.start();
-  SCCWN F(n);
+  SeqBF F(n);
   F.lmax = std::ceil(std::log2(n));
   assert(F.lmax < 64);
   t.next("initialization");
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
-      F.insertToBlock(u, v);
+      F.insert(u, v);
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
-      F.remove(u, v);
+      // F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
     for (size_t j = 0; j < queries_del[i].size(); j++) {
