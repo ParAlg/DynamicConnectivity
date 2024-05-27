@@ -92,6 +92,20 @@ class DynamicForest {
   // Analagous to `GetMarkedVertexInTree`.
   std::optional<Vertex> GetMarkedVertexInTree(Vertex v) const;
 
+  int64_t space() {
+    int64_t space = 0;
+    space += sizeof(int64_t);
+    space += sizeof(std::vector<sequence::Element>);
+    space += vertices_.size() * sizeof(sequence::Element);
+    space += sizeof(std::vector<sequence::Element>);
+    space += edge_elements_.size() * sizeof(sequence::Element);
+    space += sizeof(std::vector<sequence::Element*>);
+    space += free_edge_elements_.size() * sizeof(sequence::Element*);
+    space += sizeof(std::unordered_map<UndirectedEdge,detail::UndirectedEdgeElements,UndirectedEdgeHash>);
+    space += edges_.size() * (sizeof(UndirectedEdge) + sizeof(detail::UndirectedEdgeElements));
+    return space;
+  }
+
  private:
   detail::UndirectedEdgeElements
   AllocateEdgeElements(const UndirectedEdge& edge);

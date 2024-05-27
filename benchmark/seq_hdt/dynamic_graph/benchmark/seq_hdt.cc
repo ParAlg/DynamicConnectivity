@@ -36,6 +36,9 @@ int main(int argc, char** argv) {
   auto E = parlay::random_shuffle(parlay::remove_duplicates(utils::to_edges(G)));
   vertex m = E.size();
 
+  std::cout << "n=" << n << std::endl;
+  std::cout << "m=" << m << std::endl;
+
   auto batch_size = parlay::tabulate(num_batches + 1, [&](size_t i) { return m / num_batches * i; });
   batch_size[num_batches] = m;
 
@@ -57,6 +60,7 @@ int main(int argc, char** argv) {
   t.start();
   DynamicConnectivity graph(n);
   t.next("initialization");
+  std::cout << std::endl << "Space: " << graph.space() << std::endl << std::endl;
   for (size_t i = 0; i < num_batches; i++) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
@@ -67,6 +71,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < queries_ins[i].size(); j++)
       Ans_ins[i][j] = graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
     t.next("Answer queries #" + std::to_string(i));
+    std::cout << std::endl << "Space: " << graph.space() << std::endl << std::endl;
   }
 
   for (size_t i = 0; i < num_batches; i++) {
@@ -79,6 +84,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < queries_del[i].size(); j++)
       Ans_del[i][j] = graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
     t.next("Answer queries #" + std::to_string(i));
+    std::cout << std::endl << "Space: " << graph.space() << std::endl << std::endl;
   }
 
   std::ofstream faq;

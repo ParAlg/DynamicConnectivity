@@ -114,6 +114,25 @@ class DynamicConnectivity {
    */
   void DeleteEdge(const UndirectedEdge& edge);
 
+  int64_t space() {
+    int64_t space = 0;
+    space += sizeof(int64_t);
+    space += sizeof(std::vector<DynamicForest>);
+    for (int i = 0; i < spanning_forests_.size(); i++)
+      space += spanning_forests_[i].space();
+    space += sizeof(std::vector<std::vector<std::unordered_set<Vertex>>>);
+    for (auto level : non_tree_adjacency_lists_) {
+      space += sizeof(std::vector<std::unordered_set<Vertex>>);
+      for (auto adj_list : level) {
+        space += sizeof(std::unordered_set<Vertex>);
+        space += adj_list.size() * sizeof(Vertex);
+      }
+    }
+    space += sizeof(std::unordered_map<UndirectedEdge,detail::EdgeInfo,UndirectedEdgeHash>);
+    space += edges_.size() * (sizeof(UndirectedEdge) + sizeof(detail::EdgeInfo));
+    return space;
+  }
+
  private:
   void AddNonTreeEdge(const UndirectedEdge& edge);
   void AddTreeEdge(const UndirectedEdge& edge);
