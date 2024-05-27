@@ -51,40 +51,64 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
   std::ofstream fins, fdel;
 
+  bool do_queries = true;
+
   t.start();
   std::cout << "Using cluster forest: " << (use_compression ? "COMPRESSED" : "UNCOMPRESSED") << std::endl;
   std::cout << "Insertions: " << (blocked_insert ? "BLOCKED" : "ROOT") << std::endl;
 
   if (use_compression) {
     SCCWN F(n);
-    // if (blocked_insert) F.blocked_insert = true;
     F.lmax = std::ceil(std::log2(n));
     if (blocked_insert) F.blocked_insert = true;
     assert(F.lmax < 64);
-    // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+    t.next("Stat collecting time");
+
     for (size_t i = 0; i < num_batches; i++) { // DO INSERTIONS
-      std::cout << "INSERTING BATCH " << i << std::endl;
+      std::cout << std::endl << "INSERTING BATCH " << i << std::endl;
       for (size_t j = 0; j < batches_ins[i].size(); j++) {
         long u = batches_ins[i][j].first;
         long v = batches_ins[i][j].second;
         F.insert(u, v);
       }
       t.next("Insert batch #" + std::to_string(i));
-      // std::cout << std::endl; F.print_cg_sizes();
-      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+
+      if (do_queries) {
+        std::cout << "Doing " << queries_ins[i].size() << " queries." << std::endl;
+        for (size_t j = 0; j < queries_ins[i].size(); j++) {
+          Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
+        }
+        t.next("Answer queries #" + std::to_string(i));
+      }
+
+      std::cout << std::endl; F.print_cg_sizes();
+      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
       // F.run_stat("./", true, false, false);
+      t.next("Stat collecting time");
     }
+
     for (size_t i = 0; i < num_batches; i++) { // DO DELETIONS
-      std::cout << "DELETING BATCH " << i << std::endl;
+      std::cout << std::endl << "DELETING BATCH " << i << std::endl;
       for (size_t j = 0; j < batches_del[i].size(); j++) {
         long u = batches_del[i][j].first;
         long v = batches_del[i][j].second;
         F.remove(u, v);
       }
       t.next("Delete batch #" + std::to_string(i));
-      // std::cout << std::endl; F.print_cg_sizes();
-      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+
+      if (do_queries) {
+        std::cout << "Doing " << queries_del[i].size() << " queries." << std::endl;
+        for (size_t j = 0; j < queries_del[i].size(); j++) {
+          Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+        }
+        t.next("Answer queries #" + std::to_string(i));
+      }
+
+      std::cout << std::endl; F.print_cg_sizes();
+      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
       // F.run_stat("./", true, false, false);
+      t.next("Stat collecting time");
     }
   }
   
@@ -93,49 +117,55 @@ int main(int argc, char** argv) {
     F.lmax = std::ceil(std::log2(n));
     if (blocked_insert) F.blocked_insert = true;
     assert(F.lmax < 64);
-    // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+    t.next("Stat collecting time");
+
     for (size_t i = 0; i < num_batches; i++) { // DO INSERTIONS
-      std::cout << "INSERTING BATCH " << i << std::endl;
+      std::cout << std::endl << "INSERTING BATCH " << i << std::endl;
       for (size_t j = 0; j < batches_ins[i].size(); j++) {
         long u = batches_ins[i][j].first;
         long v = batches_ins[i][j].second;
         F.insert(u, v);
       }
       t.next("Insert batch #" + std::to_string(i));
-      // std::cout << std::endl; F.print_cg_sizes();
-      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+
+      if (do_queries) {
+        std::cout << "Doing " << queries_ins[i].size() << " queries." << std::endl;
+        for (size_t j = 0; j < queries_ins[i].size(); j++) {
+          Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
+        }
+        t.next("Answer queries #" + std::to_string(i));
+      }
+
+      std::cout << std::endl; F.print_cg_sizes();
+      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
       // F.run_stat("./", true, false, false);
+      t.next("Stat collecting time");
     }
+
     for (size_t i = 0; i < num_batches; i++) { // DO DELETIONS
-      std::cout << "DELETING BATCH " << i << std::endl;
+      std::cout << std::endl << "DELETING BATCH " << i << std::endl;
       for (size_t j = 0; j < batches_del[i].size(); j++) {
         long u = batches_del[i][j].first;
         long v = batches_del[i][j].second;
         F.remove(u, v);
       }
       t.next("Delete batch #" + std::to_string(i));
-      // std::cout << std::endl; F.print_cg_sizes();
-      // std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl << std::endl;
+
+      if (do_queries) {
+        std::cout << "Doing " << queries_del[i].size() << " queries." << std::endl;
+        for (size_t j = 0; j < queries_del[i].size(); j++) {
+          Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+        }
+        t.next("Answer queries #" + std::to_string(i));
+      }
+
+      std::cout << std::endl; F.print_cg_sizes();
+      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
       // F.run_stat("./", true, false, false);
+      t.next("Stat collecting time");
     }
   }
 
-  // DO QUERIES
-  // auto x = Out.find_first_of(".");
-  // auto s = Out.substr(0, x);
-  // // F.run_stat(s);
-  // std::ofstream faq;
-  // faq.open(Out);
-  // if (!faq.is_open()) {
-  //   std::cout << "cannot open output file\n";
-  //   std::abort();
-  // }
-  // for (size_t i = 0; i < num_batches; i++)
-  //   for (size_t j = 0; j < queries_ins[i].size(); j++)
-  //     faq << Ans_ins[i][j];
-  // for (size_t i = 0; i < num_batches; i++)
-  //   for (size_t j = 0; j < queries_del[i].size(); j++)
-  //     faq << Ans_del[i][j];
-  // faq.close();
-  // return 0;
+  return 0;
 }
