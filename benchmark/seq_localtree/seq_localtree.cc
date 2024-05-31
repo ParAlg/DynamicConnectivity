@@ -54,7 +54,9 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
   std::ofstream fins, fdel;
 
-  bool do_queries = true;
+  bool do_queries = false;
+  bool collect_stats = false;
+  bool measure_space = false;
 
   t.start();
   std::cout << "Using cluster forest: " << (use_compression ? "COMPRESSED" : "UNCOMPRESSED") << std::endl;
@@ -65,7 +67,7 @@ int main(int argc, char** argv) {
     F.lmax = std::ceil(std::log2(n));
     if (blocked_insert) F.blocked_insert = true;
     assert(F.lmax < 64);
-    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+    if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
     t.next("Stat collecting time");
 
     for (size_t i = 0; i < num_batches; i++) { // DO INSERTIONS
@@ -85,10 +87,9 @@ int main(int argc, char** argv) {
         t.next("Answer queries #" + std::to_string(i));
       }
 
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
-      // F.run_stat("./", true, false, false);
-      t.next("Stat collecting time");
+      if (collect_stats) {std::cout << std::endl; F.print_cg_sizes();}
+      if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+      if (collect_stats || measure_space) t.next("Stat collecting time");
     }
 
     for (size_t i = 0; i < num_batches; i++) { // DO DELETIONS
@@ -108,10 +109,9 @@ int main(int argc, char** argv) {
         t.next("Answer queries #" + std::to_string(i));
       }
 
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
-      // F.run_stat("./", true, false, false);
-      t.next("Stat collecting time");
+      if (collect_stats) {std::cout << std::endl; F.print_cg_sizes();}
+      if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+      if (collect_stats || measure_space) t.next("Stat collecting time");
     }
   }
   
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
     F.lmax = std::ceil(std::log2(n));
     if (blocked_insert) F.blocked_insert = true;
     assert(F.lmax < 64);
-    std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+    if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
     t.next("Stat collecting time");
 
     for (size_t i = 0; i < num_batches; i++) { // DO INSERTIONS
@@ -140,10 +140,9 @@ int main(int argc, char** argv) {
         t.next("Answer queries #" + std::to_string(i));
       }
 
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
-      // F.run_stat("./", true, false, false);
-      t.next("Stat collecting time");
+      if (collect_stats) {std::cout << std::endl; F.print_cg_sizes();}
+      if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+      if (collect_stats || measure_space) t.next("Stat collecting time");
     }
 
     for (size_t i = 0; i < num_batches; i++) { // DO DELETIONS
@@ -163,10 +162,9 @@ int main(int argc, char** argv) {
         t.next("Answer queries #" + std::to_string(i));
       }
 
-      std::cout << std::endl; F.print_cg_sizes();
-      std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
-      // F.run_stat("./", true, false, false);
-      t.next("Stat collecting time");
+      if (collect_stats) {std::cout << std::endl; F.print_cg_sizes();}
+      if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
+      if (collect_stats || measure_space) t.next("Stat collecting time");
     }
   }
 
