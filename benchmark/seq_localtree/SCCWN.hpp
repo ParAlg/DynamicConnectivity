@@ -199,11 +199,15 @@ inline void SCCWN::insert(size_t u, size_t v) {
       assert(localTree::getParent(Cu) == p && localTree::getParent(Cv) == p);
       if (Cu->getLevel() == p->getLevel() - 1 || Cv->getLevel() == p->getLevel() - 1) {
         if (Cu->getLevel() == Cv->getLevel()) { // Merge two nodes directly under parent
-          // NEED TO RECOMPRESS
           localTree::deleteFromParent(Cu);
           localTree::deleteFromParent(Cv);
           localTree::merge(Cu, Cv);
-          localTree::addChild(p, Cu);
+          if (p->getSize() == 0) {
+            auto gp = localTree::getParent(p);
+            localTree::deleteFromParent(p);
+            localTree::addChild(gp, Cu);
+            delete p;
+          } else localTree::addChild(p, Cu);
           iu++;
           iv++;
           Cu = *iu;
