@@ -23,6 +23,7 @@ class SCCWN {
   parlay::sequence<localTree *> leaves;
   SCCWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
   ~SCCWN() { run_stat("./", false, true, false); };
+  void insert(size_t u, size_t v);
   void insertToLCA(size_t u, size_t v);
   void insertToRoot(size_t u, size_t v);
   void insertToBlock(size_t u, size_t v);
@@ -225,6 +226,114 @@ inline localTree *SCCWN::pushDown(parlay::sequence<localTree *> &pu, size_t uter
   }
   assert(localTree::getParent(pu[uter]) == localTree::getParent(pv[vter]));
   return localTree::getParent(pu[uter]);
+}
+inline void SCCWN::insert(size_t u, size_t v) {
+  if (leaves[u] == nullptr) leaves[u] = new localTree(u);
+  if (leaves[v] == nullptr) leaves[v] = new localTree(v);
+  auto pv = localTree::getRootPath(leaves[v]);
+  auto pu = localTree::getRootPath(leaves[u]);
+  auto iu = pu.rbegin();
+  auto iv = pv.rbegin();
+  size_t l;
+  auto Cu = *iu;
+  auto Cv = *iv;
+  if (*iu != *iv) {
+    size_t max_l = std::max(Cu->getLevel(), Cv->getLevel());
+    if (Cu->getSize() + Cv->getSize() <= (1 << max_l)) {
+      if (Cu->getLevel() > Cv->getLevel()) {
+        localTree::addChild(Cu, Cv);
+        l = Cu->getLevel();
+        iu++;
+        Cu = *iu;
+      } else if (Cu->getLevel() < Cv->getLevel()) {
+        localTree::addChild(Cv, Cu);
+        l = Cv->getLevel();
+        iv++;
+        Cv = *iv;
+      } else {
+        localTree::merge(Cu, Cv);
+        l = Cu->getLevel();
+        iu++;
+        iv++;
+        Cu = *iu;
+        Cv = *iv;
+      }
+    } else {
+      localTree *C;
+      if (Cu->getLevel() >= Cv->getLevel())
+        C = new localTree(Cu, Cv);
+      else
+        C = new localTree(Cv, Cu);
+      l = C->getLevel();
+    }
+  } else {
+    auto lca = *iu;
+    while (*iu == *iv) {
+      lca = *iu;
+      iu++;
+      iv++;
+    }
+    Cu = *iu;
+    Cv = *iv;
+    l = lca->getLevel();
+  }
+
+  localTree *p = localTree::getParent(Cu);
+  while (Cu->getSize() + Cv->getSize() <= (1 << (p->getLevel() - 1))) {
+    assert(Cu != Cv);
+    assert(localTree::getParent(Cu) == p && localTree::getParent(Cv) == p);
+    if (Cu->getLevel() == p->getLevel() - 1 || Cv->getLevel() == p->getLevel() - 1) {
+      if (Cu->getLevel() == Cv->getLevel()) {  // Merge two nodes directly under parent
+        // NEED TO RECOMPRESS
+        localTree::deleteFromParent(Cu);
+        localTree::deleteFromParent(Cv);
+        localTree::merge(Cu, Cv);
+        localTree::addChild(p, Cu);
+        iu++;
+        iv++;
+        Cu = *iu;
+        Cv = *iv;
+      } else if (Cu->getLevel() > Cv->getLevel()) {  // If one node directly under parent add
+                                                     // other as child
+        if (Cu->getSize() + Cv->getSize() > (1 << Cu->getLevel())) break;
+        localTree::deleteFromParent(Cu);
+        localTree::deleteFromParent(Cv);
+        localTree::addChild(Cu, Cv);
+        localTree::addChild(p, Cu);
+        iu++;
+        Cu = *iu;
+      } else {  // If one node directly under parent add other as child
+        if (Cv->getSize() + Cu->getSize() > (1 << Cv->getLevel())) break;
+        localTree::deleteFromParent(Cu);
+        localTree::deleteFromParent(Cv);
+        localTree::addChild(Cv, Cu);
+        localTree::addChild(p, Cv);
+        iv++;
+        Cv = *iv;
+      }
+    } else {  // For both nodes far below parent create new parent as far down
+              // as possible
+      localTree::deleteFromParent(Cu);
+      localTree::deleteFromParent(Cv);
+      localTree *C;
+      if (Cu->getLevel() >= Cv->getLevel())
+        C = new localTree(Cu, Cv);
+      else
+        C = new localTree(Cv, Cu);
+      C->setLevel(std::max(std::max(Cu->getLevel(), Cv->getLevel()) + 1, (size_t)std::ceil(std::log2(C->getSize()))));
+      localTree::addChild(p, C);
+    }
+    if (iu == pu.rend() || iv == pv.rend()) break;
+    p = localTree::getParent(Cu);
+  }
+  auto lu = 1;
+  auto lv = 1;
+  if (iu != pu.rend()) lu = Cu->getLevel();
+  if (iv != pv.rend()) lv = Cv->getLevel();
+  l = std::max(lu, lv) + 1;
+
+  leaves[u]->insertToLeaf(v, l);
+  leaves[v]->insertToLeaf(u, l);
 }
 inline void SCCWN::remove(size_t u, size_t v) {
   // std::cout << u << " " << v << std::endl;

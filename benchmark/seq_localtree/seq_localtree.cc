@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
-      F.insertToBlock(u, v);
+      F.insert(u, v);
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
   }
   auto x = Out.find_first_of(".");
   auto s = Out.substr(0, x);
-  F.run_stat(s, true);
+  // F.run_stat(s, true);
   std::ofstream faq;
   faq.open(Out);
   if (!faq.is_open()) {
