@@ -602,7 +602,8 @@ void test23() {
   // auto ins = e;
   for (size_t i = 0; i < ins.size(); i++)
     F.insertToBlock(ins[i].first, ins[i].second);
-  // F.run_stat(".", true);
+  F.run_stat("./", true);
+  F.checkLevel();
   auto del = ins.cut(0, 500000);
   auto db1 = parlay::random_shuffle(del);
   for (size_t i = 0; i < db1.size(); i++) {

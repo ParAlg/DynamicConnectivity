@@ -26,4 +26,4 @@ class Radius {
   Radius(size_t _f, size_t _ru, size_t _eu, size_t _cu, size_t _rv, size_t _ev, size_t _cv, size_t _l) :
       found(_f), nRu(_ru), nEu(_eu), nCu(_cu), nRv(_rv), nEv(_ev), nCv(_cv), level(_l) {}
 };
-static parlay::sequence<Radius> Rstat;
+inline parlay::sequence<Radius> Rstat;

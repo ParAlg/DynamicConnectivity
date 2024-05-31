@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     std::abort();
   }
   test(instances_ins, queries_ins, num_batches, faq);
-  // test(instances_del, queries_del, num_batches, faq);
+  test(instances_del, queries_del, num_batches, faq);
   faq.close();
 
   return 0;

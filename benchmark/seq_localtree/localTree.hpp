@@ -7,6 +7,7 @@
 #include <parlay/sequence.h>
 class rankTree;
 class rankArr;
+inline size_t fanout[10000001];
 class localTree {
  private:
   friend class rankTree;
@@ -45,6 +46,7 @@ class localTree {
   static void addChild(localTree* p, localTree* son);
   static void add2Children(localTree* p, localTree* s1, localTree* s2);
   static void deleteFromParent(localTree* p);
+  static size_t getRTLen(localTree* p) { return rankTree::getRootPathLen(p->parent); }
   static localTree* getParent(localTree* r);
   static localTree* getRoot(localTree* r);
   static localTree* getLevelNode(localTree* r, size_t l);
@@ -241,13 +243,17 @@ inline void localTree::traverseTopDown(localTree* root, bool clear, bool verbose
   stats::memUsage += sizeof(localTree);
   auto leaves = rankTree::decompose(root->rTrees, clear);
   if (stat) {
-    stats st(root->level, 0, 0, root->size);
-    if (!leaves.empty()) {
-      st.fanout = leaves.size();
-      st.height = root->rTrees[root->rTrees.size() - 1]->rank - leaves[0]->rank + 1;
-    }
-    info.push_back(std::move(st));
+    // stats st(root->level, 0, 0, root->size);
+    // if (!leaves.empty()) {
+    //   st.fanout = leaves.size();
+    //   st.height = root->rTrees[root->rTrees.size() - 1]->rank - leaves[0]->rank + 1;
+    // }
+    // info.push_back(std::move(st));
   }
+  if (!leaves.empty()) fanout[leaves.size()]++;
+  if (leaves.size() == 1)
+    std::cout << root->level << " " << root->getSize() << " " << leaves[0]->descendant->level << " "
+              << leaves[0]->descendant->getSize() << std::endl;
   for (auto it : leaves) {
     traverseTopDown(it->descendant, clear, verbose, stat, info);
     if (clear) delete it;

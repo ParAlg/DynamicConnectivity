@@ -38,6 +38,7 @@ class rankTree {
   static arr insertRankTree(arr& rTrees, rankTree* T, localTree* node);
   static arr Merge(arr& r1, arr& r2, localTree* node);
   static rankTree* getRoot(rankTree* T);
+  static size_t getRootPathLen(rankTree* T);
   static localTree* updateBitMapByTree(rankTree* T, std::bitset<64> nval);
   static void updateBitMap(rankTree* T, std::bitset<64> oval, std::bitset<64> nval);
   static rankTree* fetchLeaf(rankTree* T, size_t l);
@@ -246,6 +247,14 @@ inline rankTree* rankTree::getRoot(rankTree* T) {
   while (T->parent)
     T = T->parent;
   return T;
+}
+inline size_t rankTree::getRootPathLen(rankTree* T) {
+  size_t l = 0;
+  while (T && T->parent) {
+    T = T->parent;
+    l++;
+  }
+  return l;
 }
 // if no need to go up, return nullptr
 // if reach the root, then return the node this root points to

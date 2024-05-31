@@ -179,22 +179,22 @@ inline void blocked_arr::statistic(std::string filepath = "./", bool clear = fal
   parlay::parallel_for(0, leaves.size(), [&](size_t i) {
     if (leaves[i]) roots[i] = cluster_graph::getRoot(leaves[i]);
   });
-  if (verbose) printCG(leaves);
-  if (verbose) printCG(roots);
+  // if (verbose) printCG(leaves);
+  // if (verbose) printCG(roots);
   roots = parlay::remove_duplicates(roots);
-  if (verbose) printCG(roots);
+  // if (verbose) printCG(roots);
   parlay::parallel_for(0, roots.size(), [&](size_t i) {
     if (roots[i]) {
-      std::ofstream fout;
-      if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
+      // std::ofstream fout;
+      // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
       parlay::sequence<stats> st;
       cluster_graph::cleanTopDown(roots[i], clear, st, stat, verbose);
-      if (stat) {
-        parlay::sort_inplace(st, [&](stats x, stats y) { return x.level > y.level; });
-        for (auto it : st)
-          fout << it.level << " " << it.fanout << " " << " " << it.size << std::endl;
-        fout.close();
-      }
+      // if (stat) {
+      //   parlay::sort_inplace(st, [&](stats x, stats y) { return x.level > y.level; });
+      //   for (auto it : st)
+      //     fout << it.level << " " << it.fanout << " " << " " << it.size << std::endl;
+      //   fout.close();
+      // }
     }
   });
   if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";

@@ -50,6 +50,7 @@ class localTree {
   }
   size_t getSize() { return this->size; }
   void setSize(size_t sz) { this->size = sz; }
+  localTree* getMaxChild() { return this->max_child; }
   static void merge(localTree* Cu, localTree* Cv);
   static void addChild(localTree* p, localTree* son);
   static void add2Children(localTree* p, localTree* s1, localTree* s2);
@@ -59,6 +60,7 @@ class localTree {
   static localTree* getLevelNode(localTree* r, size_t l);
   static nodeArr getRootPath(localTree* r);
   static size_t getRootPathLen(localTree* r, localTree** p);
+  static size_t getNodePathLen(localTree* r, localTree** p, size_t l);
   void insertToLeaf(size_t v, size_t l);
   void deleteEdge(size_t v, size_t l);
   size_t getEdgeLevel(size_t e);
@@ -98,15 +100,16 @@ inline localTree* localTree::getIfSingleton(localTree* r) {
   if (r->rTrees.size() > 1) return r;
   if (!r->rTrees[0]->isleaf()) return r;
   auto node = r->rTrees[0]->descendant;
-  if (node->level == 0) return r;
+  // if (node->level == 0) return r;
   delete node->parent;
-  // node->parent = nullptr;
-  // delete r;
-  r->rTrees = node->rTrees;
-  for (auto it : r->rTrees)
-    it->node = r;
-  delete node;
-  return r;
+  node->parent = nullptr;
+  delete r;
+  return node;
+  // r->rTrees = node->rTrees;
+  // for (auto it : r->rTrees)
+  //   it->node = r;
+  // delete node;
+  // return r;
 }
 inline bool localTree::ifSingleton(localTree* r) {
   if (!r) return false;
@@ -199,6 +202,14 @@ inline localTree::nodeArr localTree::getRootPath(localTree* r) {
 inline size_t localTree::getRootPathLen(localTree* r, localTree** p) {
   size_t len = 0;
   while (r) {
+    p[len++] = r;
+    r = getParent(r);
+  }
+  return len;
+}
+inline size_t localTree::getNodePathLen(localTree* r, localTree** p, size_t l) {
+  size_t len = 0;
+  while (r->level < l) {
     p[len++] = r;
     r = getParent(r);
   }

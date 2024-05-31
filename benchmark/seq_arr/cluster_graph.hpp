@@ -275,24 +275,25 @@ inline void cluster_graph::cleanTopDown(cluster_graph* v, bool clear, parlay::se
   // ASSERT_MSG(v->size <= (1 << v->level), "node size violate");
   if (v->lf && clear) delete v->lf;
   stats::memUsage += sizeof(cluster_graph) + v->NumChild * sizeof(child) + v->NumChild * sizeof(child*);
-  if (verbose) {
-    std::cout << "freeing " << v << " at level " << v->level << " with size " << v->size << std::endl;
-    for (size_t i = 0; i < v->NumChild; i++)
-      std::cout << v->nodes[i]->descent << ",";
-    std::cout << "\n\n";
-  }
-  if (runStat) {
-    stats info(v->level, v->size, v->NumChild);
-    st.push_back(std::move(info));
-  }
+  // if (verbose) {
+  //   std::cout << "freeing " << v << " at level " << v->level << " with size " << v->size << std::endl;
+  //   for (size_t i = 0; i < v->NumChild; i++)
+  //     std::cout << v->nodes[i]->descent << ",";
+  //   std::cout << "\n\n";
+  // }
+  // if (runStat) {
+  //   stats info(v->level, v->size, v->NumChild);
+  //   st.push_back(std::move(info));
+  // }
   size_t count = 0;
+  if (v->nodes.size() == 1) std::cout << v->level << std::endl;
   for (size_t i = 0; i < v->nodes.size(); i++) {
     count += v->nodes[i]->size;
     cleanTopDown(v->nodes[i]->descent, clear, st, runStat, verbose);
     if (clear) delete v->nodes[i];
   }
   if (v->level == 0) count = 1;
-  if (count != v->size) std::cout << count << "," << v->size << std::endl;
+  // if (count != v->size) std::cout << count << "," << v->size << std::endl;
   ASSERT_MSG(count == v->size, "nodes size != sum of children size");
   if (clear) {
     v->nodes.clear();

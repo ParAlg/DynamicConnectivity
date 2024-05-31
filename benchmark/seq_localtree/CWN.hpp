@@ -2,6 +2,7 @@
 #include <fstream>
 #include <queue>
 #include <unordered_set>
+inline size_t num_fetched = 0;
 class CWN {
  private:
   static std::tuple<bool, size_t, size_t> fetchEdge(std::queue<localTree *> &Q, size_t l);
@@ -21,15 +22,102 @@ class CWN {
   parlay::sequence<localTree *> leaves;
   CWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
   ~CWN() { run_stat("./", false, true, false); };
-  void insert(size_t u, size_t v);
+  void insertToRoot(size_t u, size_t v);
+  void insertToBlock(size_t u, size_t v);
+  void insertToLCA(size_t u, size_t v);
   bool is_connected(size_t u, size_t v);
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
+  void run_path_stat();
+  void checkLevel() {
+    for (size_t i = 0; i < n; i++) {
+      if (leaves[i] != nullptr) {
+        auto r = leaves[i];
+        while (localTree::getParent(r) != nullptr) {
+          if (localTree::getParent(r)->getLevel() <= r->getLevel()) {
+            std::cout << "parent level = " << localTree::getParent(r)->getLevel()
+                      << " parent size = " << localTree::getParent(r)->getSize() << " child level = " << r->getLevel()
+                      << " child size = " << r->getSize() << std::endl;
+            exit(0);
+          }
+          r = localTree::getParent(r);
+        }
+      }
+    }
+  }
 };
 inline size_t CWN::lmax = 63;
 // 0/1 num Ru,Eu,Rv,Ev,CP->getLevel()
 inline bool CWN::verbose = false;
-inline void CWN::insert(size_t u, size_t v) {
+inline void CWN::run_path_stat() {
+  const size_t szwo = 64;
+  const size_t szw = szwo * szwo;
+  size_t LenW[szw];
+  size_t LenWO[szwo];
+  memset(LenW, 0, sizeof(LenW));
+  memset(LenWO, 0, sizeof(LenWO));
+  for (size_t i = 0; i < n; i++) {
+    if (!leaves[i]) continue;
+    auto Pu = localTree::getRootPath(leaves[i]);
+    LenWO[Pu.size()]++;
+    size_t ct = 0;
+    for (auto it : Pu) {
+      ct += localTree::getRTLen(it);
+    }
+    LenW[ct + Pu.size()]++;
+  }
+  for (size_t i = 0; i < szwo; i++)
+    if (LenWO[i]) std::cout << i << " " << LenWO[i] << std::endl;
+  std::cout << "length with rank tree\n";
+  for (size_t i = 0; i < szw; i++)
+    if (LenW[i]) std::cout << i << " " << LenW[i] << std::endl;
+}
+inline void CWN::insertToBlock(size_t u, size_t v) {
+  auto g = [](size_t &u) -> localTree * {
+    localTree *r = new localTree(u);
+    localTree *l = r;
+    while (r->getLevel() < lmax) {
+      auto p = new localTree();
+      p->setLevel(r->getLevel() + 1);
+      localTree::addChild(p, r);
+      r = p;
+    }
+    return l;
+  };
+  if (leaves[u] == nullptr) leaves[u] = g(u);
+  if (leaves[v] == nullptr) leaves[v] = g(v);
+
+  auto Pu = localTree::getRootPath(leaves[u]);
+  auto Pv = localTree::getRootPath(leaves[v]);
+  auto iu = Pu.rbegin();
+  auto iv = Pv.rbegin();
+  size_t l;
+  if (*iu != *iv) {
+    l = (*iu)->getLevel();
+    localTree::merge(*iu, *iv);
+    iu++;
+    iv++;
+  }
+  while (*iu == *iv) {
+    l = (*iu)->getLevel();
+    iu++;
+    iv++;
+  }
+  while ((*iu)->getSize() + (*iv)->getSize() <= 1 << (*iu)->getLevel()) {
+    auto p = localTree::getParent(*iu);
+    assert(localTree::getParent(*iu) == localTree::getParent(*iv));
+    localTree::deleteFromParent(*iu);
+    localTree::deleteFromParent(*iv);
+    localTree::merge(*iu, *iv);
+    localTree::addChild(p, *iu);
+    l = (*iu)->getLevel();
+    iu++;
+    iv++;
+  }
+  leaves[u]->insertToLeaf(v, l);
+  leaves[v]->insertToLeaf(u, l);
+}
+inline void CWN::insertToRoot(size_t u, size_t v) {
   auto g = [](size_t &u) -> localTree * {
     localTree *r = new localTree(u);
     localTree *l = r;
@@ -122,6 +210,8 @@ inline void CWN::remove(size_t u, size_t v) {
             placeEdges(Ev, l - 1);
           }
           if (verbose) printSearch(1, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+          Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+          Rstat.push_back(std::move(info));
           return;
         } else {
           if (Hu.find(Cuv) == Hu.end()) {
@@ -176,7 +266,8 @@ inline void CWN::remove(size_t u, size_t v) {
         Cv = CP;
         CP = GP;
         l = CP ? l + 1 : 0;
-        if (verbose) printSearch(0, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+        Radius info(0, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+        Rstat.push_back(std::move(info));
         break;
       }
       auto ev = fetchEdge(Qv, l);
@@ -215,7 +306,8 @@ inline void CWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
             placeEdges(Ev, l - 1);
           }
-          if (verbose) printSearch(1, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+          Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+          Rstat.push_back(std::move(info));
           return;
         } else {
           if (Hv.find(Cuv) == Hv.end()) {
@@ -273,7 +365,8 @@ inline void CWN::remove(size_t u, size_t v) {
         Cv = _CP;
         CP = GP;
         l = CP ? l + 1 : 0;
-        if (verbose) printSearch(0, Ru.size(), Eu.size(), Rv.size(), Ev.size(), l);
+        Radius info(0, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+        Rstat.push_back(std::move(info));
         break;
       }
     }
@@ -290,26 +383,31 @@ inline void CWN::run_stat(std::string filepath, bool verbose = false, bool clear
     if (leaves[i]) parents[i] = localTree::getParent(leaves[i]);
   });
   stats::memUsage = 0;
-  if (verbose) printNodes(leaves);
-  if (verbose) printNodes(parents);
-  if (verbose) printNodes(roots);
-  roots = parlay::remove_duplicates(roots);
-  if (verbose) printNodes(roots);
-  parlay::parallel_for(0, roots.size(), [&](size_t i) {
-    if (roots[i]) {
-      std::ofstream fout;
-      if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
-      parlay::sequence<stats> info;
-      localTree::traverseTopDown(roots[i], clear, verbose, stat, info);
-      if (stat) {
-        parlay::sort_inplace(info, [&](stats x, stats y) { return x.level > y.level; });
-        for (auto it : info)
-          fout << it.level << " " << it.fanout << " " << it.height << " " << it.size << std::endl;
-        fout.close();
-      }
-    }
-  });
+  // if (verbose) printNodes(leaves);
+  // if (verbose) printNodes(parents);
+  // if (verbose) printNodes(roots);
+  // roots = parlay::remove_duplicates(roots);
+  // if (verbose) printNodes(roots);
+  // parlay::parallel_for(0, roots.size(), [&](size_t i) {
+  //   if (roots[i]) {
+  //     // std::ofstream fout;
+  //     // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
+  //     parlay::sequence<stats> info;
+  //     localTree::traverseTopDown(roots[i], clear, verbose, stat, info);
+  //     // if (stat) {
+  //     //   parlay::sort_inplace(info, [&](stats x, stats y) { return x.level > y.level; });
+  //     //   for (auto it : info)
+  //     //     fout << it.level << " " << it.fanout << " " << it.height << " " << it.size << std::endl;
+  //     //   fout.close();
+  //     // }
+  //   }
+  // });
+  // auto In = parlay::tabulate(n, [&](size_t i) -> size_t { return Rstat[i].nRu + Rstat[i].nRv; });
+  // auto Out = parlay::histogram_by_index(In, parlay::reduce(In, parlay::maximum<size_t>()) + 1);
+  // for (size_t i = 0; i < Out.size(); i++)
+  //   if (Out[i]) std::cout << i << "," << Out[i] << std::endl;
   if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
+  if (stat) std::cout << num_fetched << std::endl;
 }
 inline void CWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l) {
   for (auto it : edges) {
@@ -318,6 +416,8 @@ inline void CWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, 
   }
 }
 inline std::tuple<bool, size_t, size_t> CWN::fetchEdge(std::queue<localTree *> &Q, size_t l) {
+  if (Q.empty()) return std::make_tuple(false, 0, 0);
+  num_fetched++;
   auto node = Q.front();
   auto e = localTree::fetchEdge(node, l);
   while (!std::get<0>(e)) {
