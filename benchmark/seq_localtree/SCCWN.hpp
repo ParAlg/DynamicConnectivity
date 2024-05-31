@@ -25,6 +25,22 @@ class SCCWN {
   bool is_connected(size_t u, size_t v);
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
+  void checkLevel() {
+    for (size_t i = 0; i < n; i++) {
+      if (leaves[i] != nullptr) {
+        auto r = leaves[i];
+        while (localTree::getParent(r) != nullptr) {
+          if (localTree::getParent(r)->getLevel() <= r->getLevel()) {
+            std::cout << "parent level = " << localTree::getParent(r)->getLevel()
+                      << " parent size = " << localTree::getParent(r)->getSize() << " child level = " << r->getLevel()
+                      << " child size = " << r->getSize() << std::endl;
+            exit(0);
+          }
+          r = localTree::getParent(r);
+        }
+      }
+    }
+  }
 };
 inline size_t SCCWN::lmax = 63;
 inline void SCCWN::insertToRoot(size_t u, size_t v) {
@@ -145,18 +161,24 @@ inline localTree *SCCWN::pushDown(parlay::sequence<localTree *> &pu, size_t uter
       localTree::addChild(p, pu[uter]);
       uter--;
       vter--;
-    } else if (p->getLevel() - pu[uter]->getLevel() == 1) {
+    } else {
       localTree::deleteFromParent(pu[uter]);
       localTree::deleteFromParent(pv[vter]);
       localTree::addChild(pu[uter], pv[vter]);
       localTree::addChild(p, pu[uter]);
       uter--;
-    } else {
-      localTree::deleteFromParent(pu[uter]);
-      localTree::deleteFromParent(pv[vter]);
-      auto np = new localTree(pu[uter], pv[vter]);
-      localTree::addChild(p, np);
-      return np;
+      // } else if (p->getLevel() - pu[uter]->getLevel() == 1) {
+      //   localTree::deleteFromParent(pu[uter]);
+      //   localTree::deleteFromParent(pv[vter]);
+      //   localTree::addChild(pu[uter], pv[vter]);
+      //   localTree::addChild(p, pu[uter]);
+      //   uter--;
+      // } else {
+      //   localTree::deleteFromParent(pu[uter]);
+      //   localTree::deleteFromParent(pv[vter]);
+      //   auto np = new localTree(pu[uter], pv[vter]);
+      //   localTree::addChild(p, np);
+      //   return np;
     }
   }
   assert(localTree::getParent(pu[uter]) == localTree::getParent(pv[vter]));
@@ -245,8 +267,8 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Eu, l);
             placeEdges(Ev, C->getLevel());
           }
-          Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
-          Rstat.push_back(std::move(info));
+          // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+          // Rstat.push_back(std::move(info));
           return;
         } else {
           if (Hu.find(Cuv) == Hu.end()) {
@@ -327,8 +349,8 @@ inline void SCCWN::remove(size_t u, size_t v) {
         CP = GP;
         l = CP ? CP->getLevel() : 0;
 
-        Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
-        Rstat.push_back(std::move(info));
+        // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+        // Rstat.push_back(std::move(info));
 
         break;
       }
@@ -380,8 +402,8 @@ inline void SCCWN::remove(size_t u, size_t v) {
             placeEdges(Ev, C->getLevel());
           }
 
-          Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
-          Rstat.push_back(std::move(info));
+          // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+          // Rstat.push_back(std::move(info));
           return;
         } else {
           if (Hv.find(Cuv) == Hv.end()) {
@@ -458,8 +480,8 @@ inline void SCCWN::remove(size_t u, size_t v) {
         CP = GP;
         l = CP ? CP->getLevel() : 0;
 
-        Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
-        Rstat.push_back(std::move(info));
+        // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(), nCv, l);
+        // Rstat.push_back(std::move(info));
 
         break;
       }
@@ -485,28 +507,28 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false, bool cle
   if (verbose) printNodes(roots);
   parlay::parallel_for(0, roots.size(), [&](size_t i) {
     if (roots[i]) {
-      std::ofstream fout;
-      if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
+      // std::ofstream fout;
+      // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
       parlay::sequence<stats> info;
       localTree::traverseTopDown(roots[i], clear, verbose, stat, info);
-      if (stat) {
-        parlay::sort_inplace(info, [&](stats x, stats y) { return x.level > y.level; });
-        for (auto it : info)
-          fout << it.level << " " << it.fanout << " " << it.height << " " << it.size << std::endl;
-        fout.close();
-      }
+      // if (stat) {
+      //   parlay::sort_inplace(info, [&](stats x, stats y) { return x.level > y.level; });
+      //   for (auto it : info)
+      //     fout << it.level << " " << it.fanout << " " << it.height << " " << it.size << std::endl;
+      //   fout.close();
+      // }
     }
   });
   if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
-  if (stat) {
-    parlay::sort_inplace(Rstat, [&](const Radius &a, const Radius &b) { return a.level > b.level; });
-    std::ofstream fradius;
-    fradius.open(filepath + ".rad");
-    for (auto it : Rstat)
-      fradius << it.found << " " << it.nRu << " " << it.nEu << " " << it.nCu << " " << it.nRv << " " << it.nEv << " "
-              << it.nCv << " " << it.level << std::endl;
-    fradius.close();
-  }
+  // if (stat) {
+  //   parlay::sort_inplace(Rstat, [&](const Radius &a, const Radius &b) { return a.level > b.level; });
+  //   std::ofstream fradius;
+  //   fradius.open(filepath + ".rad");
+  //   for (auto it : Rstat)
+  //     fradius << it.found << " " << it.nRu << " " << it.nEu << " " << it.nCu << " " << it.nRv << " " << it.nEv << " "
+  //             << it.nCv << " " << it.level << std::endl;
+  //   fradius.close();
+  // }
 }
 inline void SCCWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l) {
   for (auto it : edges) {
