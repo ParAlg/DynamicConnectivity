@@ -1,4 +1,4 @@
-#include "CWN.hpp"
+#include "SCCWN.hpp"
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <parlay/internal/get_time.h>
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
   std::ofstream fins, fdel;
   t.start();
-  CWN F(n);
+  SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
   assert(F.lmax < 64);
   t.next("initialization");
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
-      F.insertToBlock(u, v);
+      F.insertToLCA(u, v);
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
@@ -69,22 +69,24 @@ int main(int argc, char** argv) {
   auto x = Out.find_first_of(".");
   auto s = Out.substr(0, x);
   // F.run_path_stat(s);
-  F.run_stat(s, true);
+  // F.run_stat(s, true);
+  saved_deletion = 0;
   t.next("statistic");
-  // for (size_t i = 0; i < num_batches; i++) {
-  //   for (size_t j = 0; j < batches_del[i].size(); j++) {
-  //     long u = batches_del[i][j].first;
-  //     long v = batches_del[i][j].second;
-  //     F.remove(u, v);
-  //   }
-  //   t.next("Delete batch #" + std::to_string(i));
-  //   // for (size_t j = 0; j < queries_del[i].size(); j++) {
-  //   //   // todo here
-  //   //   Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-  //   // }
+  for (size_t i = 0; i < num_batches; i++) {
+    for (size_t j = 0; j < batches_del[i].size(); j++) {
+      long u = batches_del[i][j].first;
+      long v = batches_del[i][j].second;
+      F.remove(u, v);
+    }
+    t.next("Delete batch #" + std::to_string(i));
+    // for (size_t j = 0; j < queries_del[i].size(); j++) {
+    //   // todo here
+    //   Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+    // }
 
-  //   // t.next("Answer queries #" + std::to_string(i));
-  // }
+    // t.next("Answer queries #" + std::to_string(i));
+  }
+  std::cout << "saved detetion: " << saved_deletion << std::endl;
   // F.run_stat(s, false);
   // std::ofstream faq;
   // faq.open(Out);

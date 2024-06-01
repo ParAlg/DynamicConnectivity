@@ -412,7 +412,7 @@ inline void CWN::run_stat(std::string filepath, bool verbose = false, bool clear
   // auto Out = parlay::histogram_by_index(In, parlay::reduce(In, parlay::maximum<size_t>()) + 1);
   // for (size_t i = 0; i < Out.size(); i++)
   //   if (Out[i]) std::cout << i << "," << Out[i] << std::endl;
-  std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
+  // std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
   std::cout << num_fetched << std::endl;
   if (verbose) {
     std::ofstream ffanout;

@@ -3,6 +3,7 @@
 #include <queue>
 #include <unordered_set>
 const std::string FILENAME = "_compressed_root";
+inline size_t saved_deletion = 0;
 class SCCWN {
  private:
   static std::tuple<bool, size_t, size_t> fetchEdge(std::queue<localTree *> &Q, size_t l);
@@ -351,7 +352,10 @@ inline void SCCWN::remove(size_t u, size_t v) {
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
   auto CP = localTree::getParent(Cu);
-  if (Cu == Cv) return;
+  if (Cu == Cv) {
+    saved_deletion++;
+    return;
+  }
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
   std::queue<localTree *> Qu, Qv;                      // ready to fetch
@@ -677,7 +681,7 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false, bool cle
       // }
     }
   }
-  std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
+  // std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
   std::cout << "number of edge fetched during deletion " << num_fetched << std::endl;
   if (verbose) {
     std::ofstream ffanout;
