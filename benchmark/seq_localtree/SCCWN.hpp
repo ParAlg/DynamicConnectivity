@@ -519,7 +519,7 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false, bool cle
       // }
     }
   });
-  if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
+  // if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
   // if (stat) {
   //   parlay::sort_inplace(Rstat, [&](const Radius &a, const Radius &b) { return a.level > b.level; });
   //   std::ofstream fradius;

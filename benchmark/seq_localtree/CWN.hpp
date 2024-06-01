@@ -297,19 +297,19 @@ inline void CWN::run_stat(std::string filepath, bool verbose = false, bool clear
   if (verbose) printNodes(roots);
   parlay::parallel_for(0, roots.size(), [&](size_t i) {
     if (roots[i]) {
-      std::ofstream fout;
-      if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
+      // std::ofstream fout;
+      // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
       parlay::sequence<stats> info;
       localTree::traverseTopDown(roots[i], clear, verbose, stat, info);
-      if (stat) {
-        parlay::sort_inplace(info, [&](stats x, stats y) { return x.level > y.level; });
-        for (auto it : info)
-          fout << it.level << " " << it.fanout << " " << it.height << " " << it.size << std::endl;
-        fout.close();
-      }
+      // if (stat) {
+      //   parlay::sort_inplace(info, [&](stats x, stats y) { return x.level > y.level; });
+      //   for (auto it : info)
+      //     fout << it.level << " " << it.fanout << " " << it.height << " " << it.size << std::endl;
+      //   fout.close();
+      // }
     }
   });
-  if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
+  // if (stat) std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
 }
 inline void CWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l) {
   for (auto it : edges) {
