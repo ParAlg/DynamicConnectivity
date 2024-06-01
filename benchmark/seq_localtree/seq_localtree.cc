@@ -1,4 +1,4 @@
-#include "SCCWN.hpp"
+#include "CWN.hpp"
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <parlay/internal/get_time.h>
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
   parlay::internal::timer t;
   std::ofstream fins, fdel;
   t.start();
-  SCCWN F(n);
+  CWN F(n);
   F.lmax = std::ceil(std::log2(n));
   assert(F.lmax < 64);
   t.next("initialization");
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     for (size_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
-      F.insert(u, v);
+      F.insertToBlock(u, v);
       // std::cout << u << " " << v << std::endl;
       // todo here: add edges to graph
     }
@@ -63,39 +63,42 @@ int main(int argc, char** argv) {
     //   // todo here
     //   Ans_ins[i][j] = F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     // }
-    t.next("Answer queries #" + std::to_string(i));
-  }
-  // F.run_path_stat();
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
-      long u = batches_del[i][j].first;
-      long v = batches_del[i][j].second;
-      F.remove(u, v);
-    }
-    t.next("Delete batch #" + std::to_string(i));
-    // for (size_t j = 0; j < queries_del[i].size(); j++) {
-    //   // todo here
-    //   Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-    // }
-
     // t.next("Answer queries #" + std::to_string(i));
   }
+
   auto x = Out.find_first_of(".");
   auto s = Out.substr(0, x);
-  // F.run_stat(s, true);
-  std::ofstream faq;
-  faq.open(Out);
-  if (!faq.is_open()) {
-    std::cout << "cannot open output file\n";
-    std::abort();
-  }
-  // for (size_t i = 0; i < num_batches; i++)
-  //   for (size_t j = 0; j < queries_ins[i].size(); j++)
-  //     faq << Ans_ins[i][j];
-  // for (size_t i = 0; i < num_batches; i++)
-  //   for (size_t j = 0; j < queries_del[i].size(); j++)
-  //     faq << Ans_del[i][j];
-  faq.close();
+  // F.run_path_stat(s);
+  F.run_stat(s, true);
+  t.next("statistic");
+  // for (size_t i = 0; i < num_batches; i++) {
+  //   for (size_t j = 0; j < batches_del[i].size(); j++) {
+  //     long u = batches_del[i][j].first;
+  //     long v = batches_del[i][j].second;
+  //     F.remove(u, v);
+  //   }
+  //   t.next("Delete batch #" + std::to_string(i));
+  //   // for (size_t j = 0; j < queries_del[i].size(); j++) {
+  //   //   // todo here
+  //   //   Ans_del[i][j] = F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+  //   // }
+
+  //   // t.next("Answer queries #" + std::to_string(i));
+  // }
+  // F.run_stat(s, false);
+  // std::ofstream faq;
+  // faq.open(Out);
+  // if (!faq.is_open()) {
+  //   std::cout << "cannot open output file\n";
+  //   std::abort();
+  // }
+  // // for (size_t i = 0; i < num_batches; i++)
+  // //   for (size_t j = 0; j < queries_ins[i].size(); j++)
+  // //     faq << Ans_ins[i][j];
+  // // for (size_t i = 0; i < num_batches; i++)
+  // //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  // //     faq << Ans_del[i][j];
+  // faq.close();
   // for (size_t i = 0; i < 65; i++)
   //   if (Len[i]) std::cout << i << " " << Len[i] << std::endl;
   return 0;

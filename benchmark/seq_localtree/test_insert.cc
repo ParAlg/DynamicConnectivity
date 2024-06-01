@@ -1,8 +1,8 @@
-#include "SCCWN.hpp"
+#include "CWN.hpp"
 #include <iostream>
 #include <fstream>
 void test1() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(1, 3);
   F.insertToBlock(1, 4);
@@ -16,7 +16,7 @@ void test1() {
   F.run_stat("./", true);
 }
 void test2() {  // not compression
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(2, 3);
   F.insertToBlock(4, 5);
@@ -32,7 +32,7 @@ void test2() {  // not compression
   F.run_stat("./", true);
 }
 void test3() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(1, 3);
@@ -48,7 +48,7 @@ void test3() {
   F.run_stat(".", true);
 }
 void test4() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(1, 3);
   F.remove(1, 2);
@@ -56,7 +56,7 @@ void test4() {
   F.run_stat(".", true);
 }
 void test5() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -75,7 +75,7 @@ void test5() {
   // F.statistic(false, false, true);
 }
 void test6() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(1, 3);
   F.insertToBlock(5, 4);
@@ -87,7 +87,7 @@ void test6() {
   F.run_stat(".", true);
 }
 void test7() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(1, 3);
@@ -99,7 +99,7 @@ void test7() {
   // F.statistic(false, false, true);
 }
 void test8() {
-  SCCWN F(50);
+  CWN F(50);
 
   F.insertToBlock(1, 2);
   F.insertToBlock(1, 3);
@@ -124,7 +124,7 @@ void test8() {
   // F.statistic(false, false, true);
 }
 void test9() {
-  SCCWN F(50);
+  CWN F(50);
 
   F.insertToBlock(1, 2);
   F.insertToBlock(1, 3);
@@ -170,7 +170,7 @@ void test9() {
   // F.statistic(false, false, true);
 }
 void test10() {
-  SCCWN F(100);
+  CWN F(100);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -203,7 +203,7 @@ void test10() {
   // F.statistic(false, false, true);
 }
 void test11() {
-  SCCWN F(100);
+  CWN F(100);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -236,7 +236,7 @@ void test11() {
   // F.statistic(false, false, true);
 }
 void test12() {
-  SCCWN F(120);
+  CWN F(120);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -293,7 +293,7 @@ void test12() {
   // F.statistic(false, false, true);
 }
 void test13() {
-  SCCWN F(120);
+  CWN F(120);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -349,7 +349,7 @@ void test13() {
   // F.statistic(false, false, true);
 }
 void test14() {
-  SCCWN F(120);
+  CWN F(120);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -453,7 +453,7 @@ void test14() {
   F.remove(63, 39);
 }
 void test15() {  // lp == lson
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(5, 6);
@@ -471,7 +471,7 @@ void test15() {  // lp == lson
   F.run_stat(".", true);
 }
 void test16() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(2, 4);
@@ -489,7 +489,7 @@ void test16() {
   F.run_stat(".", true);
 }
 void test17() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(3, 1);
@@ -501,7 +501,7 @@ void test17() {
   F.run_stat(".", true);
 }
 void test18() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 2);
   F.insertToBlock(4, 1);
@@ -515,7 +515,7 @@ void test18() {
   F.run_stat(".", true);
 }
 void test19() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(3, 1);
@@ -529,7 +529,7 @@ void test19() {
   F.run_stat(".", true);
 }
 void test20() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(4, 3);
   F.insertToBlock(2, 4);
   F.insertToBlock(1, 5);
@@ -541,7 +541,7 @@ void test20() {
   F.run_stat(".", true);
 }
 void test21() {
-  SCCWN F(10);
+  CWN F(10);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(4, 2);
@@ -560,7 +560,7 @@ void test21() {
   F.run_stat(".", true);
 }
 void test22() {
-  SCCWN F(20);
+  CWN F(20);
   F.insertToBlock(1, 2);
   F.insertToBlock(3, 4);
   F.insertToBlock(3, 5);
@@ -589,7 +589,7 @@ void test22() {
 void test23() {
   // size_t n = 64;
   size_t n = 2048;
-  SCCWN F(n);
+  CWN F(n);
   F.lmax = std::log2(n) + 1;
   parlay::sequence<std::pair<size_t, size_t>> e;
   for (size_t i = 1; i < n - 1; i++)
@@ -617,7 +617,7 @@ void test23() {
 }
 // void test_local() {
 //   size_t n = 2049280;
-//   SCCWN F(n);
+//   CWN F(n);
 //   F.lmax = std::log2(n) + 1;
 
 //   std::ifstream fin;

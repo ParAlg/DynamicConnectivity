@@ -2,6 +2,7 @@
 #include <fstream>
 #include <queue>
 #include <unordered_set>
+const std::string FILENAME = "_compressed_root";
 class SCCWN {
  private:
   static std::tuple<bool, size_t, size_t> fetchEdge(std::queue<localTree *> &Q, size_t l);
@@ -30,7 +31,7 @@ class SCCWN {
   bool is_connected(size_t u, size_t v);
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
-  void run_path_stat();
+  void run_path_stat(std::string filepath);
   void checkLevel() {
     for (size_t i = 0; i < n; i++) {
       if (leaves[i] != nullptr) {
@@ -50,7 +51,7 @@ class SCCWN {
 };
 inline size_t num_fetched = 0;
 inline size_t SCCWN::lmax = 63;
-inline void SCCWN::run_path_stat() {
+inline void SCCWN::run_path_stat(std::string filepath) {
   const size_t szwo = 64;
   const size_t szw = szwo * szwo;
   size_t LenW[szw];
@@ -67,11 +68,16 @@ inline void SCCWN::run_path_stat() {
     }
     LenW[ct + Pu.size()]++;
   }
+  std::ofstream f1;
+  f1.open(filepath + FILENAME + "_woranktree.csv");
   for (size_t i = 0; i < szwo; i++)
-    if (LenWO[i]) std::cout << i << " " << LenWO[i] << std::endl;
-  std::cout << "length with rank tree\n";
+    if (LenWO[i]) f1 << i << "," << LenWO[i] << std::endl;
+  f1.close();
+  std::ofstream f2;
+  f2.open(filepath + FILENAME + "_wranktree.csv");
   for (size_t i = 0; i < szw; i++)
-    if (LenW[i]) std::cout << i << " " << LenW[i] << std::endl;
+    if (LenW[i]) f2 << i << "," << LenW[i] << std::endl;
+  f2.close();
 }
 inline void SCCWN::insertToRoot(size_t u, size_t v) {
   auto g = [&](size_t &u) -> localTree * {
@@ -674,20 +680,22 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false, bool cle
   std::cout << "quiet memory usage is " << stats::memUsage << " bytes\n";
   std::cout << "number of edge fetched during deletion " << num_fetched << std::endl;
   if (verbose) {
-    // parlay::sort_inplace(Rstat, [&](const Radius &a, const Radius &b) { return a.level > b.level; });
-    // auto In = parlay::tabulate(Rstat.size(), [&](size_t i) -> size_t { return Rstat[i].nRu + Rstat[i].nRv; });
-    // std::cout << parlay::reduce(In, parlay::maximum<size_t>()) + 1 << std::endl;
-    // auto Out = parlay::histogram_by_index(In, parlay::reduce(In, parlay::maximum<size_t>()) + 1);
-    // std::ofstream fradius;
-    // fradius.open(filepath + "_diameter.csv");
-    // for (size_t i = 0; i < Out.size(); i++)
-    //   if (Out[i]) fradius << i << "," << Out[i] << std::endl;
-    // fradius.close();
     std::ofstream ffanout;
-    ffanout.open(filepath + "_compressed_blocked_fanout.csv");
+    ffanout.open(filepath + FILENAME + "_fanout.csv");
     for (size_t i = 0; i < 10000001; i++)
       if (fanout[i]) ffanout << i << "," << fanout[i] << std::endl;
     ffanout.close();
+  }
+  if (!verbose && filepath != "./") {
+    // parlay::sort_inplace(Rstat, [&](const Radius &a, const Radius &b) { return a.level > b.level; });
+    auto In = parlay::tabulate(Rstat.size(), [&](size_t i) -> size_t { return Rstat[i].nRu + Rstat[i].nRv; });
+    // std::cout << parlay::reduce(In, parlay::maximum<size_t>()) + 1 << std::endl;
+    auto Out = parlay::histogram_by_index(In, parlay::reduce(In, parlay::maximum<size_t>()) + 1);
+    std::ofstream fradius;
+    fradius.open(filepath + FILENAME + "_diameter.csv");
+    for (size_t i = 0; i < Out.size(); i++)
+      if (Out[i]) fradius << i << "," << Out[i] << std::endl;
+    fradius.close();
 
     // for (size_t i = 0; i < 10000001; i++)
     //   if (fanout[i]) std::cout << i << "," << fanout[i] << std::endl;

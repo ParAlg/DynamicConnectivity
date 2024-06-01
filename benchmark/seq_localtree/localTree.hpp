@@ -251,9 +251,9 @@ inline void localTree::traverseTopDown(localTree* root, bool clear, bool verbose
     // info.push_back(std::move(st));
   }
   if (!leaves.empty()) fanout[leaves.size()]++;
-  if (leaves.size() == 1)
-    std::cout << root->level << " " << root->getSize() << " " << leaves[0]->descendant->level << " "
-              << leaves[0]->descendant->getSize() << std::endl;
+  // if (leaves.size() == 1)
+  //   std::cout << root->level << " " << root->getSize() << " " << leaves[0]->descendant->level << " "
+  //             << leaves[0]->descendant->getSize() << std::endl;
   for (auto it : leaves) {
     traverseTopDown(it->descendant, clear, verbose, stat, info);
     if (clear) delete it;
