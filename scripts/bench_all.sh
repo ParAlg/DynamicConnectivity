@@ -55,7 +55,7 @@ make bench_all
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./bench_all -a 2 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_all/${graph}.query
+  ${numactl} ./bench_all -a 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_all/${graph}.query
   echo
 done
 

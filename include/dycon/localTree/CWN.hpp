@@ -25,7 +25,7 @@ public:
   parlay::sequence<localTree *> leaves;
   CWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
   ~CWN() { run_stat("./", false, true, false); };
-  void insert(size_t u, size_t v) { insertToRoot(u, v); }
+  void insert(size_t u, size_t v) { insertToBlock(u, v); }
   void insertToRoot(size_t u, size_t v);
   void insertToBlock(size_t u, size_t v);
   bool is_connected(size_t u, size_t v);
@@ -75,25 +75,36 @@ inline void CWN::insertToBlock(size_t u, size_t v) {
     leaves[u] = g(u);
   if (leaves[v] == nullptr)
     leaves[v] = g(v);
+
   auto Pu = localTree::getRootPath(leaves[u]);
   auto Pv = localTree::getRootPath(leaves[v]);
-  auto iu = Pu.begin();
-  auto iv = Pv.begin();
-  while ((*iu) == (*iv)) {
-    iu++;
-    iv++;
-  }
-  while ((*iu) != (*iv)) {
-    size_t l = (*iu)->getLevel();
-    if ((*iu)->getSize() + (*iv)->getSize() > (1 << l)) {
-      leaves[u]->insertToLeaf(v, l);
-      leaves[v]->insertToLeaf(u, l);
-      break;
-    }
+  auto iu = Pu.rbegin();
+  auto iv = Pv.rbegin();
+  size_t l;
+  if (*iu != *iv) {
+    l = (*iu)->getLevel();
     localTree::merge(*iu, *iv);
     iu++;
     iv++;
   }
+  while (*iu == *iv) {
+    l = (*iu)->getLevel();
+    iu++;
+    iv++;
+  }
+  while ((*iu)->getSize() + (*iv)->getSize() <= 1 << (*iu)->getLevel()) {
+    auto p = localTree::getParent(*iu);
+    assert(localTree::getParent(*iu) == localTree::getParent(*iv));
+    localTree::deleteFromParent(*iu);
+    localTree::deleteFromParent(*iv);
+    localTree::merge(*iu, *iv);
+    localTree::addChild(p, *iu);
+    l = (*iu)->getLevel();
+    iu++;
+    iv++;
+  }
+  leaves[u]->insertToLeaf(v, l);
+  leaves[v]->insertToLeaf(u, l);
 }
 inline void CWN::remove(size_t u, size_t v) {
   // std::cout << u << " " << v << std::endl;

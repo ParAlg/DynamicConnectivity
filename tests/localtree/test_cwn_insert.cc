@@ -1,19 +1,22 @@
+#include <cmath>
 #include <dycon/localTree/CWN.hpp>
 #include <fstream>
 #include <iostream>
 void test1() {
   CWN F(20);
+  F.lmax = 5;
   F.insert(1, 2);
   F.insert(1, 3);
-  F.insert(1, 4);
-  F.insert(2, 3);
-  F.insert(3, 4);
-  F.insert(2, 4);
-  F.remove(1, 2);
-  F.remove(1, 3);
-  F.remove(1, 4);
-  F.remove(2, 4);
-  F.run_stat("./", true);
+  // F.insert(1, 4);
+  // F.insert(2, 3);
+  // F.insert(3, 4);
+  // F.insert(2, 4);
+  // F.remove(1, 2);
+  // F.remove(1, 3);
+  // F.remove(1, 4);
+  // F.remove(2, 4);
+  // F.remove(2, 3);
+  // F.remove(3, 4);
 }
 void test2() { // not compression
   CWN F(20);
@@ -638,7 +641,7 @@ void test23() {
 //   fdel.close();
 // }
 int main() {
-  // test1();
+  test1();
   // test2();
   // test3();
   // test4();
@@ -660,7 +663,7 @@ int main() {
   // test20();
   // test21();
   // test22();
-  test23();
+  // test23();
   // test_local();
   return 0;
 }
