@@ -100,7 +100,7 @@ endif()
 #                         Unit tests
 
 # enable_testing()
-# add_subdirectory(tests)
+add_subdirectory(tests)
 
 # -------------------------------------------------------------------
 #                       Benchmarks

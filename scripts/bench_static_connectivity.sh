@@ -46,16 +46,16 @@ declare data_path="${source_dir}/data"
 # echo $source_dir
 
 mkdir ${data_path}/static_connectivity
-cd ${source_dir}/build/benchmark/static_connectivity/
+cd ${source_dir}/build/benchmark/
 
 
 #echo $(pwd)
-rm static_connectivity
-make static_connectivity
+rm bench_static_connectivity
+make bench_static_connectivity
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./static_connectivity -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/static_connectivity/${graph}.query
+  ${numactl} ./bench_static_connectivity -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/static_connectivity/${graph}.query
   echo
 done
 

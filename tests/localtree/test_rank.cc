@@ -1,10 +1,9 @@
-#include "localTree.hpp"
-#include "assert.hpp"
+#include <dycon/helpers/assert.hpp>
+#include <dycon/localTree/rankTree.hpp>
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
-#include <iostream>
 class test_rankTree : public rankTree {
- public:
+public:
   // using arr = parlay::sequence<test_rankTree *>;
   using arr = parlay::sequence<rankTree *>;
   // static arr convertFromBase(arr &A);
@@ -25,14 +24,14 @@ using arr = test_rankTree::arr;
 // arr test_rankTree::convertToBase(arr &A) {
 //   arr B;
 //   B.reserve(A.size());
-//   parlay::parallel_for(0, A.size(), [&](size_t i) { B[i] = reinterpret_cast<rankTree *>(A[i]); });
-//   return B;
+//   parlay::parallel_for(0, A.size(), [&](size_t i) { B[i] =
+//   reinterpret_cast<rankTree *>(A[i]); }); return B;
 // }
 // arr test_rankTree::convertFromBase(arr &A) {
 //   arr B;
 //   B.reserve(A.size());
-//   parlay::parallel_for(0, A.size(), [&](size_t i) { B[i] = reinterpret_cast<test_rankTree *>(A[i]); });
-//   return B;
+//   parlay::parallel_for(0, A.size(), [&](size_t i) { B[i] =
+//   reinterpret_cast<test_rankTree *>(A[i]); }); return B;
 // }
 arr test_rankTree::testRankTreesGen(size_t n) {
   return rankTree::testRankTreesGen(n);
@@ -56,9 +55,7 @@ arr test_rankTree::testDecompose(arr &A) {
 bool test_rankTree::testEqualRanks(arr &A, arr &B) {
   return rankTree::testEqualRanks(A, B);
 }
-arr test_rankTree::testRemove(rankTree *T) {
-  return rankTree::testRemove(T);
-}
+arr test_rankTree::testRemove(rankTree *T) { return rankTree::testRemove(T); }
 arr test_rankTree::testMerge(arr &A, arr &B) {
   return rankTree::testMerge(A, B);
 }
@@ -77,12 +74,14 @@ int main() {
   auto A = test_rankTree::testRankTreesGen(n);
   auto ATrees = test_rankTree::testBuildFromSequence(A);
   auto AFlatten = test_rankTree::testDecompose(ATrees);
-  ASSERT_MSG(test_rankTree::testEqualRanks(A, AFlatten) == true, "decompose fail");
+  ASSERT_MSG(test_rankTree::testEqualRanks(A, AFlatten) == true,
+             "decompose fail");
 
   auto B = test_rankTree::testRankTreesGen(m);
   auto BTrees = test_rankTree::testBuildFromSequence(B);
   auto BFlatten = test_rankTree::testDecompose(BTrees);
-  ASSERT_MSG(test_rankTree::testEqualRanks(B, BFlatten) == true, "decompose fail");
+  ASSERT_MSG(test_rankTree::testEqualRanks(B, BFlatten) == true,
+             "decompose fail");
 
   auto CTrees = test_rankTree::testMerge(ATrees, BTrees);
   auto CFlatten = test_rankTree::testDecompose(CTrees);
@@ -97,7 +96,8 @@ int main() {
     auto DTrees = test_rankTree::testRemove(*it);
     rFlatten.erase(it);
     auto DFlatten = test_rankTree::testDecompose(DTrees);
-    ASSERT_MSG(test_rankTree::testEqualRanks(rFlatten, DFlatten) == true, "remove decompose fail");
+    ASSERT_MSG(test_rankTree::testEqualRanks(rFlatten, DFlatten) == true,
+               "remove decompose fail");
   }
 
   auto E = test_rankTree::testRankTreesGen(n + m);
@@ -107,7 +107,8 @@ int main() {
     ETrees = test_rankTree::testRemove(ETrees, *it);
     E.erase(it);
     auto EFlatten = test_rankTree::testDecompose(ETrees);
-    ASSERT_MSG(test_rankTree::testEqualRanks(EFlatten, E) == true, "remove from rank forest fail");
+    ASSERT_MSG(test_rankTree::testEqualRanks(EFlatten, E) == true,
+               "remove from rank forest fail");
   }
   return 0;
 }

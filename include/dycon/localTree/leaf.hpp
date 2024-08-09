@@ -1,9 +1,9 @@
 #pragma once
-#include "assert.hpp"
-#include <cassert>
-#include <set>
-#include <map>
+#include "../helpers/assert.hpp"
 #include <bitset>
+#include <cassert>
+#include <map>
+#include <set>
 // This is the leaf of the cluster forest.
 // It contains a vertex in the graph and its incident edges.
 // The incident edges are grouped by their level. So we need at
@@ -17,11 +17,12 @@
 // incident edges in that level
 
 class leaf {
- public:
+public:
   // using incident_edges = std::map<size_t, std::set<size_t>>;
   // using edge_lists = std::pair<size_t, std::set<size_t>>;
 
-  leaf(size_t _id = 0, void *p = nullptr) : E(), parent(p), edgemap(), size(0), id(_id) {}
+  leaf(size_t _id = 0, void *p = nullptr)
+      : E(), parent(p), edgemap(), size(0), id(_id) {}
   bool insert(size_t e, size_t l);
   bool remove(size_t e, size_t l);
   size_t getLevel(size_t e);
@@ -32,19 +33,18 @@ class leaf {
   size_t getSize() { return size; }
   size_t getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
-  std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator> getLevelIterator(size_t l);
+  std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator>
+  getLevelIterator(size_t l);
   std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
 
- private:
+private:
   std::map<size_t, std::set<size_t>> E;
-  void *parent;  // pointer to rank tree of the level logn cluster node
+  void *parent; // pointer to rank tree of the level logn cluster node
   std::bitset<64> edgemap;
   size_t id;
   size_t size;
 };
-inline void leaf::linkToRankTree(void *p) {
-  parent = p;
-}
+inline void leaf::linkToRankTree(void *p) { parent = p; }
 inline bool leaf::insert(size_t e, size_t l) {
   auto &E = this->E;
   // find if there is level l incident edges
@@ -67,7 +67,8 @@ inline bool leaf::insert(size_t e, size_t l) {
 inline std::tuple<bool, size_t, size_t> leaf::fetchEdge(size_t l) {
   auto &E = this->E;
   auto it = E.find(l);
-  if (it == E.end()) return std::make_tuple(false, 0, 0);
+  if (it == E.end())
+    return std::make_tuple(false, 0, 0);
   auto v = it->second.begin();
   auto e = std::make_tuple(true, id, *v);
   return e;
@@ -91,7 +92,8 @@ inline size_t leaf::getLevel(size_t e) {
   bool flag = false;
   // std::cout << "number of levels " << E.size() << std::endl;
   for (auto const &[l, edges] : E) {
-    // std::cout << "number of vertices in each level " << edges.size() << std::endl;
+    // std::cout << "number of vertices in each level " << edges.size() <<
+    // std::endl;
     if (edges.find(e) != edges.end()) {
       level = l;
       flag = true;
@@ -108,9 +110,12 @@ inline bool leaf::checkLevel(size_t l) {
   // check if this vertex has level l incident edges.
   auto &E = this->E;
   auto it = E.find(l);
-  if (it != E.end()) return true;
+  if (it != E.end())
+    return true;
   return false;
 }
-inline std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator> leaf::getLevelIterator(size_t l) {
-  return std::make_pair(this->E.find(l)->second.begin(), this->E.find(l)->second.end());
+inline std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator>
+leaf::getLevelIterator(size_t l) {
+  return std::make_pair(this->E.find(l)->second.begin(),
+                        this->E.find(l)->second.end());
 }

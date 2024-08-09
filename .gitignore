@@ -39,4 +39,6 @@ data/
 *.bak
 *.clang-format
 *.cache
+.vscode/
+.cache/
 

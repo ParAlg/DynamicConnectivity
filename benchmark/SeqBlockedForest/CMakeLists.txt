@@ -1,8 +1,0 @@
-add_executable(test_leaf_seqblocked test_leaf.cc)
-target_link_libraries(test_leaf_seqblocked PRIVATE dycon)
-add_executable(test_rank_seqblocked test_rank.cc)
-target_link_libraries(test_rank_seqblocked PRIVATE dycon)
-add_executable(test_insert_seqblocked test_insert.cc)
-target_link_libraries(test_insert_seqblocked PRIVATE dycon)
-add_executable(SeqBlockedForest SeqBlockedForest.cc)
-target_link_libraries(SeqBlockedForest PRIVATE dycon)

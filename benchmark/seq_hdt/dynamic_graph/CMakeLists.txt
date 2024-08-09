@@ -6,8 +6,8 @@ target_link_libraries(lib_dynamic_connectivity
   lib_dynamic_forest
   lib_graph
   lib_hash
-  parlay
-  dycon
+  # parlay
+  # dycon
 )
 target_include_directories(lib_dynamic_connectivity PUBLIC
   ${CMAKE_SOURCE_DIR}/benchmark/seq_hdt/utilities/include
@@ -38,7 +38,7 @@ add_library(lib_graph STATIC
 target_link_libraries(lib_graph
   lib_assert
   lib_hash
-  dycon
+  # dycon
 )
 target_include_directories(lib_graph PRIVATE
   include

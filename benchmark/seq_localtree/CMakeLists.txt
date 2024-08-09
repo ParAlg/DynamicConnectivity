@@ -1,8 +1,0 @@
-add_executable(test_leaf test_leaf.cc)
-target_link_libraries(test_leaf PRIVATE dycon)
-add_executable(test_rank test_rank.cc)
-target_link_libraries(test_rank PRIVATE dycon)
-add_executable(test_cwn_insert test_insert.cc)
-target_link_libraries(test_cwn_insert PRIVATE dycon)
-add_executable(seq_localtree seq_localtree.cc)
-target_link_libraries(seq_localtree PRIVATE dycon)
