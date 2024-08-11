@@ -1,3 +1,0 @@
-[submodule "benchmark/BatchHL"]
-	path = benchmark/BatchHL
-	url = https://github.com/mufarhan/BatchHL.git
