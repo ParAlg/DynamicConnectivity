@@ -391,7 +391,7 @@ int main(int argc, char **argv) {
   auto E =
       parlay::random_shuffle(parlay::remove_duplicates(utils::to_edges(G)));
   vertex m = E.size();
-
+  std::cout << n << std::endl << m << std::endl;
   auto batch_size = parlay::tabulate(
       num_batches + 1, [&](size_t i) { return m / num_batches * i; });
   batch_size[num_batches] = m;

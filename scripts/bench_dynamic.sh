@@ -1,11 +1,11 @@
 #!/bin/bash
 declare -a undir_graph=(
   # Social
-
-#  "com-orkut_sym"
-#  "soc-LiveJournal1_sym"
-#  "twitter_sym"
-#  "friendster_sym"
+  "stackoverflow_sym"
+ "com-orkut_sym"
+ "soc-LiveJournal1_sym"
+ "twitter_sym"
+ "friendster_sym"
 # #
 # #  # # Web
 #  "sd_arc_sym"
@@ -17,7 +17,7 @@ declare -a undir_graph=(
 #  "Germany_sym"
 
   # # k-NN
-  "Household_lines_5_sym"
+  # "Household_lines_5_sym"
 #  "CHEM_5_sym"
 #  "GeoLifeNoScale_2_sym"
 #  "GeoLifeNoScale_5_sym"
@@ -45,17 +45,17 @@ declare data_path="${source_dir}/data"
 # echo $data_path
 # echo $source_dir
 
-mkdir ${data_path}/bench_all
+mkdir ${data_path}/bench_dynamic
 cd ${source_dir}/build/benchmark/
 
 
 #echo $(pwd)
-rm bench_all
-make bench_all
+rm bench_dynamic
+make bench_dynamic
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./bench_all -a 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_all/${graph}.query
+  ${numactl} ./bench_dynamic -a 4 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
   echo
 done
 
