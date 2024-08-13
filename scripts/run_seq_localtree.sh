@@ -2,7 +2,7 @@
 declare -a undir_graph=(
   # Social
 
-  # "com-orkut_sym"
+  "com-orkut_sym"
   # "soc-LiveJournal1_sym"
   # "twitter_sym"
   # "friendster_sym"
@@ -18,12 +18,12 @@ declare -a undir_graph=(
 
   # k-NN
   # "Household_lines_5_sym"
-  "CHEM_5_sym"
+  # "CHEM_5_sym"
   # "GeoLifeNoScale_20_sym"
   # "Cosmo50_5_sym"
 
   # Synthetic
-  "grid_1000_10000_03_sym"
+  # "grid_1000_10000_03_sym"
   # "grid_1000_10000_sym"
   # "grid_4000_4000_03_sym"
   # "grid_4000_4000_sym"
@@ -50,21 +50,24 @@ cd ${source_dir}/build/benchmark/seq_localtree/
 rm seq_localtree
 make seq_localtree
 
-export PARLAY_NUM_THREADS=50
+export PARLAY_NUM_THREADS=25
 
 for graph in "${undir_graph[@]}"; do
   mkdir ${data_path}/seq_localtree/${graph}
 
   # echo Running compressed cluster forest with blocked insertion on ${graph}.bin
   ${numactl} ./seq_localtree -c 1 -i 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
+
+  # echo Running compressed cluster forest with LCA insertion on ${graph}.bin
+  # ${numactl} ./seq_localtree -c 1 -i 2 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
   
   # echo Running compressed cluster forest with root insertion on ${graph}.bin
-  ${numactl} ./seq_localtree -c 1 -i 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
+  # ${numactl} ./seq_localtree -c 1 -i 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
   
   # echo Running uncompressed cluster forest with blocked insertion on ${graph}.bin
-  ${numactl} ./seq_localtree -c 0 -i 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
+  # ${numactl} ./seq_localtree -c 0 -i 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
   
   # echo Running uncompressed cluster forest with root insertion on ${graph}.bin
-  ${numactl} ./seq_localtree -c 0 -i 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
+  # ${numactl} ./seq_localtree -c 0 -i 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/seq_localtree/${graph}.out
 done
 

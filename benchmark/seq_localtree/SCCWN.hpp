@@ -16,12 +16,13 @@ private:
 public:
   size_t n;
   static size_t lmax;
-  static bool blocked_insert;
+  static int insertion_mode;
   parlay::sequence<localTree *> leaves;
   SCCWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
   // ~SCCWN() { run_stat("./", true, false, false); };
   void insert(size_t u, size_t v);
   void insertToBlock(size_t u, size_t v);
+  void insertToRoot(size_t u, size_t v);
   bool is_connected(size_t u, size_t v);
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
@@ -47,7 +48,7 @@ public:
   }
 };
 inline size_t SCCWN::lmax = 63;
-inline bool SCCWN::blocked_insert = false;
+inline int SCCWN::insertion_mode = 0;
 
 void SCCWN::print_cg_sizes() {
   size_t total = 0;
@@ -141,8 +142,13 @@ int64_t SCCWN::space() {
 }
 
 inline void SCCWN::insert(size_t u, size_t v) {
-  if (this->blocked_insert)
+  if (this->insertion_mode == 1) {
     this->insertToBlock(u,v);
+    return;
+  } else if (this->insertion_mode == 0) {
+    this->insertToRoot(u,v);
+    return;
+  }
   if (leaves[u] == nullptr)
     leaves[u] = new localTree(u);
   if (leaves[v] == nullptr)
@@ -254,6 +260,23 @@ inline void SCCWN::insert(size_t u, size_t v) {
 
   leaves[u]->insertToLeaf(v, l);
   leaves[v]->insertToLeaf(u, l);
+}
+inline void SCCWN::insertToRoot(size_t u, size_t v) {
+  auto g = [&](size_t &u) -> localTree * {
+    localTree *r = localTree::getRoot(leaves[u]);
+    if (r->getLevel() == lmax) return r;
+    auto p = new localTree();
+    p->setLevel(lmax);
+    localTree::addChild(p, r);
+    return p;
+  };
+  if (leaves[u] == nullptr) leaves[u] = new localTree(u);
+  if (leaves[v] == nullptr) leaves[v] = new localTree(v);
+  auto Cu = g(u);
+  auto Cv = g(v);
+  if (Cu != Cv) localTree::merge(Cu, Cv);
+  leaves[u]->insertToLeaf(v, lmax);
+  leaves[v]->insertToLeaf(u, lmax);
 }
 inline void SCCWN::insertToBlock(size_t u, size_t v) {
   if (leaves[u] == nullptr) leaves[u] = new localTree(u);

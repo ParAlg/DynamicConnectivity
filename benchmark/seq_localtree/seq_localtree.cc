@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
   size_t num_batches = P.getOptionIntValue("-b", 10);
   size_t num_queries = P.getOptionIntValue("-q", 1000);
   bool use_compression = P.getOptionIntValue("-c", 0);
-  bool blocked_insert = P.getOptionIntValue("-i", 0);
+  int insertion_mode = P.getOptionIntValue("-i", 0);
 
   std::cout << "INITIALIZING INPUT GRAPH " << In << std::endl;
 
@@ -56,16 +56,16 @@ int main(int argc, char** argv) {
 
   bool do_queries = false;
   bool collect_stats = false;
-  bool measure_space = false;
+  bool measure_space = true;
 
   t.start();
   std::cout << "Using cluster forest: " << (use_compression ? "COMPRESSED" : "UNCOMPRESSED") << std::endl;
-  std::cout << "Insertions: " << (blocked_insert ? "BLOCKED" : "ROOT") << std::endl;
+  std::cout << "Insertions: " << (insertion_mode == 0 ? "ROOT" : (insertion_mode == 1 ? "BLOCKED" : "LCA")) << std::endl;
 
   if (use_compression) {
     SCCWN F(n);
     F.lmax = std::ceil(std::log2(n));
-    if (blocked_insert) F.blocked_insert = true;
+    F.insertion_mode = insertion_mode;
     assert(F.lmax < 64);
     if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
     t.next("Stat collecting time");
@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
   else {
     CWN F(n);
     F.lmax = std::ceil(std::log2(n));
-    if (blocked_insert) F.blocked_insert = true;
+    if (insertion_mode == 1) F.blocked_insert = true;
     assert(F.lmax < 64);
     if (measure_space) std::cout << std::endl << "Space: " << F.space()/1000000 << " MB" << std::endl;
     t.next("Stat collecting time");
