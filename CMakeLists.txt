@@ -29,7 +29,7 @@ message(STATUS "PROJECT_SOURCE_DIR              ${DynamicConnectivity_SOURCE_DIR
 add_library(dycon INTERFACE)
 set(DYCON_INCLUDE_DIR "${DynamicConnectivity_SOURCE_DIR}/include/")
 target_include_directories(dycon INTERFACE ${DYCON_INCLUDE_DIR})
-target_compile_features(dycon INTERFACE cxx_std_20)
+target_compile_features(dycon INTERFACE cxx_std_17)
 target_compile_options(dycon INTERFACE -mcx16 -march=native)
 
 # Find threading library
