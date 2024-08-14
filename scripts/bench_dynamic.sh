@@ -1,7 +1,7 @@
 #!/bin/bash
 declare -a undir_graph=(
   # Social
-  "stackoverflow_sym"
+ "stackoverflow_sym"
  "com-orkut_sym"
  "soc-LiveJournal1_sym"
  "twitter_sym"
@@ -10,32 +10,32 @@ declare -a undir_graph=(
  "com-youtube_sym"
  "wiki-topcats_sym"
  "enwiki_sym"
- "graph500-scale25_sym"
+ "pokec_sym"
 #
 #  # # Web
- "sd_arc_sym"
-#
-#
-#  # # Road
-#
- "RoadUSA_sym"
- "Germany_sym"
+#  "sd_arc_sym"
+# #
+# #
+# #  # # Road
+# #
+#  "RoadUSA_sym"
+#  "Germany_sym"
 
-  # # k-NN
-  "Household_lines_5_sym"
-  "CHEM_5_sym"
- "GeoLifeNoScale_2_sym"
- "GeoLifeNoScale_5_sym"
- "GeoLifeNoScale_10_sym"
- "GeoLifeNoScale_15_sym"
- "GeoLifeNoScale_20_sym"
- "Cosmo50_5_sym"
+#   # # k-NN
+#   "Household_lines_5_sym"
+#   "CHEM_5_sym"
+#  "GeoLifeNoScale_2_sym"
+#  "GeoLifeNoScale_5_sym"
+#  "GeoLifeNoScale_10_sym"
+#  "GeoLifeNoScale_15_sym"
+#  "GeoLifeNoScale_20_sym"
+#  "Cosmo50_5_sym"
 
- # # Synthetic
- "grid_1000_10000_03_sym"
- "grid_1000_10000_sym"
- "grid_4000_4000_03_sym"
- "grid_4000_4000_sym"
+#  # # Synthetic
+#  "grid_1000_10000_03_sym"
+#  "grid_1000_10000_sym"
+#  "grid_4000_4000_03_sym"
+#  "grid_4000_4000_sym"
 
 )
 
