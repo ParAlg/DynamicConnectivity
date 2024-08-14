@@ -1,2 +1,2 @@
 add_subdirectory(localtree)
-# add_subdirectory(utils)
+add_subdirectory(utils)
