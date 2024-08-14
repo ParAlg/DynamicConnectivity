@@ -14,14 +14,6 @@ using utils = graph_utils<vertex>;
 using edge = graph_utils<vertex>::edge;
 using edges = graph_utils<vertex>::edges;
 using graph_info = std::tuple<edges, size_t, size_t>;
-inline graph_info graph_decoder(std::string filename) {
-  auto G = utils::break_sym_graph_from_bin(filename);
-  auto E =
-      parlay::random_shuffle(parlay::remove_duplicates(utils::to_edges(G)));
-  std::cout << G.size() << " " << E.size() << std::endl;
-  //   utils::decode_edges(E, "output.txt");
-  return std::make_tuple(parlay::random_shuffle(E), G.size(), E.size());
-}
 inline void generate_del_batch(const edges &E, std::string filename) {
   //   auto E_ = parlay::map(E.cut(0, E.size() / 10), [](auto &e) {
   auto E_ = parlay::map(E, [](auto &e) {

@@ -1,4 +1,5 @@
 #include "parlay/parallel.h"
+#include "parlay/primitives.h"
 #include "parlay/sequence.h"
 #include <cmath>
 #include <cstddef>
@@ -12,6 +13,7 @@
 #include <dynamic_graph/dynamic_connectivity.hpp>
 using vertex = size_t;
 using utils = graph_utils<vertex>;
+using edge = utils::edge;
 using edges = utils::edges;
 
 using query = utils::query;
@@ -388,10 +390,16 @@ int main(int argc, char **argv) {
   auto G = utils::break_sym_graph_from_bin(In);
   vertex n = G.size();
 
-  auto E =
-      parlay::random_shuffle(parlay::remove_duplicates(utils::to_edges(G)));
+  auto E = parlay::remove_duplicates_ordered(utils::to_edges(G),
+                                             [&](edge a, edge b) {
+                                               if (a.first == b.first)
+                                                 return a.second < b.second;
+                                               return a.first < b.first;
+                                             });
   vertex m = E.size();
   std::cout << n << std::endl << m << std::endl;
+  E = parlay::random_shuffle(E);
+
   auto batch_size = parlay::tabulate(
       num_batches + 1, [&](size_t i) { return m / num_batches * i; });
   batch_size[num_batches] = m;
@@ -401,10 +409,6 @@ int main(int argc, char **argv) {
   });
   auto queries_ins =
       utils::generate_CC_queries(num_batches, batches_ins, n, num_queries);
-  Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
-    Ans_ins[i].resize(batches_ins[i].size());
-  });
 
   auto E_ = parlay::random_shuffle(E);
   auto batches_del = parlay::tabulate(num_batches, [&](size_t i) {
