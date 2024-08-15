@@ -1,4 +1,5 @@
 #include "parlay/internal/get_time.h"
+#include "parlay/utilities.h"
 #include <cstddef>
 #include <dycon/localTree/edgeset.hpp>
 #include <parlay/primitives.h>
@@ -13,6 +14,17 @@ void test() {
   for (size_t i = 0; i < 22; i++)
     std::cout << A.pop() << std::endl;
   std::cout << "----------\n";
+  A.print_all();
+  size_t ith = parlay::hash64(4396) % A.get_size();
+  std::cout << "After remove " << A.at(ith) << std::endl;
+  A.remove(ith);
+  A.print_all();
+}
+void test_remove() {
+  DynamicArray<size_t> A;
+  for (size_t i = 1; i < 11; i++)
+    A.insert(i);
+  A.remove(5);
   A.print_all();
 }
 //      insert     pop
@@ -174,6 +186,7 @@ void bench() {
 int main() {
 
   // test();
-  bench();
+  test_remove();
+  // bench();
   return 0;
 }

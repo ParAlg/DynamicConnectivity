@@ -39,7 +39,7 @@ declare -a undir_graph=(
 
 )
 
-declare numactl="numactl -i all"
+declare numactl=""
 
 declare num_batches=10
 

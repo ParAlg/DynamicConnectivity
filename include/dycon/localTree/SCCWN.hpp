@@ -310,7 +310,9 @@ inline void SCCWN::remove(size_t u, size_t v) {
           }
           Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
           leaves[std::get<1>(eu)]->deleteEdgeLazy(std::get<2>(eu), l);
-          leaves[std::get<2>(eu)]->deleteEdgeLazy(std::get<1>(eu), l);
+          auto [lu, iu] = leaves[std::get<2>(eu)]->getEdgeInfo(std::get<1>(eu));
+          assert(lu == l);
+          leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), iu, l);
         }
       } else {
         auto GP = localTree::getParent(CP);
@@ -453,7 +455,9 @@ inline void SCCWN::remove(size_t u, size_t v) {
           }
           Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
           leaves[std::get<1>(ev)]->deleteEdgeLazy(std::get<2>(ev), l);
-          leaves[std::get<2>(ev)]->deleteEdgeLazy(std::get<1>(ev), l);
+          auto [lv, iv] = leaves[std::get<2>(ev)]->getEdgeInfo(std::get<1>(ev));
+          assert(l == lv);
+          leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), iv, l);
         }
       } else {
         auto GP = localTree::getParent(CP);
