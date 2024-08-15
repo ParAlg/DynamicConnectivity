@@ -6,6 +6,7 @@
 #include <cstring>
 #include <parlay/alloc.h>
 #include <parlay/parallel.h>
+#include <stdexcept>
 template <typename T, uint32_t B = 8> class DynamicArray {
 private:
   using EBlock = std::array<T, B>;
@@ -88,45 +89,14 @@ public:
           std::cout << (*blocks[i])[j] << std::endl;
     }
   }
+
+  // operations on a specific location
+  T at(T ith) { return (*blocks[(ith - 1) / B])[(ith - 1) % B]; }
+  void remove(T ith) {
+    std::swap((*blocks[(ith - 1) / B])[(ith - 1) % B],
+              (*blocks[used_blocks - 1])[(num_elements - 1) % B]);
+    pop();
+  }
   void mem_stat() { EBallocator::print_stats(); }
 };
-// template <typename T> class DynamicArray {
-// private:
-//   struct EBlock {
-//     T X[8];
-//   };
-//   using EBallocator = parlay::type_allocator<EBlock>;
-//   T num_blocks;
-//   T num_ele;
-//   EBlock **blocks;
-
-// public:
-//   DynamicArray() : num_blocks(0), num_ele(0), blocks(nullptr) {}
-//   ~DynamicArray() {
-//     for (T i = 0; i < num_blocks; i++)
-//       EBallocator::free(blocks[i]);
-//   }
-//   void insert(const T &element) {
-//     if (num_ele % 8 == 0 || num_blocks == 0)
-//       blocks[num_blocks++] = (EBlock *)EBallocator::alloc();
-//     num_ele++;
-//     blocks[num_blocks - 1]->X[num_ele - 8 * num_blocks - 1] = element;
-//   }
-//   // pop the last one, if the last block is empty, collect it.
-//   T pop() {
-//     if (num_blocks == 0 || num_ele == 0) {
-//       std::cout << "over pop\n";
-//       std::abort();
-//     }
-//     T e = blocks[num_blocks - 1]->X[num_ele - 8 * num_blocks - 1];
-//     num_ele--;
-//     if (num_ele % num_blocks == 0) {
-//       EBallocator::free(blocks[num_blocks - 1]);
-//       num_blocks--;
-//     }
-//     return e;
-//   }
-//   T fetch() { return blocks[num_blocks - 1]->X[num_ele - 8 * num_blocks - 1];
-//   }
-// };
 #endif

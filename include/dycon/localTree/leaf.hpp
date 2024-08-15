@@ -1,9 +1,11 @@
-#pragma once
-#include "../helpers/assert.hpp"
+#ifndef LT_LEAF
+#define LT_LEAF
+#include "edgeset.hpp"
 #include <bitset>
 #include <cassert>
+#include <cstddef>
 #include <map>
-#include <set>
+#include <utility>
 // This is the leaf of the cluster forest.
 // It contains a vertex in the graph and its incident edges.
 // The incident edges are grouped by their level. So we need at
@@ -18,104 +20,88 @@
 
 class leaf {
 public:
-  // using incident_edges = std::map<size_t, std::set<size_t>>;
-  // using edge_lists = std::pair<size_t, std::set<size_t>>;
-
   leaf(size_t _id = 0, void *p = nullptr)
-      : E(), parent(p), edgemap(), size(0), id(_id) {}
-  bool insert(size_t e, size_t l);
-  bool remove(size_t e, size_t l);
-  size_t getLevel(size_t e);
-  bool checkLevel(size_t l);
-  void linkToRankTree(void *p);
+      : parent(p), edgemap(), size(0), id(_id) {
+    // memset(E, 0, sizeof(DynamicArray<size_t, 64> *) * 32);
+    for (size_t i = 0; i < 33; i++)
+      E[i] = new DynamicArray<size_t, 64>;
+  }
+  ~leaf() {
+    for (size_t i = 0; i < 33; i++)
+      delete E[i];
+  }
+  void insert(size_t e, size_t l);
+  void remove_lazy(size_t e, size_t l);
+  void remove(size_t e, size_t ith, size_t l);
+  std::pair<size_t, size_t> getEdgeInfo(size_t e);
+  bool hasLevelEdge(size_t l);
+  void flattenLevel(size_t l) { E[l]->print_all(); }
+  size_t getNumEdges(size_t l) { return E[l]->get_size(); }
+  std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
+  void linkToRankTree(void *p) { parent = p; }
   void *getParent() { return parent; }
-  bool checkLevelEdge(size_t l) { return edgemap[l]; }
+  bool hasLevelEdgeEdge(size_t l) { return edgemap[l]; }
   size_t getSize() { return size; }
   size_t getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
-  std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator>
-  getLevelIterator(size_t l);
-  std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
 
 private:
-  std::map<size_t, std::set<size_t>> E;
+  size_t size;
+  // store level of edge (id,v)
+  // map<id,<level,ith in array>>;
+  std::map<size_t, std::pair<size_t, size_t>> L;
   void *parent; // pointer to rank tree of the level logn cluster node
   std::bitset<64> edgemap;
   size_t id;
-  size_t size;
+  DynamicArray<size_t, 64> *E[33];
 };
-inline void leaf::linkToRankTree(void *p) { parent = p; }
-inline bool leaf::insert(size_t e, size_t l) {
-  auto &E = this->E;
-  // find if there is level l incident edges
-  size++;
-  auto it = E.find(l);
-  if (it != E.end()) {
-    // insert to grouped BBST
-    assert(it->second.find(e) == it->second.end());
-    it->second.insert(e);
-  } else {
-    // insert to a new group
-    std::set<size_t> e_;
-    e_.insert(e);
-    E.insert(std::make_pair(l, std::move(e_)));
-    this->edgemap[l] = 1;
-    return true;
+inline void leaf::insert(size_t e, size_t l) {
+  this->size++;    // #incident vertices
+  E[l]->insert(e); // add to dynamic array
+  this->edgemap[l] = 1;
+  //  <other_endpoint,<level,ith in the array>>
+  this->L.insert(std::make_pair(e, std::make_pair(l, E[l]->get_size())));
+}
+// remove the last one from the array
+inline void leaf::remove_lazy(size_t e, size_t l) {
+  if (E[l]->tail() != e) {
+    std::cout << e << " " << E[l]->tail() << std::endl;
+    E[l]->print_all();
   }
-  return false;
+
+  assert(e == E[l]->tail()); // delete the correct edge
+  this->size--;              // #incident vertices
+  this->L.erase(e);          // not incident vertex anymore
+  E[l]->pop();               // pop from tail of the array
+  if (E[l]->is_empty())      // bitmap
+    this->edgemap[l] = 0;
+}
+inline void leaf::remove(size_t e, size_t ith, size_t l) {
+  if (E[l]->at(ith) != e) {
+    std::cout << e << " " << E[l]->at(ith) << std::endl;
+    E[l]->print_all();
+  }
+  assert(E[l]->at(ith) == e); // delete the correct edge
+  this->size--;               // #incident vertices
+  this->L.erase(e);           // not incident vertex anymore
+  E[l]->remove(ith);          // remove specific element
+  if (E[l]->is_empty())
+    this->edgemap[l] = 0;
+}
+
+inline std::pair<size_t, size_t> leaf::getEdgeInfo(size_t e) {
+  auto it = L.find(e);
+  assert(it != L.end());
+  return it->second;
+}
+inline bool leaf::hasLevelEdge(size_t l) {
+  // check if this vertex has level l incident edges.
+  assert(!(E[l]->is_empty()) == this->edgemap[l]);
+  return !E[l]->is_empty();
 }
 inline std::tuple<bool, size_t, size_t> leaf::fetchEdge(size_t l) {
-  auto &E = this->E;
-  auto it = E.find(l);
-  if (it == E.end())
+  if (this->edgemap[l] == 0)
     return std::make_tuple(false, 0, 0);
-  auto v = it->second.begin();
-  auto e = std::make_tuple(true, id, *v);
-  return e;
+  return std::make_tuple(true, id, E[l]->tail());
 }
-inline bool leaf::remove(size_t e, size_t l) {
-  this->size--;
-  auto &E = this->E;
-  auto it = E.find(l);
-  ASSERT_MSG(it != E.end(), "remove from wrong edge level");
-  it->second.erase(e);
-  if (it->second.size() == 0) {
-    E.erase(it);
-    this->edgemap[l] = 0;
-    return true;
-  }
-  return false;
-}
-inline size_t leaf::getLevel(size_t e) {
-  auto &E = this->E;
-  size_t level = UINT64_MAX;
-  bool flag = false;
-  // std::cout << "number of levels " << E.size() << std::endl;
-  for (auto const &[l, edges] : E) {
-    // std::cout << "number of vertices in each level " << edges.size() <<
-    // std::endl;
-    if (edges.find(e) != edges.end()) {
-      level = l;
-      flag = true;
-      break;
-    }
-  }
-
-  // std::cout << "level is " << level << std::endl;
-  ASSERT_MSG(flag == true, "edge doesn't exist");
-
-  return level;
-}
-inline bool leaf::checkLevel(size_t l) {
-  // check if this vertex has level l incident edges.
-  auto &E = this->E;
-  auto it = E.find(l);
-  if (it != E.end())
-    return true;
-  return false;
-}
-inline std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator>
-leaf::getLevelIterator(size_t l) {
-  return std::make_pair(this->E.find(l)->second.begin(),
-                        this->E.find(l)->second.end());
-}
+#endif

@@ -2,8 +2,10 @@
 #include "leaf.hpp"
 #include "rankTree.hpp"
 #include "stats.hpp"
+#include <cstddef>
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
+#include <utility>
 class rankTree;
 class localTree {
 private:
@@ -51,8 +53,9 @@ public:
   static localTree *getLevelNode(localTree *r, size_t l);
   static nodeArr getRootPath(localTree *r);
   void insertToLeaf(size_t v, size_t l);
-  void deleteEdge(size_t v, size_t l);
-  size_t getEdgeLevel(size_t e);
+  void deleteEdge(size_t v, size_t ith, size_t l);
+  void deleteEdgeLazy(size_t v, size_t l);
+  std::pair<size_t, size_t> getEdgeInfo(size_t e);
   static void traverseTopDown(localTree *root, bool clear, bool verbose,
                               bool stat, parlay::sequence<stats> &info);
   static std::tuple<bool, size_t, size_t> fetchEdge(localTree *root, size_t l);
@@ -233,11 +236,17 @@ inline void localTree::insertToLeaf(size_t v, size_t l) {
   // go up to update
   updateBitMap(this);
 }
-inline void localTree::deleteEdge(size_t v, size_t l) {
-  this->vertex->remove(v, l);
+inline void localTree::deleteEdge(size_t v, size_t ith, size_t l) {
+  this->vertex->remove(v, ith, l);
   this->edgemap = this->vertex->getEdgeMap();
   updateBitMap(this);
 }
+inline void localTree::deleteEdgeLazy(size_t v, size_t l) {
+  this->vertex->remove_lazy(v, l);
+  this->edgemap = this->vertex->getEdgeMap();
+  updateBitMap(this);
+}
+
 inline void localTree::deleteFromParent(localTree *p) {
   // remove p from its parent
   if (!p->parent)
@@ -251,8 +260,8 @@ inline void localTree::deleteFromParent(localTree *p) {
     updateBitMap(node);
   p->parent = nullptr;
 }
-inline size_t localTree::getEdgeLevel(size_t e) {
-  return this->vertex->getLevel(e);
+inline std::pair<size_t, size_t> localTree::getEdgeInfo(size_t e) {
+  return this->vertex->getEdgeInfo(e);
 }
 inline void localTree::traverseTopDown(localTree *root, bool clear,
                                        bool verbose, bool stat,
