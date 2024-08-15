@@ -243,6 +243,7 @@ inline void localTree::deleteEdge(size_t v, size_t ith, size_t l) {
 }
 inline void localTree::deleteEdgeLazy(size_t v, size_t l) {
   this->vertex->remove_lazy(v, l);
+
   this->edgemap = this->vertex->getEdgeMap();
   updateBitMap(this);
 }

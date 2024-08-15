@@ -17,17 +17,17 @@
 // 3.Given an edge(u,v), use O(logn) to find the level of the edge.
 // 4.Given a level l, use O(loglogn) to determine if there are any
 // incident edges in that level
-
+const size_t MAX_LEVEL = 33;
 class leaf {
 public:
   leaf(size_t _id = 0, void *p = nullptr)
       : parent(p), edgemap(), size(0), id(_id) {
     // memset(E, 0, sizeof(DynamicArray<size_t, 64> *) * 32);
-    for (size_t i = 0; i < 33; i++)
+    for (size_t i = 0; i < MAX_LEVEL; i++)
       E[i] = new DynamicArray<size_t, 64>;
   }
   ~leaf() {
-    for (size_t i = 0; i < 33; i++)
+    for (size_t i = 0; i < MAX_LEVEL; i++)
       delete E[i];
   }
   void insert(size_t e, size_t l);
@@ -44,6 +44,7 @@ public:
   size_t getSize() { return size; }
   size_t getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
+  void flatten();
 
 private:
   size_t size;
@@ -53,7 +54,7 @@ private:
   void *parent; // pointer to rank tree of the level logn cluster node
   std::bitset<64> edgemap;
   size_t id;
-  DynamicArray<size_t, 64> *E[33];
+  DynamicArray<size_t, 64> *E[MAX_LEVEL];
 };
 inline void leaf::insert(size_t e, size_t l) {
   this->size++;    // #incident vertices
@@ -65,8 +66,9 @@ inline void leaf::insert(size_t e, size_t l) {
 // remove the last one from the array
 inline void leaf::remove_lazy(size_t e, size_t l) {
   if (E[l]->tail() != e) {
-    std::cout << e << " " << E[l]->tail() << std::endl;
-    E[l]->print_all();
+    std::cout << this->id << " " << e << " " << E[l]->tail() << " " << " "
+              << E[l]->get_size() << std::endl;
+    flatten();
   }
 
   assert(e == E[l]->tail()); // delete the correct edge
@@ -78,13 +80,18 @@ inline void leaf::remove_lazy(size_t e, size_t l) {
 }
 inline void leaf::remove(size_t e, size_t ith, size_t l) {
   if (E[l]->at(ith) != e) {
-    std::cout << e << " " << E[l]->at(ith) << std::endl;
+    std::cout << this->id << " " << e << " " << E[l]->at(ith) << " " << ith
+              << " " << E[l]->get_size() << std::endl;
     E[l]->print_all();
   }
+  // since we swap the ith to the E[l]->num_elementh
+  //  we also need to update the ith info for the new one at ith
   assert(E[l]->at(ith) == e); // delete the correct edge
-  this->size--;               // #incident vertices
-  this->L.erase(e);           // not incident vertex anymore
-  E[l]->remove(ith);          // remove specific element
+  L[E[l]->tail()] = std::make_pair(l, ith);
+  // L[e] = std::make_pair(l, E[l]->get_size());
+  this->size--;      // #incident vertices
+  this->L.erase(e);  // not incident vertex anymore
+  E[l]->remove(ith); // remove specific element
   if (E[l]->is_empty())
     this->edgemap[l] = 0;
 }
@@ -103,5 +110,13 @@ inline std::tuple<bool, size_t, size_t> leaf::fetchEdge(size_t l) {
   if (this->edgemap[l] == 0)
     return std::make_tuple(false, 0, 0);
   return std::make_tuple(true, id, E[l]->tail());
+}
+inline void leaf::flatten() {
+  for (size_t i = 0; i < MAX_LEVEL; i++) {
+    if (this->edgemap[i]) {
+      std::cout << "flatten level " << i << " edges\n";
+      E[i]->print_all();
+    }
+  }
 }
 #endif
