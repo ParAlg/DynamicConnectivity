@@ -1,3 +1,0 @@
-add_executable(hashexample example.cc)
-target_link_libraries(hashexample PRIVATE dycon)
-target_include_directories(hashexample PRIVATE dycon)
