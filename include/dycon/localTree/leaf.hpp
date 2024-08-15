@@ -1,7 +1,10 @@
 #pragma once
 #include "../helpers/assert.hpp"
+#include "parlay/parallel.h"
 #include <bitset>
 #include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <map>
 #include <set>
 // This is the leaf of the cluster forest.
@@ -15,16 +18,18 @@
 // 3.Given an edge(u,v), use O(logn) to find the level of the edge.
 // 4.Given a level l, use O(loglogn) to determine if there are any
 // incident edges in that level
-
+#define MAX_LEVEL 32
 class leaf {
 public:
   // using incident_edges = std::map<size_t, std::set<size_t>>;
   // using edge_lists = std::pair<size_t, std::set<size_t>>;
 
   leaf(size_t _id = 0, void *p = nullptr)
-      : E(), parent(p), edgemap(), size(0), id(_id) {}
-  bool insert(size_t e, size_t l);
-  bool remove(size_t e, size_t l);
+      : parent(p), edgemap(), size(0), id(_id) {
+    memset(E, 0, sizeof(E));
+  };
+  void insert(size_t e, size_t l);
+  void remove(size_t e, size_t l);
   size_t getLevel(size_t e);
   bool checkLevel(size_t l);
   void linkToRankTree(void *p);
@@ -38,84 +43,61 @@ public:
   std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
 
 private:
-  std::map<size_t, std::set<size_t>> E;
+  //   std::map<size_t, std::set<size_t>> E;
+  std::set<size_t> *E[MAX_LEVEL + 1];
   void *parent; // pointer to rank tree of the level logn cluster node
   std::bitset<64> edgemap;
   size_t id;
   size_t size;
 };
 inline void leaf::linkToRankTree(void *p) { parent = p; }
-inline bool leaf::insert(size_t e, size_t l) {
+inline void leaf::insert(size_t e, size_t l) {
   auto &E = this->E;
   // find if there is level l incident edges
   size++;
-  auto it = E.find(l);
-  if (it != E.end()) {
-    // insert to grouped BBST
-    assert(it->second.find(e) == it->second.end());
-    it->second.insert(e);
-  } else {
-    // insert to a new group
-    std::set<size_t> e_;
-    e_.insert(e);
-    E.insert(std::make_pair(l, std::move(e_)));
-    this->edgemap[l] = 1;
-    return true;
-  }
-  return false;
+  if (E[l] == nullptr) // no edge in this level
+    E[l] = new std::set<size_t>;
+  assert(E[l]->find(e) == E[l]->end());
+  E[l]->insert(e);
+  this->edgemap[l] = 1;
 }
 inline std::tuple<bool, size_t, size_t> leaf::fetchEdge(size_t l) {
   auto &E = this->E;
-  auto it = E.find(l);
-  if (it == E.end())
+  if (E[l] == nullptr || E[l]->empty())
     return std::make_tuple(false, 0, 0);
-  auto v = it->second.begin();
-  auto e = std::make_tuple(true, id, *v);
+  auto e = std::make_tuple(true, id, *(E[l]->begin()));
   return e;
 }
-inline bool leaf::remove(size_t e, size_t l) {
+inline void leaf::remove(size_t e, size_t l) {
   this->size--;
   auto &E = this->E;
-  auto it = E.find(l);
-  ASSERT_MSG(it != E.end(), "remove from wrong edge level");
-  it->second.erase(e);
-  if (it->second.size() == 0) {
-    E.erase(it);
+  assert(E[l] != nullptr && !E[l]->empty());
+  E[l]->erase(e);
+  if (E[l]->empty()) {
+    delete E[l];
+    E[l] = nullptr;
     this->edgemap[l] = 0;
-    return true;
   }
-  return false;
 }
 inline size_t leaf::getLevel(size_t e) {
   auto &E = this->E;
-  size_t level = UINT64_MAX;
+  size_t level = MAX_LEVEL + 1;
   bool flag = false;
-  // std::cout << "number of levels " << E.size() << std::endl;
-  for (auto const &[l, edges] : E) {
-    // std::cout << "number of vertices in each level " << edges.size() <<
-    // std::endl;
-    if (edges.find(e) != edges.end()) {
-      level = l;
+  for (size_t i = 0; i <= MAX_LEVEL; i++) {
+    if (E[i] != nullptr && E[i]->contains(e)) {
+      level = i;
       flag = true;
       break;
     }
   }
 
   // std::cout << "level is " << level << std::endl;
-  ASSERT_MSG(flag == true, "edge doesn't exist");
+  assert(flag == true);
 
   return level;
 }
 inline bool leaf::checkLevel(size_t l) {
   // check if this vertex has level l incident edges.
-  auto &E = this->E;
-  auto it = E.find(l);
-  if (it != E.end())
-    return true;
-  return false;
-}
-inline std::pair<std::set<size_t>::iterator, std::set<size_t>::iterator>
-leaf::getLevelIterator(size_t l) {
-  return std::make_pair(this->E.find(l)->second.begin(),
-                        this->E.find(l)->second.end());
+  assert(this->edgemap[l] == (E[l] != nullptr && E[l]->empty()));
+  return this->edgemap[l];
 }

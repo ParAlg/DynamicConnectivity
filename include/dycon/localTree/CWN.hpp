@@ -107,7 +107,7 @@ inline void CWN::insertToBlock(size_t u, size_t v) {
   leaves[v]->insertToLeaf(u, l);
 }
 inline void CWN::remove(size_t u, size_t v) {
-  // std::cout << u << " " << v << std::endl;
+  // std::cout << u << "  " << v << std::endl;
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
   size_t l = leaves[u]->getEdgeLevel(v);
   leaves[u]->deleteEdge(v, l);
