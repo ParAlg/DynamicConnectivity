@@ -85,7 +85,12 @@ else()
   find_package(pam REQUIRED)
   target_link_libraries(dycon INTERFACE pam)
 endif()
-
+FetchContent_Declare(abseil-cpp
+GIT_REPOSITORY git@github.com:abseil/abseil-cpp.git
+GIT_TAG master
+)
+FetchContent_MakeAvailable(abseil-cpp)
+target_link_libraries(dycon INTERFACE absl::flat_hash_map)
 # Link against jemalloc
 #find_library(JEMALLOC_LIB jemalloc)
 #if(NOT JEMALLOC_LIB)
