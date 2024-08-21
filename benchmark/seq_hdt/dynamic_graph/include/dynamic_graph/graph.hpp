@@ -10,7 +10,7 @@
 #include <utility>
 
 /** Represents a vertex in a graph. */
-typedef int64_t Vertex;
+typedef uint32_t Vertex;
 
 /** Represents an edge in a directed graph. */
 typedef std::pair<Vertex, Vertex> DirectedEdge;
@@ -30,9 +30,9 @@ struct UndirectedEdge {
   const Vertex second;
 };
 /** Defines how to print UndirectedEdge in an output stream. */
-std::ostream& operator<<(std::ostream& out, const UndirectedEdge& edge);
+std::ostream &operator<<(std::ostream &out, const UndirectedEdge &edge);
 /** Equality operator for UndirectedEdge. */
-bool operator==(const UndirectedEdge& e1, const UndirectedEdge& e2);
+bool operator==(const UndirectedEdge &e1, const UndirectedEdge &e2);
 
 /** For storing undirected edges in hash containers. For instance:
  *  \code
@@ -45,5 +45,5 @@ struct UndirectedEdgeHash {
    *  @param[in] edge Edge to be hashed.
    *  @returns Hash value of the edge.
    */
-  std::size_t operator()(const UndirectedEdge& edge) const;
+  std::size_t operator()(const UndirectedEdge &edge) const;
 };

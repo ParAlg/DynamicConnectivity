@@ -87,15 +87,20 @@ else()
 endif()
 
 # Link against jemalloc
-#find_library(JEMALLOC_LIB jemalloc)
-#if(NOT JEMALLOC_LIB)
+# find_library(JEMALLOC_LIB jemalloc)
+# if(NOT JEMALLOC_LIB)
 #  message(FATAL_ERROR "Could not find jemalloc.")
-#else()
+# else()
 #  message("-- Found jemalloc: ${JEMALLOC_LIB}")
 #  target_link_libraries(dycon INTERFACE optimized ${JEMALLOC_LIB})
-#endif()
+# endif()
 
-
+if (JEMALLOC)
+  set(JEMALLOC_LIB_DIR  "/home/zhongqi/local/lib")
+  set(JEMALLOC_INCLUDE_DIR "/home/zhongqi/local/include")
+#   include_directories(${JEMALLOC_INCLUDE_DIR})
+#   target_link_libraries(dycon PRIVATE "${JEMALLOC_LIB_DIR}/libjemalloc.so")
+endif()
 # -------------------------------------------------------------------
 #                         Unit tests
 

@@ -31,14 +31,14 @@ struct EdgeInfo {
   EdgeType type;
 };
 
-}  // namespace detail
+} // namespace detail
 
 /** This class represents an undirected graph that can undergo efficient edge
  *  insertions, edge deletions, and connectivity queries. Multiple edges between
  *  a pair of vertices are supported.
  */
 class DynamicConnectivity {
- public:
+public:
   /** Initializes an empty graph with a fixed number of vertices.
    *
    *  Efficiency: \f$ O(n \log n ) \f$ where \f$ n \f$ is the number of vertices
@@ -46,7 +46,7 @@ class DynamicConnectivity {
    *
    *  @param[in] num_vertices Number of vertices in the graph.
    */
-  explicit DynamicConnectivity(int64_t num_vertices);
+  explicit DynamicConnectivity(uint32_t num_vertices);
 
   /** Deallocates the data structure. */
   ~DynamicConnectivity();
@@ -55,14 +55,14 @@ class DynamicConnectivity {
    *  graph must be known. */
   DynamicConnectivity() = delete;
   /** Copy constructor not implemented. */
-  DynamicConnectivity(const DynamicConnectivity& other) = delete;
+  DynamicConnectivity(const DynamicConnectivity &other) = delete;
   /** Copy assignment not implemented. */
-  DynamicConnectivity& operator=(const DynamicConnectivity& other) = delete;
+  DynamicConnectivity &operator=(const DynamicConnectivity &other) = delete;
 
   /** Move constructor. */
-  DynamicConnectivity(DynamicConnectivity&& other) noexcept;
+  DynamicConnectivity(DynamicConnectivity &&other) noexcept;
   /** Move assignment not implemented. */
-  DynamicConnectivity& operator=(DynamicConnectivity&& other) noexcept;
+  DynamicConnectivity &operator=(DynamicConnectivity &&other) noexcept;
 
   /** Returns true if vertices \p u and \p v are connected in the graph.
    *
@@ -81,7 +81,7 @@ class DynamicConnectivity {
    *  @param[in] edge Edge.
    *  @returns True if \p edge is in the graph, false if it is not.
    */
-  bool HasEdge(const UndirectedEdge& edge) const;
+  bool HasEdge(const UndirectedEdge &edge) const;
 
   /** Returns the number of vertices in `v`'s connected component.
    *
@@ -90,18 +90,19 @@ class DynamicConnectivity {
    * @param[in] v Vertex.
    * @returns The number of vertices in \p v's connected component.
    */
-  int64_t GetSizeOfConnectedComponent(Vertex v) const;
+  uint32_t GetSizeOfConnectedComponent(Vertex v) const;
 
   /** Adds an edge to the graph.
    *
-   *  The edge must not already be in the graph and must not be a self-loop edge.
+   *  The edge must not already be in the graph and must not be a self-loop
+   * edge.
    *
    *  Efficiency: \f$ O\left( \log^2 n \right) \f$ amortized where \f$ n \f$ is
    *  the number of vertices in the graph.
    *
    *  @param[in] edge Edge to be added.
    */
-  void AddEdge(const UndirectedEdge& edge);
+  void AddEdge(const UndirectedEdge &edge);
 
   /** Deletes an edge from the graph.
    *
@@ -112,17 +113,17 @@ class DynamicConnectivity {
    *
    *  @param[in] edge Edge to be deleted.
    */
-  void DeleteEdge(const UndirectedEdge& edge);
+  void DeleteEdge(const UndirectedEdge &edge);
 
- private:
-  void AddNonTreeEdge(const UndirectedEdge& edge);
-  void AddTreeEdge(const UndirectedEdge& edge);
-  void AddEdgeToAdjacencyList(const UndirectedEdge& edge, detail::Level level);
-  void DeleteEdgeFromAdjacencyList(
-      const UndirectedEdge& edge, detail::Level level);
-  void ReplaceTreeEdge(const UndirectedEdge& edge, detail::Level level);
+private:
+  void AddNonTreeEdge(const UndirectedEdge &edge);
+  void AddTreeEdge(const UndirectedEdge &edge);
+  void AddEdgeToAdjacencyList(const UndirectedEdge &edge, detail::Level level);
+  void DeleteEdgeFromAdjacencyList(const UndirectedEdge &edge,
+                                   detail::Level level);
+  void ReplaceTreeEdge(const UndirectedEdge &edge, detail::Level level);
 
-  const int64_t num_vertices_;
+  const uint32_t num_vertices_;
   // `spanning_forests_[i]` stores F_i, the spanning forest for the i-th
   // subgraph. In particular, `spanning_forests[0]` is a spanning forest for the
   // whole graph.
@@ -130,8 +131,8 @@ class DynamicConnectivity {
   // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
   // v by level-i non-tree edges.
   std::vector<std::vector<std::unordered_set<Vertex>>>
-    non_tree_adjacency_lists_;
+      non_tree_adjacency_lists_;
   // All edges in the graph.
   std::unordered_map<UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
-    edges_;
+      edges_;
 };
