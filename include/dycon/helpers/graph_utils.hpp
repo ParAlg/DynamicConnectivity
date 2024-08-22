@@ -60,7 +60,8 @@ template <typename vertex> struct graph_utils {
 
   static edges to_edges(const graph &G) {
     return flatten(parlay::tabulate(G.size(), [&](vertex u) {
-      return map(G[u], [=](vertex v) { return std::pair(u, v); });
+      return map(G[u],
+                 [=](vertex v) { return std::pair((vertex)u, (vertex)v); });
     }));
   }
 
@@ -347,14 +348,14 @@ template <typename vertex> struct graph_utils {
                           [&](auto i) { return flags[i]; });
   }
   static parlay::sequence<queries>
-  generate_CC_queries(size_t &num_batches, parlay::sequence<edges> &E,
-                      size_t &n, size_t &num_queries) {
-    return parlay::tabulate(num_batches, [&](size_t i) {
+  generate_CC_queries(uint32_t &num_batches, parlay::sequence<edges> &E,
+                      vertex &n, uint32_t &num_queries) {
+    return parlay::tabulate(num_batches, [&](uint32_t i) {
       auto E_ = E[i];
       auto candidate_vertices = avail_vertices(E_, n);
       // std::cout << candidate_vertices.size() << std::endl;
       queries Q(num_queries);
-      parlay::parallel_for(0, Q.size(), [&](size_t j) {
+      parlay::parallel_for(0, Q.size(), [&](uint32_t j) {
         Q[j].first = // 50 percent non-connect pair
             j % 2 ? E_[parlay::hash64(j) % E_.size()].first
                   : candidate_vertices[parlay::hash64(
