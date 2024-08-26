@@ -47,7 +47,7 @@ class DynamicConnectivity {
    *
    *  @param[in] num_vertices Number of vertices in the graph.
    */
-  explicit DynamicConnectivity(int64_t num_vertices);
+  explicit DynamicConnectivity(uint32_t num_vertices);
 
   /** Deallocates the data structure. */
   ~DynamicConnectivity();
@@ -91,7 +91,7 @@ class DynamicConnectivity {
    * @param[in] v Vertex.
    * @returns The number of vertices in \p v's connected component.
    */
-  int64_t GetSizeOfConnectedComponent(Vertex v) const;
+  uint32_t GetSizeOfConnectedComponent(Vertex v) const;
 
   /** Adds an edge to the graph.
    *
@@ -115,9 +115,9 @@ class DynamicConnectivity {
    */
   void DeleteEdge(const UndirectedEdge& edge);
 
-    int64_t space() {
-      int64_t space = 0;
-      space += sizeof(int64_t);
+    size_t space() {
+      size_t space = 0;
+      space += sizeof(uint32_t);
       space += sizeof(std::vector<DynamicForest>);
       for (int i = 0; i < spanning_forests_.size(); i++)
         space += spanning_forests_[i].space();
@@ -142,7 +142,7 @@ class DynamicConnectivity {
       const UndirectedEdge& edge, detail::Level level);
   void ReplaceTreeEdge(const UndirectedEdge& edge, detail::Level level);
 
-  const int64_t num_vertices_;
+  const uint32_t num_vertices_;
   // `spanning_forests_[i]` stores F_i, the spanning forest for the i-th
   // subgraph. In particular, `spanning_forests[0]` is a spanning forest for the
   // whole graph.

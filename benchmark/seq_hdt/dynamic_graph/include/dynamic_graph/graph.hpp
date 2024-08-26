@@ -10,7 +10,7 @@
 #include <utility>
 
 /** Represents a vertex in a graph. */
-typedef int64_t Vertex;
+typedef uint32_t Vertex;
 
 /** Represents an edge in a directed graph. */
 typedef std::pair<Vertex, Vertex> DirectedEdge;

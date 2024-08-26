@@ -2,15 +2,15 @@
 declare -a undir_graph=(
   # Social
  "com-youtube_sym"
- "as-skitter_sym"
- "pokec_sym"
- "wiki-topcats_sym"
- "stackoverflow_sym"
- "soc-LiveJournal1_sym"
- "enwiki_sym"
- "com-orkut_sym"
- "twitter_sym"
- "friendster_sym"
+#  "as-skitter_sym"
+#  "pokec_sym"
+#  "wiki-topcats_sym"
+#  "stackoverflow_sym"
+#  "soc-LiveJournal1_sym"
+#  "enwiki_sym"
+#  "com-orkut_sym"
+#  "twitter_sym"
+#  "friendster_sym"
 #
 #  # # Web
 #  "sd_arc_sym"

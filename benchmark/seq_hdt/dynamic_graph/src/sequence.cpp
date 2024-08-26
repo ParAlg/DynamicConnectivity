@@ -17,12 +17,12 @@ using namespace detail;
 namespace {
 
   std::mt19937 random_generator{0};
-  std::uniform_int_distribution<int64_t> priority_distribution{
-    std::numeric_limits<int64_t>::min(), std::numeric_limits<int64_t>::max()};
+  std::uniform_int_distribution<uint32_t> priority_distribution{
+    std::numeric_limits<uint32_t>::min(), std::numeric_limits<uint32_t>::max()};
 
 }  // namespace
 
-Element::Element(const std::pair<int64_t, int64_t>& id)
+Element::Element(const std::pair<uint32_t, uint32_t>& id)
   : id_{id}
   , priority_{priority_distribution(random_generator)} {}
 Element::Element()
@@ -220,7 +220,7 @@ Element* Element::Split() {
   return successor;
 }
 
-int64_t Element::GetSize() const {
+uint32_t Element::GetSize() const {
   return GetRoot()->subtree_data_.size;
 }
 
@@ -273,7 +273,7 @@ void Element::SequenceIds(std::vector<Id>* output) const {
   }
 }
 
-std::vector<std::pair<int64_t, int64_t>> Element::SequenceIds() const {
+std::vector<std::pair<uint32_t, uint32_t>> Element::SequenceIds() const {
   const Element* root = GetRoot();
   std::vector<Id> output;
   root->SequenceIds(&output);

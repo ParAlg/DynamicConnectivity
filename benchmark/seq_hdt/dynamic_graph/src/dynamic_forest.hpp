@@ -35,7 +35,7 @@ class DynamicForest {
   // Initializes forest with `num_vertices` vertices and no edges.
   //
   // Efficiency: linear in the size of the forest.
-  explicit DynamicForest(int64_t num_vertices);
+  explicit DynamicForest(uint32_t num_vertices);
   DynamicForest() = delete;
 
   ~DynamicForest();
@@ -75,7 +75,7 @@ class DynamicForest {
   // Returns the number of vertices in the tree that vertex `v` resides in.
   //
   // Efficiency: logarithmic in the size of the forest.
-  int64_t GetSizeOfTree(Vertex v) const;
+  uint32_t GetSizeOfTree(Vertex v) const;
 
   // Mark (if `mark` is true) or unmark (if `mark` is false) an edge. See
   // `GetMarkedEdgeInTree`.
@@ -92,9 +92,9 @@ class DynamicForest {
   // Analagous to `GetMarkedVertexInTree`.
   std::optional<Vertex> GetMarkedVertexInTree(Vertex v) const;
 
-  int64_t space() {
-    int64_t space = 0;
-    space += sizeof(int64_t);
+  size_t space() {
+    size_t space = 0;
+    space += sizeof(uint32_t);
     space += sizeof(std::vector<sequence::Element>);
     space += vertices_.size() * sizeof(sequence::Element);
     space += sizeof(std::vector<sequence::Element>);
@@ -111,7 +111,7 @@ class DynamicForest {
   AllocateEdgeElements(const UndirectedEdge& edge);
   void FreeEdgeElements(const detail::UndirectedEdgeElements& edge_elements);
 
-  const int64_t num_vertices_;
+  const uint32_t num_vertices_;
   std::vector<sequence::Element> vertices_;
   // We preallocate all sequence elements for edges in `edge_elements_` and
   // maintain a list of unused elements in `free_edge_elements_`. The used

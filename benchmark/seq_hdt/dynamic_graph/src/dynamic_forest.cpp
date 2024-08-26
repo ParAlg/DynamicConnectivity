@@ -25,14 +25,14 @@ namespace {
 constexpr int32_t kEdgeMark{0};
 constexpr int32_t kVertexMark{1};
 
-inline void ValidateEdge(const UndirectedEdge& edge, int64_t num_vertices) {
+inline void ValidateEdge(const UndirectedEdge& edge, uint32_t num_vertices) {
   ASSERT_MSG(
       0 <= edge.first && edge.first < num_vertices
         && 0 <= edge.second && edge.second < num_vertices,
       "Edge " << edge << " out of bounds");
 }
 
-inline void ValidateVertex(Vertex v, int64_t num_vertices) {
+inline void ValidateVertex(Vertex v, uint32_t num_vertices) {
   ASSERT_MSG(0 <= v && v < num_vertices, "Vertex " << v << " out of bounds");
 }
 
@@ -47,18 +47,18 @@ UndirectedEdgeElements::UndirectedEdgeElements(
 
 }  // namespace detail
 
-DynamicForest::DynamicForest(int64_t num_vertices)
+DynamicForest::DynamicForest(uint32_t num_vertices)
     : num_vertices_(num_vertices) {
   ASSERT_MSG_ALWAYS(
       num_vertices_ > 0,
       "The number of vertices must be positive");
 
   vertices_.reserve(num_vertices_);
-  for (int64_t i = 0; i < num_vertices_; i++) {
+  for (uint32_t i = 0; i < num_vertices_; i++) {
     vertices_.emplace_back(std::make_pair(i, i));
   }
 
-  const int64_t max_num_edges{2 * (num_vertices_ - 1)};
+  const uint32_t max_num_edges{2 * (num_vertices_ - 1)};
   edge_elements_ = std::vector<Element>{
     static_cast<std::size_t>(max_num_edges),
     Element{std::make_pair(-1, -1)}};
@@ -178,7 +178,7 @@ void DynamicForest::DeleteEdge(const UndirectedEdge& edge) {
   FreeEdgeElements(edge_elements);
 }
 
-int64_t DynamicForest::GetSizeOfTree(Vertex v) const {
+uint32_t DynamicForest::GetSizeOfTree(Vertex v) const {
   ValidateVertex(v, num_vertices_);
   return vertices_[v].GetSize();
 }

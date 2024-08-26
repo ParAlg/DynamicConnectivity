@@ -42,7 +42,7 @@
 namespace {
 
 // Returns floor(log_2(x)) for x > 0.
-int8_t FloorLog2(int64_t x) {
+int8_t FloorLog2(uint32_t x) {
   int8_t a{0};
   while (x > 1) {
     x >>= 1;
@@ -51,14 +51,14 @@ int8_t FloorLog2(int64_t x) {
   return a;
 }
 
-inline void ValidateEdge(const UndirectedEdge& edge, int64_t num_vertices) {
+inline void ValidateEdge(const UndirectedEdge& edge, uint32_t num_vertices) {
   ASSERT_MSG(
       0 <= edge.first && edge.first < num_vertices
         && 0 <= edge.second && edge.second < num_vertices,
       "Edge " << edge << " out of bounds");
 }
 
-inline void ValidateVertex(Vertex v, int64_t num_vertices) {
+inline void ValidateVertex(Vertex v, uint32_t num_vertices) {
   ASSERT_MSG(0 <= v && v < num_vertices, "Vertex " << v << " out of bounds");
 }
 
@@ -66,7 +66,7 @@ inline void ValidateVertex(Vertex v, int64_t num_vertices) {
 
 using namespace detail;
 
-DynamicConnectivity::DynamicConnectivity(int64_t num_vertices)
+DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
     : num_vertices_{num_vertices} {
   ASSERT_MSG_ALWAYS(
       num_vertices_ > 0,
@@ -100,7 +100,7 @@ bool DynamicConnectivity::HasEdge(const UndirectedEdge& edge) const {
   return edges_.find(edge) != edges_.end();
 }
 
-int64_t DynamicConnectivity::GetSizeOfConnectedComponent(Vertex v) const {
+uint32_t DynamicConnectivity::GetSizeOfConnectedComponent(Vertex v) const {
   return spanning_forests_[0].GetSizeOfTree(v);
 }
 

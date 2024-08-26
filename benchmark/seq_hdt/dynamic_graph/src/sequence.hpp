@@ -25,7 +25,7 @@ enum Direction {
 // Specialized for use in Holm et al.'s dynamic connectivity algorithm.
 struct SubtreeData {
   // Size of this node's subtree.
-  int64_t size{1};
+  uint32_t size{1};
 
   // `has_marked[i]` stores whether any node in this subtree has `marked[i]`
   // true.
@@ -38,14 +38,14 @@ struct NodeData {
 
 }  // namespace detail
 
-typedef std::pair<int64_t, int64_t> Id;
+typedef std::pair<uint32_t, uint32_t> Id;
 
 // Usage: create single-element sequences with the `Element()` constructor, and
 // build bigger sequences from there.
 class Element {
  public:
   // Initializes a single sequence element.
-  explicit Element(const std::pair<int64_t, int64_t>& id);
+  explicit Element(const std::pair<uint32_t, uint32_t>& id);
   Element();
 
   ~Element();
@@ -99,7 +99,7 @@ class Element {
   // Returns size of the sequence that the element lives in.
   //
   // Efficiency: logarithmic in the size of the element's sequence.
-  int64_t GetSize() const;
+  uint32_t GetSize() const;
 
   // Mark (if `mark` is true) or unmark (if `mark` is false) the element at
   // index `index`. See `FindMarkedElement`.
@@ -135,7 +135,7 @@ class Element {
   Element* parent_{nullptr};
   // Treap invariant: the priority of a node must be at least as great as the
   // priority of each of its children.
-  int64_t priority_;
+  uint32_t priority_;
   detail::NodeData node_data_{};
   detail::SubtreeData subtree_data_{};
 };
