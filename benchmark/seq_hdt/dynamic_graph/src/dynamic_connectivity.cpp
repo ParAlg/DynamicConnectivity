@@ -77,11 +77,11 @@ DynamicConnectivity::DynamicConnectivity(int64_t num_vertices)
       static_cast<std::size_t>(num_levels),
       DynamicForest(num_vertices_)};
   non_tree_adjacency_lists_ =
-    std::vector<std::vector<std::unordered_set<Vertex>>>{
+    std::vector<std::vector<absl::flat_hash_set<Vertex>>>{
       static_cast<std::size_t>(num_levels),
-      std::vector<std::unordered_set<Vertex>>{
+      std::vector<absl::flat_hash_set<Vertex>>{
         static_cast<std::size_t>(num_vertices_),
-        std::unordered_set<Vertex>{}}};
+        absl::flat_hash_set<Vertex>{}}};
 }
 
 DynamicConnectivity::~DynamicConnectivity() {}
@@ -216,7 +216,7 @@ DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge& edge, Level level) {
       break;
     }
 
-    std::unordered_set<Vertex>& adj_list{
+    absl::flat_hash_set<Vertex>& adj_list{
       non_tree_adjacency_lists_[level][*vertex_with_incident_edges]
     };
     while (!adj_list.empty()) {

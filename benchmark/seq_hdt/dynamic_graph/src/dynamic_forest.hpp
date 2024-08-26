@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
 #include <utility>
 #include <vector>
+#include <absl/container/flat_hash_map.h>
 
 #include <sequence.hpp>
 #include <dynamic_graph/graph.hpp>
@@ -92,6 +92,20 @@ class DynamicForest {
   // Analagous to `GetMarkedVertexInTree`.
   std::optional<Vertex> GetMarkedVertexInTree(Vertex v) const;
 
+  int64_t space() {
+    int64_t space = 0;
+    space += sizeof(int64_t);
+    space += sizeof(std::vector<sequence::Element>);
+    space += vertices_.size() * sizeof(sequence::Element);
+    space += sizeof(std::vector<sequence::Element>);
+    space += edge_elements_.size() * sizeof(sequence::Element);
+    space += sizeof(std::vector<sequence::Element*>);
+    space += free_edge_elements_.size() * sizeof(sequence::Element*);
+    space += sizeof(absl::flat_hash_map<UndirectedEdge,detail::UndirectedEdgeElements,UndirectedEdgeHash>);
+    space += edges_.bucket_count() * (sizeof(std::pair<UndirectedEdge,detail::UndirectedEdgeElements>));
+    return space;
+  }
+
  private:
   detail::UndirectedEdgeElements
   AllocateEdgeElements(const UndirectedEdge& edge);
@@ -107,7 +121,7 @@ class DynamicForest {
   std::vector<sequence::Element*> free_edge_elements_;
   // Maps undirected edge {u, v} to elements representing directed edges (u, v)
   // and (v, u).
-  std::unordered_map<
+  absl::flat_hash_map<
     UndirectedEdge,
     detail::UndirectedEdgeElements,
     UndirectedEdgeHash> edges_;

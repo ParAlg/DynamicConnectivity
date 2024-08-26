@@ -7,13 +7,14 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
+#include <absl/container/flat_hash_set.h>
+#include <absl/container/flat_hash_map.h>
 
 #include <dynamic_forest.hpp>
 #include <dynamic_graph/graph.hpp>
 #include <utilities/hash.hpp>
+
 
 namespace detail {
 
@@ -114,6 +115,25 @@ class DynamicConnectivity {
    */
   void DeleteEdge(const UndirectedEdge& edge);
 
+    int64_t space() {
+      int64_t space = 0;
+      space += sizeof(int64_t);
+      space += sizeof(std::vector<DynamicForest>);
+      for (int i = 0; i < spanning_forests_.size(); i++)
+        space += spanning_forests_[i].space();
+      space += sizeof(std::vector<std::vector<absl::flat_hash_set<Vertex>>>);
+      for (auto level : non_tree_adjacency_lists_) {
+        space += sizeof(std::vector<absl::flat_hash_set<Vertex>>);
+        for (auto adj_set : level) {
+          space += sizeof(absl::flat_hash_set<Vertex>);
+          space += adj_set.bucket_count() * sizeof(Vertex);
+        }
+      }
+      space += sizeof(absl::flat_hash_map<UndirectedEdge,detail::EdgeInfo,UndirectedEdgeHash>);
+      space += edges_.bucket_count() * (sizeof(std::pair<UndirectedEdge,detail::EdgeInfo>));
+      return space;
+    }
+
  private:
   void AddNonTreeEdge(const UndirectedEdge& edge);
   void AddTreeEdge(const UndirectedEdge& edge);
@@ -129,9 +149,9 @@ class DynamicConnectivity {
   std::vector<DynamicForest> spanning_forests_;
   // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
   // v by level-i non-tree edges.
-  std::vector<std::vector<std::unordered_set<Vertex>>>
+  std::vector<std::vector<absl::flat_hash_set<Vertex>>>
     non_tree_adjacency_lists_;
   // All edges in the graph.
-  std::unordered_map<UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
+  absl::flat_hash_map<UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
     edges_;
 };
