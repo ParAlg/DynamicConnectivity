@@ -6,6 +6,12 @@
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 class localTree;
+// todo
+//  build
+//  insertRankTree
+//  merge
+//  remove
+
 class rankTree {
 public:
   rankTree(uint32_t r, class localTree *_Node, class localTree *_des,
