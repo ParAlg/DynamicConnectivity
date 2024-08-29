@@ -84,10 +84,7 @@ inline localTree::localTree(localTree *Cu, localTree *Cv) {
       rankTree::r_alloc->construct(std::log2(Cv->size), this, Cv, Cv->edgemap);
   Cu->parent = ru;
   Cv->parent = rv;
-  this->rTrees.clear();
-  this->rTrees.push_back(rv);
-  this->rTrees.push_back(ru);
-  this->rTrees = rankTree::build(this->rTrees, this);
+  this->rTrees = parlay::sequence<rankTree *>({rv, ru});
 }
 // inline localTree *localTree::getIfSingleton(localTree *r) {
 //   if (r->rTrees.size() > 1)

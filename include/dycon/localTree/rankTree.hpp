@@ -34,7 +34,7 @@ private:
   localTree *descendant;
   // This is a pointer to the local tree node containing this rank tree
   localTree *Node;
-
+  const static uint32_t leaf_threshold = 32;
   //
   bool isleaf() { return !lchild && !rchild; }
   void setRank(size_t i) { rank = i; }
@@ -219,7 +219,7 @@ inline rankTree::arr rankTree::sortByRank(arr &rTrees) {
 inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
   rankTree *temp[128];
   uint32_t num_root = 0;
-  if (!rTrees.size())
+  if (rTrees.size() < leaf_threshold)
     return rTrees;
   for (size_t i = 0; i < rTrees.size() - 1; i++) {
     if (rTrees[i]->rank == rTrees[i + 1]->rank)
@@ -249,6 +249,20 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   // arr Seq;
   rankTree *temp[128];
   uint32_t num_root = 0;
+  if (r1.size() + r2.size() <= leaf_threshold) {
+    for (auto &it : r1) {
+      it->Node = node;
+      it->parent = nullptr;
+      temp[num_root++] = it;
+    }
+    for (auto &it : r2) {
+      it->Node = node;
+      it->parent = nullptr;
+      temp[num_root++] = it;
+    }
+    arr Seq(temp, temp + num_root);
+    return Seq;
+  }
   size_t p = 0, q = 0;
   while (p < r1.size() || q < r2.size()) {
     if (p == r1.size()) {
