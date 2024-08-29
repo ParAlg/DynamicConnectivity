@@ -14,7 +14,7 @@ private:
   fetchEdge(std::queue<localTree *> &Q, uint32_t l);
   static localTree *pushDown(parlay::sequence<localTree *> &pu, uint32_t uter,
                              parlay::sequence<localTree *> &pv, uint32_t vter);
-  void placeEdges(parlay::sequence<std::pair<uint32_t, uint32_t>> &edges,
+  void placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
                   uint32_t l);
   void printNodes(parlay::sequence<localTree *> &Nodes) {
     std::copy(Nodes.begin(), Nodes.end(),
@@ -332,31 +332,22 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     return;
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
-  std::queue<localTree *> Qu, Qv;                         // ready to fetch
-  parlay::sequence<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
-  // absl::flat_hash_set<localTree *> Hu, Hv;                // visited node
-  absl::flat_hash_set<localTree *> Ru, Rv; // visited node
-  auto init =
-      [](std::queue<localTree *> &Q,
-         parlay::sequence<std::pair<uint32_t, uint32_t>> &E,
-         //  parlay::sequence<localTree *> &R,
-         absl::flat_hash_set<localTree *> &R,
-         /*absl::flat_hash_set<localTree *> &HT,*/ localTree *C) -> void {
+  std::queue<localTree *> Qu, Qv;                    // ready to fetch
+  std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
+  absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
+  auto init = [](std::queue<localTree *> &Q,
+                 std::vector<std::pair<uint32_t, uint32_t>> &E,
+                 absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
     Q = std::queue<localTree *>();
-    E = parlay::sequence<std::pair<uint32_t, uint32_t>>();
-    // HT = absl::flat_hash_set<localTree *>();
-    // R = parlay::sequence<localTree *>();
-    // R = std::unordered_set<localTree *>();
+    E = std::vector<std::pair<uint32_t, uint32_t>>();
     R = absl::flat_hash_set<localTree *>();
     Q.push(C);
-    // HT.insert(C);
-    // R.push_back(C);
     R.insert(C);
     E.reserve(128);
   };
   while (l != 0) {
-    init(Qu, Eu, Ru, /*Hu,*/ Cu);
-    init(Qv, Ev, Rv, /*Hv,*/ Cv);
+    init(Qu, Eu, Ru, Cu);
+    init(Qv, Ev, Rv, Cv);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
@@ -366,7 +357,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         auto Cuv = localTree::getLevelNode(leaves[std::get<2>(eu)], l);
         assert(Cuv != nullptr);
         assert(CP == nullptr || localTree::getParent(Cuv) == CP);
-        // if (Hv.find(Cuv) != Hv.end()) {
         if (Rv.find(Cuv) != Rv.end()) {
           if (Eu.empty()) {
             // don't push nCu+nCv may violate size
@@ -418,10 +408,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           // nCv, l); Rstat.push_back(std::move(info));
           return;
         } else {
-          // if (Hu.find(Cuv) == Hu.end()) {
           if (Ru.find(Cuv) == Ru.end()) {
-            // Hu.insert(Cuv);
-            // Ru.push_back(Cuv);
             Ru.insert(Cuv);
             Qu.push(Cuv);
             nCu += Cuv->getSize();
@@ -435,18 +422,13 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         localTree::deleteFromParent(CP);
         localTree *_CP;
         if (Eu.empty()) {
-          // localTree::deleteFromParent(Ru[0]);
-          // _CP = Ru[0];
           localTree::deleteFromParent(*Ru.begin());
           _CP = *Ru.begin();
           if (localTree::ifSingleton(CP) == true && CP->getMap()[l] == false) {
-            // localTree::deleteFromParent(Rv[0]);
             localTree::deleteFromParent(*Rv.begin());
             localTree::l_alloc->deallocate(CP); // delete CP;
-            // CP = Rv[0];
             CP = *Rv.begin();
           }
-          // localTree::addChild(_CP, Ru[0]);
         } else if (nCu <= nCv) {
           for (auto it : Ru)
             localTree::deleteFromParent(it);
@@ -516,7 +498,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         auto Cuv = localTree::getLevelNode(leaves[std::get<2>(ev)], l);
         assert(Cuv != nullptr);
         assert(CP == nullptr || localTree::getParent(Cuv) == CP);
-        // if (Hu.find(Cuv) != Hu.end()) {
         if (Ru.find(Cuv) != Ru.end()) {
           if (Ev.empty()) {
             placeEdges(Eu, l);
@@ -568,10 +549,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           // nCv, l); Rstat.push_back(std::move(info));
           return;
         } else {
-          // if (Hv.find(Cuv) == Hv.end()) {
           if (Rv.find(Cuv) == Rv.end()) {
-            // Hv.insert(Cuv);
-            // Rv.push_back(Cuv);
             Rv.insert(Cuv);
             Qv.push(Cuv);
             nCv += Cuv->getSize();
@@ -585,9 +563,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         localTree::deleteFromParent(CP);
         localTree *_CP; // = localTree::l_alloc->construct();
         if (Ev.empty()) {
-          // localTree::deleteFromParent(Rv[0]);
-          // // localTree::addChild(_CP, Rv[0]); //abandoned
-          // _CP = Rv[0];
           localTree::deleteFromParent(*Rv.begin());
           _CP = *Rv.begin();
           placeEdges(Eu, l);
@@ -710,9 +685,8 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
   //   fradius.close();
   // }
 }
-inline void
-SCCWN::placeEdges(parlay::sequence<std::pair<uint32_t, uint32_t>> &edges,
-                  uint32_t l) {
+inline void SCCWN::placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
+                              uint32_t l) {
   for (auto it : edges) {
     leaves[it.first]->insertToLeaf(it.second, l);
     leaves[it.second]->insertToLeaf(it.first, l);
