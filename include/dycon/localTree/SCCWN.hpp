@@ -336,12 +336,10 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   parlay::sequence<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
   absl::flat_hash_set<localTree *> Hu, Hv;                // visited node
   parlay::sequence<localTree *> Ru, Rv;                   // visited node
-  uint32_t num_eu, num_ev;
   auto init = [](std::queue<localTree *> &Q,
                  parlay::sequence<std::pair<uint32_t, uint32_t>> &E,
                  parlay::sequence<localTree *> &R,
-                 absl::flat_hash_set<localTree *> &HT, localTree *C,
-                 uint32_t &num_e) -> void {
+                 absl::flat_hash_set<localTree *> &HT, localTree *C) -> void {
     Q = std::queue<localTree *>();
     E = parlay::sequence<std::pair<uint32_t, uint32_t>>();
     HT = absl::flat_hash_set<localTree *>();
@@ -349,12 +347,11 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     Q.push(C);
     HT.insert(C);
     R.push_back(C);
-    // E.clear();
-    num_e = 0;
+    E.reserve(128);
   };
   while (l != 0) {
-    init(Qu, Eu, Ru, Hu, Cu, num_eu);
-    init(Qv, Ev, Rv, Hv, Cv, num_ev);
+    init(Qu, Eu, Ru, Hu, Cu);
+    init(Qv, Ev, Rv, Hv, Cv);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
