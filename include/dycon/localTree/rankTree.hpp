@@ -2,6 +2,7 @@
 #include "alloc.h"
 #include "stats.hpp"
 #include <bitset>
+#include <cassert>
 #include <cstdint>
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
@@ -122,13 +123,17 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
 }
 inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
                                                  localTree *node = nullptr) {
-  arr Seq;
+  assert(rTrees.size < 129);
+  rankTree *temp[128];
+  uint32_t num_root = 0;
+  // arr Seq;
   size_t p = 0;
   while (p < rTrees.size()) {
     if (p == rTrees.size() - 1) {
       rTrees[p]->parent = nullptr;
       rTrees[p]->Node = node;
-      Seq.push_back(rTrees[p]);
+      // Seq.push_back(rTrees[p]);
+      temp[num_root++] = rTrees[p];
       // std::cout << "push " << p << std::endl;
       break;
     }
@@ -140,7 +145,8 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
     if (counter % 2 == 1) {
       rTrees[p]->parent = nullptr;
       rTrees[p]->Node = node;
-      Seq.push_back(rTrees[p]);
+      // Seq.push_back(rTrees[p]);
+      temp[num_root++] = rTrees[p];
       p++;
       counter--;
     }
@@ -156,6 +162,7 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
     p += counter / 2;
     // std::cout << " Merge next time happens at" << p << std::endl;
   }
+  arr Seq(temp, temp + num_root);
   return Seq;
 }
 inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
@@ -200,6 +207,10 @@ inline rankTree::arr rankTree::remove(arr &rTrees, rankTree *T,
 }
 inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
                                               localTree *node) {
+  if (rTrees.size() < leaf_threshold) {
+    rTrees.push_back(T);
+    return rTrees;
+  }
   for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
     if ((*it)->rank >= T->rank) {
       rTrees.insert(it, T);
@@ -221,6 +232,11 @@ inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
   uint32_t num_root = 0;
   if (rTrees.size() < leaf_threshold)
     return rTrees;
+  else {
+    sortByRank(rTrees);
+    return buildFromSequence(rTrees, node);
+  }
+
   for (size_t i = 0; i < rTrees.size() - 1; i++) {
     if (rTrees[i]->rank == rTrees[i + 1]->rank)
       // rTrees[i + 1] = new rankTree(rTrees[i], rTrees[i + 1]);
