@@ -328,9 +328,9 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto Cu = localTree::getLevelNode(leaves[u], l);
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
-  auto CP = localTree::getParent(Cu);
   if (Cu == Cv)
     return;
+  auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
   std::queue<localTree *> Qu, Qv;                    // ready to fetch
@@ -363,17 +363,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             // don't push nCu+nCv may violate size
             return;
           } else if (nCu <= nCv) {
-            for (auto it : Ru)
-              localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
             uint32_t _v = 0;
+            uint32_t cl = 0;
             for (auto it : Ru) {
+              localTree::deleteFromParent(it);
               _v += it->getSize();
-              if (it->getLevel() > C->getLevel())
-                C->setLevel(it->getLevel());
+              cl = std::max(cl, it->getLevel());
             }
-            C->setLevel(
-                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+            C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Ru) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -384,7 +382,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             placeEdges(Eu, C->getLevel(), true);
             placeEdges(Ev, l);
           } else {
-            for (auto it : Rv)
+            /*for (auto it : Rv)
               localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
             uint32_t _v = 0;
@@ -394,7 +392,16 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 C->setLevel(it->getLevel());
             }
             C->setLevel(
-                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));*/
+            auto C = localTree::l_alloc->construct();
+            uint32_t _v = 0;
+            uint32_t cl = 0;
+            for (auto it : Rv) {
+              _v += it->getSize();
+              cl = std::max(cl, it->getLevel());
+              localTree::deleteFromParent(it);
+            }
+            C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Rv) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
