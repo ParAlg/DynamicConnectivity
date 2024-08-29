@@ -11,7 +11,7 @@
 #include <parlay/internal/get_time.h>
 
 #include <dynamic_graph/dynamic_connectivity.hpp>
-using vertex = size_t;
+using vertex = uint32_t;
 using utils = graph_utils<vertex>;
 using edge = utils::edge;
 using edges = utils::edges;
@@ -19,7 +19,7 @@ using edges = utils::edges;
 using query = utils::query;
 using queries = utils::queries;
 using Ans = parlay::sequence<parlay::sequence<bool>>;
-void bench_uncompressed_CWN_root(size_t num_batches, size_t n,
+void bench_uncompressed_CWN_root(uint32_t num_batches, uint32_t n,
                                  std::string ansfile,
                                  parlay::sequence<edges> &batches_ins,
                                  parlay::sequence<queries> &queries_ins,
@@ -27,11 +27,11 @@ void bench_uncompressed_CWN_root(size_t num_batches, size_t n,
                                  parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking uncomressed CWN\n";
   Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
   });
   Ans Ans_del(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
   parlay::internal::timer t;
@@ -39,27 +39,27 @@ void bench_uncompressed_CWN_root(size_t num_batches, size_t n,
   CWN F(n);
   F.lmax = std::ceil(std::log2(n));
   t.next("start benchmarking uncompressed CWN with edges inserted to root");
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_ins[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
       F.insertToRoot(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++) {
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
@@ -71,15 +71,15 @@ void bench_uncompressed_CWN_root(size_t num_batches, size_t n,
     std::cout << "cannot open output file\n";
     std::abort();
   }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
   faq.close();
 }
-void bench_uncompressed_CWN_blocked(size_t num_batches, size_t n,
+void bench_uncompressed_CWN_blocked(uint32_t num_batches, uint32_t n,
                                     std::string ansfile,
                                     parlay::sequence<edges> &batches_ins,
                                     parlay::sequence<queries> &queries_ins,
@@ -87,11 +87,11 @@ void bench_uncompressed_CWN_blocked(size_t num_batches, size_t n,
                                     parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking uncomressed CWN\n";
   Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
   });
   Ans Ans_del(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
   parlay::internal::timer t;
@@ -99,27 +99,27 @@ void bench_uncompressed_CWN_blocked(size_t num_batches, size_t n,
   CWN F(n);
   F.lmax = std::ceil(std::log2(n));
   t.next("start benchmarking uncompressed CWN with edges inserted to block");
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_ins[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
       F.insertToBlock(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++) {
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
@@ -131,26 +131,27 @@ void bench_uncompressed_CWN_blocked(size_t num_batches, size_t n,
     std::cout << "cannot open output file\n";
     std::abort();
   }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
   faq.close();
 }
-void bench_compress_CWN_root(size_t num_batches, size_t n, std::string ansfile,
+void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
+                             std::string ansfile,
                              parlay::sequence<edges> &batches_ins,
                              parlay::sequence<queries> &queries_ins,
                              parlay::sequence<edges> &batches_del,
                              parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking comressed CWN with edges inserted to root\n";
   Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
   });
   Ans Ans_del(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
   parlay::internal::timer t;
@@ -158,27 +159,27 @@ void bench_compress_CWN_root(size_t num_batches, size_t n, std::string ansfile,
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
   t.next("start benchmarking comressed CWN with edges inserted to root");
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_ins[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
       F.insertToRoot(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++) {
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
@@ -190,26 +191,27 @@ void bench_compress_CWN_root(size_t num_batches, size_t n, std::string ansfile,
     std::cout << "cannot open output file\n";
     std::abort();
   }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
   faq.close();
 }
-void bench_compress_CWN_lca(size_t num_batches, size_t n, std::string ansfile,
+void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
+                            std::string ansfile,
                             parlay::sequence<edges> &batches_ins,
                             parlay::sequence<queries> &queries_ins,
                             parlay::sequence<edges> &batches_del,
                             parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking comressed CWN with edges inserted to lca\n";
   Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
   });
   Ans Ans_del(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
   parlay::internal::timer t;
@@ -217,27 +219,27 @@ void bench_compress_CWN_lca(size_t num_batches, size_t n, std::string ansfile,
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
   t.next("start benchmarking comressed CWN with edges inserted to lca");
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_ins[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
       F.insertToLCA(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++) {
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
@@ -249,15 +251,15 @@ void bench_compress_CWN_lca(size_t num_batches, size_t n, std::string ansfile,
     std::cout << "cannot open output file\n";
     std::abort();
   }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
   faq.close();
 }
-void bench_compress_CWN_blocked(size_t num_batches, size_t n,
+void bench_compress_CWN_blocked(uint32_t num_batches, uint32_t n,
                                 std::string ansfile,
                                 parlay::sequence<edges> &batches_ins,
                                 parlay::sequence<queries> &queries_ins,
@@ -265,11 +267,11 @@ void bench_compress_CWN_blocked(size_t num_batches, size_t n,
                                 parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking comressed CWN with edges inserted to blocked\n";
   Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
   });
   Ans Ans_del(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
   parlay::internal::timer t;
@@ -277,27 +279,27 @@ void bench_compress_CWN_blocked(size_t num_batches, size_t n,
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
   t.next("start benchmarking comressed CWN with edges inserted to blocked");
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_ins[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
       F.insertToBlock(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++) {
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
+    for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
     }
@@ -309,53 +311,53 @@ void bench_compress_CWN_blocked(size_t num_batches, size_t n,
     std::cout << "cannot open output file\n";
     std::abort();
   }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
   faq.close();
 }
-void bench_seq_hdt(size_t num_batches, size_t n, std::string ansfile,
+void bench_seq_hdt(uint32_t num_batches, uint32_t n, std::string ansfile,
                    parlay::sequence<edges> &batches_ins,
                    parlay::sequence<queries> &queries_ins,
                    parlay::sequence<edges> &batches_del,
                    parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking comressed CWN with edges inserted to root\n";
   Ans Ans_ins(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
   });
   Ans Ans_del(num_batches);
-  parlay::parallel_for(0, num_batches, [&](size_t i) {
+  parlay::parallel_for(0, num_batches, [&](uint32_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
   parlay::internal::timer t;
   std::ofstream fins, fdel;
   DynamicConnectivity graph(n);
   t.next("start benchmarking sequential hdt");
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_ins[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_ins[i].size(); j++) {
       long u = batches_ins[i][j].first;
       long v = batches_ins[i][j].second;
       graph.AddEdge(UndirectedEdge(u, v));
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       Ans_ins[i][j] =
           graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
     t.next("Answer queries #" + std::to_string(i));
   }
 
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
+  for (uint32_t i = 0; i < num_batches; i++) {
+    for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
       long v = batches_del[i][j].second;
       graph.DeleteEdge(UndirectedEdge(u, v));
     }
     t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       Ans_del[i][j] =
           graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
     t.next("Answer queries #" + std::to_string(i));
@@ -366,11 +368,11 @@ void bench_seq_hdt(size_t num_batches, size_t n, std::string ansfile,
     std::cout << "cannot open output file\n";
     std::abort();
   }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
+  for (uint32_t i = 0; i < num_batches; i++)
+    for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
   faq.close();
 }
@@ -383,9 +385,9 @@ int main(int argc, char **argv) {
   auto IOF = P.IOFileNames();
   std::string In = IOF.first;
   std::string Out = IOF.second;
-  size_t algorithms = P.getOptionIntValue("-a", 0);
-  size_t num_batches = P.getOptionIntValue("-b", 10);
-  size_t num_queries = P.getOptionIntValue("-q", 1000);
+  uint32_t algorithms = P.getOptionIntValue("-a", 0);
+  uint32_t num_batches = P.getOptionIntValue("-b", 10);
+  uint32_t num_queries = P.getOptionIntValue("-q", 1000);
 
   auto G = utils::break_sym_graph_from_bin(In);
   vertex n = G.size();
@@ -401,17 +403,17 @@ int main(int argc, char **argv) {
   E = parlay::random_shuffle(E);
 
   auto batch_size = parlay::tabulate(
-      num_batches + 1, [&](size_t i) { return m / num_batches * i; });
+      num_batches + 1, [&](uint32_t i) { return m / num_batches * i; });
   batch_size[num_batches] = m;
 
-  auto batches_ins = parlay::tabulate(num_batches, [&](size_t i) {
+  auto batches_ins = parlay::tabulate(num_batches, [&](uint32_t i) {
     return parlay::to_sequence(E.cut(batch_size[i], batch_size[i + 1]));
   });
   auto queries_ins =
       utils::generate_CC_queries(num_batches, batches_ins, n, num_queries);
 
   auto E_ = parlay::random_shuffle(E);
-  auto batches_del = parlay::tabulate(num_batches, [&](size_t i) {
+  auto batches_del = parlay::tabulate(num_batches, [&](uint32_t i) {
     return parlay::to_sequence(E_.cut(batch_size[i], batch_size[i + 1]));
   });
   auto queries_del =
