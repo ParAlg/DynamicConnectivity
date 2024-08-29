@@ -4,6 +4,7 @@
 #include "localTree.hpp"
 #include "parlay/sequence.h"
 #include <absl/container/flat_hash_set.h>
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -382,17 +383,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             placeEdges(Eu, C->getLevel(), true);
             placeEdges(Ev, l);
           } else {
-            /*for (auto it : Rv)
-              localTree::deleteFromParent(it);
-            auto C = localTree::l_alloc->construct();
-            uint32_t _v = 0;
-            for (auto it : Rv) {
-              _v += it->getSize();
-              if (it->getLevel() > C->getLevel())
-                C->setLevel(it->getLevel());
-            }
-            C->setLevel(
-                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));*/
             auto C = localTree::l_alloc->construct();
             uint32_t _v = 0;
             uint32_t cl = 0;
@@ -438,17 +428,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             CP = *Rv.begin();
           }
         } else if (nCu <= nCv) {
-          for (auto it : Ru)
-            localTree::deleteFromParent(it);
           _CP = localTree::l_alloc->construct();
           uint32_t _v = 0;
+          uint32_t cl = 0;
           for (auto it : Ru) {
             _v += it->getSize();
-            if (it->getLevel() > _CP->getLevel())
-              _CP->setLevel(it->getLevel());
+            cl = std::max(cl, it->getLevel());
+            localTree::deleteFromParent(it);
           }
-          _CP->setLevel(
-              std::max(_CP->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+          _CP->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Ru) {
             if (it->getLevel() == _CP->getLevel())
               localTree::merge(_CP, it);
@@ -465,17 +453,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           for (auto it : Ru)
             localTree::addChild(_CP, it);
           auto oldMap = CP->getMap();
-          for (auto it : Rv)
-            localTree::deleteFromParent(it);
           auto C = localTree::l_alloc->construct();
           uint32_t _v = 0;
+          uint32_t cl = 0;
           for (auto it : Rv) {
             _v += it->getSize();
-            if (it->getLevel() > C->getLevel())
-              C->setLevel(it->getLevel());
+            cl = std::max(cl, it->getLevel());
+            localTree::deleteFromParent(it);
           }
-          C->setLevel(
-              std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+          C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Rv) {
             if (it->getLevel() == C->getLevel())
               localTree::merge(C, it);
@@ -510,17 +496,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           if (Ev.empty()) {
             placeEdges(Eu, l);
           } else if (nCu <= nCv) {
-            for (auto it : Ru)
-              localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
             uint32_t _v = 0;
+            uint32_t cl = 0;
             for (auto it : Ru) {
               _v += it->getSize();
-              if (it->getLevel() > C->getLevel())
-                C->setLevel(it->getLevel());
+              cl = std::max(cl, it->getLevel());
+              localTree::deleteFromParent(it);
             }
-            C->setLevel(
-                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+            C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Ru) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -531,17 +515,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             placeEdges(Eu, C->getLevel(), true);
             placeEdges(Ev, l);
           } else {
-            for (auto it : Rv)
-              localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
             uint32_t _v = 0;
+            uint32_t cl = 0;
             for (auto it : Rv) {
               _v += it->getSize();
-              if (it->getLevel() > C->getLevel())
-                C->setLevel(it->getLevel());
+              cl = std::max(cl, it->getLevel());
+              localTree::deleteFromParent(it);
             }
-            C->setLevel(
-                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+            C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Rv) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -575,17 +557,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           _CP = *Rv.begin();
           placeEdges(Eu, l);
         } else if (nCv <= nCu) {
-          for (auto it : Rv)
-            localTree::deleteFromParent(it);
           _CP = localTree::l_alloc->construct();
           uint32_t _v = 0;
+          uint32_t cl = 0;
           for (auto it : Rv) {
             _v += it->getSize();
-            if (it->getLevel() > _CP->getLevel())
-              _CP->setLevel(it->getLevel());
+            cl = std::max(cl, it->getLevel());
+            localTree::deleteFromParent(it);
           }
-          _CP->setLevel(
-              std::max(_CP->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+          _CP->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Rv) {
             if (it->getLevel() == _CP->getLevel())
               localTree::merge(_CP, it);
@@ -602,17 +582,15 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           for (auto it : Rv)
             localTree::addChild(_CP, it);
           auto oldMap = CP->getMap();
-          for (auto it : Ru)
-            localTree::deleteFromParent(it);
           auto C = localTree::l_alloc->construct();
           uint32_t _v = 0;
+          uint32_t cl = 0;
           for (auto it : Ru) {
             _v += it->getSize();
-            if (it->getLevel() > C->getLevel())
-              C->setLevel(it->getLevel());
+            cl = std::max(cl, it->getLevel());
+            localTree::deleteFromParent(it);
           }
-          C->setLevel(
-              std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
+          C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Ru) {
             if (it->getLevel() == C->getLevel())
               localTree::merge(C, it);
