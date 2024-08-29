@@ -13,8 +13,8 @@ private:
   using nodeArr = parlay::sequence<localTree *>;
   // Each time manipulating node, check if 6 members are covered.
   parlay::sequence<rankTree *> rTrees;
-  size_t level;
-  size_t size; // number of vertices incident to this cluster node.
+  uint32_t level;
+  uint32_t size; // number of vertices incident to this cluster node.
   rankTree *parent;
   leaf *vertex;
   std::bitset<64> edgemap;
@@ -25,7 +25,7 @@ private:
 
 public:
   static type_allocator<localTree> *l_alloc;
-  localTree(size_t _id)
+  localTree(uint32_t _id)
       : level(0), size(1), parent(nullptr), vertex(new leaf(_id, this)),
         edgemap(0) {
     rTrees.clear();
@@ -37,28 +37,29 @@ public:
   };
   localTree(localTree *Cu, localTree *Cv);
   ~localTree();
-  size_t getLevel() { return this->level; }
+  uint32_t getLevel() { return this->level; }
   std::bitset<64> getMap() { return this->edgemap; }
-  void setLevel(size_t l) {
+  void setLevel(uint32_t l) {
     assert((1 << l) >= this->size);
     this->level = l;
   }
-  size_t getSize() { return this->size; }
+  uint32_t getSize() { return this->size; }
   static void merge(localTree *Cu, localTree *Cv);
-  // static localTree *mergeNode(nodeArr &Q, size_t l);
+  // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
   static void deleteFromParent(localTree *p);
   static localTree *getParent(localTree *r);
   static localTree *getRoot(localTree *r);
-  static localTree *getLevelNode(localTree *r, size_t l);
+  static localTree *getLevelNode(localTree *r, uint32_t l);
   static nodeArr getRootPath(localTree *r);
-  void insertToLeaf(size_t v, size_t l);
-  void deleteEdge(size_t v, size_t l);
-  size_t getEdgeLevel(size_t e);
+  void insertToLeaf(uint32_t v, uint32_t l);
+  void deleteEdge(uint32_t v, uint32_t l);
+  uint32_t getEdgeLevel(uint32_t e);
   static void traverseTopDown(localTree *root, bool clear, bool verbose,
                               bool stat, parlay::sequence<stats> &info);
-  static std::tuple<bool, size_t, size_t> fetchEdge(localTree *root, size_t l);
+  static std::tuple<bool, uint32_t, uint32_t> fetchEdge(localTree *root,
+                                                        uint32_t l);
   // static localTree *getIfSingleton(localTree *r);
   static bool ifSingleton(localTree *r);
 };
@@ -180,7 +181,7 @@ inline localTree *localTree::getRoot(localTree *r) {
   return r;
 }
 // A level i edge connects level i-1 node Cu and Cv, return
-inline localTree *localTree::getLevelNode(localTree *r, size_t l) {
+inline localTree *localTree::getLevelNode(localTree *r, uint32_t l) {
   while (r->parent) {
     auto p = getParent(r);
     if (p->level == l)
@@ -210,21 +211,24 @@ inline void localTree::updateBitMap(localTree *node) {
       break;
     auto oval = node->edgemap;
     std::bitset<64> nval = 0;
-    for (auto it : node->rTrees)
+    for (auto it : node->rTrees) {
       nval = nval | it->edgemap;
+      if (nval == 1 && oval == 1)
+        break;
+    }
     if (nval == oval)
       break;
     node->edgemap = nval;
   }
 }
-inline void localTree::insertToLeaf(size_t v, size_t l) {
+inline void localTree::insertToLeaf(uint32_t v, uint32_t l) {
   assert(this->vertex != nullptr);
   this->vertex->insert(v, l);
   this->edgemap = this->vertex->getEdgeMap();
   // go up to update
   updateBitMap(this);
 }
-inline void localTree::deleteEdge(size_t v, size_t l) {
+inline void localTree::deleteEdge(uint32_t v, uint32_t l) {
   this->vertex->remove(v, l);
   this->edgemap = this->vertex->getEdgeMap();
   updateBitMap(this);
@@ -242,7 +246,7 @@ inline void localTree::deleteFromParent(localTree *p) {
     updateBitMap(node);
   p->parent = nullptr;
 }
-inline size_t localTree::getEdgeLevel(size_t e) {
+inline uint32_t localTree::getEdgeLevel(uint32_t e) {
   return this->vertex->getLevel(e);
 }
 inline void localTree::traverseTopDown(localTree *root, bool clear,
@@ -269,8 +273,8 @@ inline void localTree::traverseTopDown(localTree *root, bool clear,
   if (clear)
     l_alloc->deallocate(root); // delete root;
 }
-inline std::tuple<bool, size_t, size_t> localTree::fetchEdge(localTree *root,
-                                                             size_t l) {
+inline std::tuple<bool, uint32_t, uint32_t>
+localTree::fetchEdge(localTree *root, uint32_t l) {
   if (root->level == 0) {
     assert(root->vertex != nullptr);
     return root->vertex->fetchEdge(l);

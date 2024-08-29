@@ -35,11 +35,11 @@ private:
   localTree *descendant;
   // This is a pointer to the local tree node containing this rank tree
   localTree *Node;
-  const static uint32_t leaf_threshold = 32;
+  const static uint32_t leaf_threshold = 64;
   //
   bool isleaf() { return !lchild && !rchild; }
-  void setRank(size_t i) { rank = i; }
-  size_t getRank() { return rank; }
+  void setRank(uint32_t i) { rank = i; }
+  uint32_t getRank() { return rank; }
   static arr decompose(rankTree *T, bool clear);
   static arr decompose(arr &rTrees, bool clear);
   static arr sortByRank(arr &rTrees);
@@ -53,14 +53,14 @@ private:
   static localTree *updateBitMapByTree(rankTree *T, std::bitset<64> nval);
   static void updateBitMap(rankTree *T, std::bitset<64> oval,
                            std::bitset<64> nval);
-  static rankTree *fetchLeaf(rankTree *T, size_t l);
+  static rankTree *fetchLeaf(rankTree *T, uint32_t l);
   static std::bitset<64> getEdgeMap(arr &A);
 
 protected:
   static rankTree *testGetRoot(rankTree *T) { return getRoot(T); }
   static void testRankDistinct(arr &A, std::string msg);
   static void testRankInc(arr &A, std::string msg);
-  static arr testRankTreesGen(size_t n);
+  static arr testRankTreesGen(uint32_t n);
   static arr testBuildFromSequence(arr &A);
   static arr testDecompose(rankTree *T);
   static arr testSortByRank(arr &A);
@@ -107,7 +107,7 @@ inline rankTree::arr rankTree::decompose(rankTree *T, bool clear = false) {
         r_alloc->deallocate(root);
     }
   }
-  for (size_t i = 0; i < rTrees.size() / 2; i++)
+  for (uint32_t i = 0; i < rTrees.size() / 2; i++)
     std::swap(rTrees[i], rTrees[rTrees.size() - i - 1]);
   return rTrees;
 }
@@ -115,7 +115,7 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
   if (rTrees.empty())
     return rTrees;
   arr A;
-  for (size_t i = 0; i < rTrees.size(); i++) {
+  for (uint32_t i = 0; i < rTrees.size(); i++) {
     auto B = decompose(rTrees[i], clear);
     A.append(B);
   }
@@ -123,11 +123,11 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
 }
 inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
                                                  localTree *node = nullptr) {
-  assert(rTrees.size < 129);
-  rankTree *temp[128];
+  assert(rTrees.size < leaf_threshold);
+  rankTree *temp[2 * leaf_threshold];
   uint32_t num_root = 0;
   // arr Seq;
-  size_t p = 0;
+  uint32_t p = 0;
   while (p < rTrees.size()) {
     if (p == rTrees.size() - 1) {
       rTrees[p]->parent = nullptr;
@@ -137,7 +137,7 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
       // std::cout << "push " << p << std::endl;
       break;
     }
-    size_t counter = 1;
+    uint32_t counter = 1;
     while ((p + counter) < rTrees.size() &&
            rTrees[p + counter]->rank == rTrees[p]->rank)
       counter++;
@@ -150,11 +150,11 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
       p++;
       counter--;
     }
-    for (size_t i = 0; i < counter; i += 2) {
+    for (uint32_t i = 0; i < counter; i += 2) {
       rTrees[p + i + 1] = r_alloc->construct(rTrees[p + i], rTrees[p + i + 1]);
       // rTrees[p + i + 1] = new rankTree(rTrees[p + i], rTrees[p + i + 1]);
     }
-    for (size_t i = 0; i < counter / 2; i++) {
+    for (uint32_t i = 0; i < counter / 2; i++) {
       rTrees[(p + counter) - i - 1] = rTrees[(p + counter) - i * 2 - 1];
       // std::cout << "move from " << (p + counter) - i * 2 - 1 << " to " << (p
       // + counter) - i - 1 << std::endl;
@@ -167,7 +167,7 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
 }
 inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
   // arr rTrees;
-  rankTree *temp[128];
+  rankTree *temp[2 * leaf_threshold];
   uint32_t num_root = 0;
   auto p = T->parent;
   while (p) {
@@ -229,7 +229,7 @@ inline rankTree::arr rankTree::sortByRank(arr &rTrees) {
   return rTrees;
 }
 inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
-  rankTree *temp[128];
+  rankTree *temp[2 * leaf_threshold];
   uint32_t num_root = 0;
   if (rTrees.size() < leaf_threshold)
     return rTrees;
@@ -238,7 +238,7 @@ inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
     return buildFromSequence(rTrees, node);
   }
 
-  for (size_t i = 0; i < rTrees.size() - 1; i++) {
+  for (uint32_t i = 0; i < rTrees.size() - 1; i++) {
     if (rTrees[i]->rank == rTrees[i + 1]->rank)
       // rTrees[i + 1] = new rankTree(rTrees[i], rTrees[i + 1]);
       rTrees[i + 1] = r_alloc->construct(rTrees[i], rTrees[i + 1]);
@@ -264,7 +264,7 @@ inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
 // each rankTree stores the correct pointer to its local tree node
 inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   // arr Seq;
-  rankTree *temp[128];
+  rankTree *temp[2 * leaf_threshold];
   uint32_t num_root = 0;
   if (r1.size() + r2.size() <= leaf_threshold) {
     for (auto &it : r1) {
@@ -280,7 +280,7 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
     arr Seq(temp, temp + num_root);
     return Seq;
   }
-  size_t p = 0, q = 0;
+  uint32_t p = 0, q = 0;
   while (p < r1.size() || q < r2.size()) {
     if (p == r1.size()) {
       while (q < r2.size()) {
@@ -346,7 +346,7 @@ inline localTree *rankTree::updateBitMapByTree(rankTree *T,
   assert(T->Node);
   return T->Node;
 }
-inline rankTree *rankTree::fetchLeaf(rankTree *T, size_t l) {
+inline rankTree *rankTree::fetchLeaf(rankTree *T, uint32_t l) {
   while (!T->isleaf()) {
     if (T->lchild->edgemap[l] == 1)
       T = T->lchild;
@@ -358,7 +358,7 @@ inline rankTree *rankTree::fetchLeaf(rankTree *T, size_t l) {
 }
 inline std::bitset<64> rankTree::getEdgeMap(arr &A) {
   std::bitset<64> b = 0;
-  for (size_t i = 0; i < A.size(); i++)
+  for (uint32_t i = 0; i < A.size(); i++)
     b = b | A[i]->edgemap;
   return b;
 }
@@ -367,24 +367,24 @@ inline void rankTree::updateBitMap(rankTree *T, std::bitset<64> oval,
 
 inline void rankTree::testRankDistinct(arr &A,
                                        std::string msg = "rank not distince") {
-  for (size_t i = 0; i < A.size() - 1; i++)
+  for (uint32_t i = 0; i < A.size() - 1; i++)
     ASSERT_MSG(A[i]->rank != A[i + 1]->rank, msg);
 }
 inline void rankTree::testRankInc(arr &A,
                                   std::string msg = "rank not increasing") {
-  for (size_t i = 0; i < A.size() - 1; i++)
+  for (uint32_t i = 0; i < A.size() - 1; i++)
     ASSERT_MSG(A[i]->rank <= A[i + 1]->rank, msg);
 }
-inline rankTree::arr rankTree::testRankTreesGen(size_t n) {
+inline rankTree::arr rankTree::testRankTreesGen(uint32_t n) {
   arr A(n);
-  parlay::parallel_for(0, n, [&](size_t i) {
+  parlay::parallel_for(0, n, [&](uint32_t i) {
     A[i] = new rankTree(parlay::hash64(i) % parlay::log2_up(n), nullptr,
                         nullptr, 0);
   });
   A = testSortByRank(A);
   testRankInc(A, "sort rank fail");
   std::cout << "test rank tree generation" << std::endl;
-  // for (size_t i = 0; i < n; i++)
+  // for (uint32_t i = 0; i < n; i++)
   //   std::cout << A[i]->getRank() << std::endl;
   return A;
 }
@@ -392,12 +392,12 @@ inline rankTree::arr rankTree::testBuildFromSequence(arr &A) {
   std::cout
       << "test building rank trees of distinct rank from a bunch of rank trees"
       << std::endl;
-  if (A.size() > 128) {
+  if (A.size() > 2 * leaf_threshold) {
     std::cout << "this version does not support building from long sequence";
     std::abort();
   }
   auto B = buildFromSequence(A);
-  // for (size_t i = 0; i < B.size(); i++)
+  // for (uint32_t i = 0; i < B.size(); i++)
   //   std::cout << B[i]->getRank() << std::endl;
   testRankDistinct(B, "not distinct rank trees");
   return B;
@@ -408,7 +408,7 @@ inline rankTree::arr rankTree::testDecompose(rankTree *T) {
 inline rankTree::arr rankTree::testSortByRank(arr &A) {
   sortByRank(A);
 
-  // for (size_t i = 0; i < A.size(); i++)
+  // for (uint32_t i = 0; i < A.size(); i++)
   //   std::cout << A[i]->rank << ",";
   // std::cout << std::endl;
 
@@ -416,9 +416,9 @@ inline rankTree::arr rankTree::testSortByRank(arr &A) {
 }
 inline bool rankTree::testEqualRanks(arr &A, arr &B) {
   ASSERT_MSG(A.size() == B.size(), "Decompose Size expected to be same");
-  // for (size_t i = 0; i < A.size(); i++)
+  // for (uint32_t i = 0; i < A.size(); i++)
   //   std::cout << A[i]->rank << "," << B[i]->rank << std::endl;
-  parlay::parallel_for(0, A.size(), [&](size_t i) {
+  parlay::parallel_for(0, A.size(), [&](uint32_t i) {
     ASSERT_MSG(A[i]->rank == B[i]->rank,
                "rank should be the same after decomposing");
   });

@@ -5,7 +5,6 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-#include <set>
 #include <tuple>
 // This is the leaf of the cluster forest.
 // It contains a vertex in the graph and its incident edges.

@@ -2,19 +2,20 @@
 #include "dycon/localTree/graph.hpp"
 #include "localTree.hpp"
 #include "parlay/sequence.h"
+#include <absl/container/flat_hash_set.h>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <fstream>
 #include <queue>
 #include <unordered_set>
 class SCCWN {
 private:
   static std::tuple<bool, size_t, size_t> fetchEdge(std::queue<localTree *> &Q,
-                                                    size_t l);
-  static localTree *pushDown(parlay::sequence<localTree *> &pu, size_t uter,
-                             parlay::sequence<localTree *> &pv, size_t vter);
-  void placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l);
+                                                    uint32_t l);
+  static localTree *pushDown(parlay::sequence<localTree *> &pu, uint32_t uter,
+                             parlay::sequence<localTree *> &pv, uint32_t vter);
+  void placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges,
+                  uint32_t l);
   void printNodes(parlay::sequence<localTree *> &Nodes) {
     std::copy(Nodes.begin(), Nodes.end(),
               std::ostream_iterator<localTree *>(std::cout, ","));
@@ -22,10 +23,11 @@ private:
   }
 
 public:
-  size_t n;
-  static size_t lmax;
+  uint32_t n;
+  static uint32_t lmax;
   parlay::sequence<localTree *> leaves;
-  SCCWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {
+  SCCWN(uint32_t _n)
+      : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {
     parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
@@ -41,14 +43,14 @@ public:
     rankTree::r_alloc->~type_allocator();
     localTree::l_alloc->~type_allocator();
   };
-  void insertToLCA(size_t u, size_t v);
-  void insertToRoot(size_t u, size_t v);
-  void insertToBlock(size_t u, size_t v);
-  bool is_connected(size_t u, size_t v);
-  void remove(size_t u, size_t v);
+  void insertToLCA(uint32_t u, uint32_t v);
+  void insertToRoot(uint32_t u, uint32_t v);
+  void insertToBlock(uint32_t u, uint32_t v);
+  bool is_connected(uint32_t u, uint32_t v);
+  void remove(uint32_t u, uint32_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
   void checkLevel() {
-    for (size_t i = 0; i < n; i++) {
+    for (uint32_t i = 0; i < n; i++) {
       if (leaves[i] != nullptr) {
         auto r = leaves[i];
         while (localTree::getParent(r) != nullptr) {
@@ -66,9 +68,9 @@ public:
     }
   }
 };
-inline size_t SCCWN::lmax = 63;
-inline void SCCWN::insertToRoot(size_t u, size_t v) {
-  auto g = [&](size_t &u) -> localTree * {
+inline uint32_t SCCWN::lmax = 63;
+inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
+  auto g = [&](uint32_t &u) -> localTree * {
     localTree *r = localTree::getRoot(leaves[u]);
     if (r->getLevel() == lmax)
       return r;
@@ -88,7 +90,7 @@ inline void SCCWN::insertToRoot(size_t u, size_t v) {
   leaves[u]->insertToLeaf(v, lmax);
   leaves[v]->insertToLeaf(u, lmax);
 }
-inline void SCCWN::insertToLCA(size_t u, size_t v) {
+inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->construct(u);
   if (leaves[v] == nullptr)
@@ -105,7 +107,7 @@ inline void SCCWN::insertToLCA(size_t u, size_t v) {
       // because they cannot be in the same CF
       if (Cu == Cv) { // LCA
         auto P = localTree::getParent(Cu);
-        size_t l = (P == nullptr) ? Cu->getLevel() : P->getLevel();
+        uint32_t l = (P == nullptr) ? Cu->getLevel() : P->getLevel();
         leaves[u]->insertToLeaf(v, l);
         leaves[v]->insertToLeaf(u, l);
         return;
@@ -153,7 +155,7 @@ inline void SCCWN::insertToLCA(size_t u, size_t v) {
   assert(localTree::getParent(Cu) == nullptr);
   assert(localTree::getParent(Cv) == nullptr);
   assert(Cu != Cv);
-  size_t l;
+  uint32_t l;
   if (Cu->getLevel() < Cv->getLevel())
     std::swap(Cu, Cv); // make sure left is higher
   if (Cu->getSize() + Cv->getSize() <= (1 << Cu->getLevel())) {
@@ -171,7 +173,7 @@ inline void SCCWN::insertToLCA(size_t u, size_t v) {
   leaves[u]->insertToLeaf(v, l);
   leaves[v]->insertToLeaf(u, l);
 }
-// inline void SCCWN::insertToLCA(size_t u, size_t v) {
+// inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
 //   if (leaves[u] == nullptr)
 //     leaves[u] = localTree::l_alloc->construct(u);
 //   if (leaves[v] == nullptr)
@@ -180,7 +182,7 @@ inline void SCCWN::insertToLCA(size_t u, size_t v) {
 // auto pu = localTree::getRootPath(leaves[u]);
 // auto iu = pu.rbegin();
 // auto iv = pv.rbegin();
-// size_t l;
+// uint32_t l;
 // if (*iu != *iv) {
 //   auto Cu = *iu;
 //   auto Cv = *iv;
@@ -214,15 +216,15 @@ inline void SCCWN::insertToLCA(size_t u, size_t v) {
 
 // allocator
 // modify rank tree
-inline void SCCWN::insertToBlock(size_t u, size_t v) {
+inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->construct(u);
   if (leaves[v] == nullptr)
     leaves[v] = localTree::l_alloc->construct(v);
   auto pv = localTree::getRootPath(leaves[v]);
   auto pu = localTree::getRootPath(leaves[u]);
-  size_t uLen = pu.size();
-  size_t vLen = pv.size();
+  uint32_t uLen = pu.size();
+  uint32_t vLen = pv.size();
   localTree *rootu = pu[uLen - 1];
   localTree *rootv = pv[vLen - 1];
   localTree *np = nullptr;
@@ -274,9 +276,9 @@ inline void SCCWN::insertToBlock(size_t u, size_t v) {
   leaves[v]->insertToLeaf(u, np->getLevel());
 }
 inline localTree *SCCWN::pushDown(parlay::sequence<localTree *> &pu,
-                                  size_t uter,
+                                  uint32_t uter,
                                   parlay::sequence<localTree *> &pv,
-                                  size_t vter) {
+                                  uint32_t vter) {
   while (pu[uter]->getSize() + pv[vter]->getSize() <=
          1 << std::max(pu[uter]->getLevel(), pv[vter]->getLevel())) {
     if (pu[uter]->getLevel() < pv[vter]->getLevel()) {
@@ -314,12 +316,12 @@ inline localTree *SCCWN::pushDown(parlay::sequence<localTree *> &pu,
   assert(localTree::getParent(pu[uter]) == localTree::getParent(pv[vter]));
   return localTree::getParent(pu[uter]);
 }
-inline void SCCWN::remove(size_t u, size_t v) {
+inline void SCCWN::remove(uint32_t u, uint32_t v) {
   // std::cout << u << " " << v << std::endl;
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
-  size_t l = leaves[u]->getSize() < leaves[v]->getSize()
-                 ? leaves[u]->getEdgeLevel(v)
-                 : leaves[v]->getEdgeLevel(u);
+  uint32_t l = leaves[u]->getSize() < leaves[v]->getSize()
+                   ? leaves[u]->getEdgeLevel(v)
+                   : leaves[v]->getEdgeLevel(u);
   leaves[u]->deleteEdge(v, l);
   leaves[v]->deleteEdge(u, l);
   auto Cu = localTree::getLevelNode(leaves[u], l);
@@ -332,15 +334,15 @@ inline void SCCWN::remove(size_t u, size_t v) {
 
   std::queue<localTree *> Qu, Qv;                     // ready to fetch
   parlay::sequence<std::pair<size_t, size_t>> Eu, Ev; // fetched edge
-  std::unordered_set<localTree *> Hu, Hv;             // visited node
+  absl::flat_hash_set<localTree *> Hu, Hv;            // visited node
   parlay::sequence<localTree *> Ru, Rv;               // visited node
   auto init = [](std::queue<localTree *> &Q,
                  parlay::sequence<std::pair<size_t, size_t>> &E,
                  parlay::sequence<localTree *> &R,
-                 std::unordered_set<localTree *> &HT, localTree *C) -> void {
+                 absl::flat_hash_set<localTree *> &HT, localTree *C) -> void {
     Q = std::queue<localTree *>();
     E = parlay::sequence<std::pair<size_t, size_t>>();
-    HT = std::unordered_set<localTree *>();
+    HT = absl::flat_hash_set<localTree *>();
     R = parlay::sequence<localTree *>();
     Q.push(C);
     HT.insert(C);
@@ -367,14 +369,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
             for (auto it : Ru)
               localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
-            size_t _v = 0;
+            uint32_t _v = 0;
             for (auto it : Ru) {
               _v += it->getSize();
               if (it->getLevel() > C->getLevel())
                 C->setLevel(it->getLevel());
             }
             C->setLevel(
-                std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Ru) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -388,14 +390,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
             for (auto it : Rv)
               localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
-            size_t _v = 0;
+            uint32_t _v = 0;
             for (auto it : Rv) {
               _v += it->getSize();
               if (it->getLevel() > C->getLevel())
                 C->setLevel(it->getLevel());
             }
             C->setLevel(
-                std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Rv) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -437,14 +439,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
           for (auto it : Ru)
             localTree::deleteFromParent(it);
           _CP = localTree::l_alloc->construct();
-          size_t _v = 0;
+          uint32_t _v = 0;
           for (auto it : Ru) {
             _v += it->getSize();
             if (it->getLevel() > _CP->getLevel())
               _CP->setLevel(it->getLevel());
           }
           _CP->setLevel(
-              std::max(_CP->getLevel(), (size_t)std::ceil(std::log2(_v))));
+              std::max(_CP->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Ru) {
             if (it->getLevel() == _CP->getLevel())
               localTree::merge(_CP, it);
@@ -464,14 +466,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
           for (auto it : Rv)
             localTree::deleteFromParent(it);
           auto C = localTree::l_alloc->construct();
-          size_t _v = 0;
+          uint32_t _v = 0;
           for (auto it : Rv) {
             _v += it->getSize();
             if (it->getLevel() > C->getLevel())
               C->setLevel(it->getLevel());
           }
           C->setLevel(
-              std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+              std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Rv) {
             if (it->getLevel() == C->getLevel())
               localTree::merge(C, it);
@@ -509,14 +511,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
             for (auto it : Ru)
               localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
-            size_t _v = 0;
+            uint32_t _v = 0;
             for (auto it : Ru) {
               _v += it->getSize();
               if (it->getLevel() > C->getLevel())
                 C->setLevel(it->getLevel());
             }
             C->setLevel(
-                std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Ru) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -530,14 +532,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
             for (auto it : Rv)
               localTree::deleteFromParent(it);
             auto C = localTree::l_alloc->construct();
-            size_t _v = 0;
+            uint32_t _v = 0;
             for (auto it : Rv) {
               _v += it->getSize();
               if (it->getLevel() > C->getLevel())
                 C->setLevel(it->getLevel());
             }
             C->setLevel(
-                std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+                std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
             for (auto it : Rv) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
@@ -576,14 +578,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
           for (auto it : Rv)
             localTree::deleteFromParent(it);
           _CP = localTree::l_alloc->construct();
-          size_t _v = 0;
+          uint32_t _v = 0;
           for (auto it : Rv) {
             _v += it->getSize();
             if (it->getLevel() > _CP->getLevel())
               _CP->setLevel(it->getLevel());
           }
           _CP->setLevel(
-              std::max(_CP->getLevel(), (size_t)std::ceil(std::log2(_v))));
+              std::max(_CP->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Rv) {
             if (it->getLevel() == _CP->getLevel())
               localTree::merge(_CP, it);
@@ -603,14 +605,14 @@ inline void SCCWN::remove(size_t u, size_t v) {
           for (auto it : Ru)
             localTree::deleteFromParent(it);
           auto C = localTree::l_alloc->construct();
-          size_t _v = 0;
+          uint32_t _v = 0;
           for (auto it : Ru) {
             _v += it->getSize();
             if (it->getLevel() > C->getLevel())
               C->setLevel(it->getLevel());
           }
           C->setLevel(
-              std::max(C->getLevel(), (size_t)std::ceil(std::log2(_v))));
+              std::max(C->getLevel(), (uint32_t)std::ceil(std::log2(_v))));
           for (auto it : Ru) {
             if (it->getLevel() == C->getLevel())
               localTree::merge(C, it);
@@ -639,7 +641,7 @@ inline void SCCWN::remove(size_t u, size_t v) {
     }
   }
 }
-inline bool SCCWN::is_connected(size_t u, size_t v) {
+inline bool SCCWN::is_connected(uint32_t u, uint32_t v) {
   return localTree::getRoot(leaves[u]) == localTree::getRoot(leaves[v]);
 }
 
@@ -647,7 +649,7 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
                             bool clear = false, bool stat = true) {
   parlay::sequence<localTree *> roots(leaves.size(), nullptr);
   parlay::sequence<localTree *> parents(leaves.size(), nullptr);
-  parlay::parallel_for(0, roots.size(), [&](size_t i) {
+  parlay::parallel_for(0, roots.size(), [&](uint32_t i) {
     if (leaves[i])
       roots[i] = localTree::getRoot(leaves[i]);
     if (leaves[i])
@@ -663,7 +665,7 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
   roots = parlay::remove_duplicates(roots);
   if (verbose)
     printNodes(roots);
-  parlay::parallel_for(0, roots.size(), [&](size_t i) {
+  parlay::parallel_for(0, roots.size(), [&](uint32_t i) {
     if (roots[i]) {
       // std::ofstream fout;
       // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
@@ -693,14 +695,14 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
 }
 inline void
 SCCWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges,
-                  size_t l) {
+                  uint32_t l) {
   for (auto it : edges) {
     leaves[it.first]->insertToLeaf(it.second, l);
     leaves[it.second]->insertToLeaf(it.first, l);
   }
 }
 inline std::tuple<bool, size_t, size_t>
-SCCWN::fetchEdge(std::queue<localTree *> &Q, size_t l) {
+SCCWN::fetchEdge(std::queue<localTree *> &Q, uint32_t l) {
   if (Q.empty())
     return std::make_tuple(false, 0, 0);
   auto node = Q.front();
