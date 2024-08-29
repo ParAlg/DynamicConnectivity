@@ -198,7 +198,8 @@ inline rankTree::arr rankTree::remove(arr &rTrees, rankTree *T,
   auto root = getRoot(T);
   for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
     if (*it == root) {
-      rTrees.erase(it);
+      std::swap(rTrees[it - rTrees.begin()], rTrees[rTrees.size() - 1]);
+      rTrees.erase(rTrees.begin() + (rTrees.size() - 1));
       break;
     }
   }
@@ -391,6 +392,10 @@ inline rankTree::arr rankTree::testBuildFromSequence(arr &A) {
   std::cout
       << "test building rank trees of distinct rank from a bunch of rank trees"
       << std::endl;
+  if (A.size() > 128) {
+    std::cout << "this version does not support building from long sequence";
+    std::abort();
+  }
   auto B = buildFromSequence(A);
   // for (size_t i = 0; i < B.size(); i++)
   //   std::cout << B[i]->getRank() << std::endl;
