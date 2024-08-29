@@ -10,11 +10,11 @@
 #include <unordered_set>
 class SCCWN {
 private:
-  static std::tuple<bool, size_t, size_t> fetchEdge(std::queue<localTree *> &Q,
-                                                    uint32_t l);
+  static std::tuple<bool, uint32_t, uint32_t>
+  fetchEdge(std::queue<localTree *> &Q, uint32_t l);
   static localTree *pushDown(parlay::sequence<localTree *> &pu, uint32_t uter,
                              parlay::sequence<localTree *> &pv, uint32_t vter);
-  void placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges,
+  void placeEdges(parlay::sequence<std::pair<uint32_t, uint32_t>> &edges,
                   uint32_t l);
   void printNodes(parlay::sequence<localTree *> &Nodes) {
     std::copy(Nodes.begin(), Nodes.end(),
@@ -332,26 +332,29 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     return;
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
-  std::queue<localTree *> Qu, Qv;                     // ready to fetch
-  parlay::sequence<std::pair<size_t, size_t>> Eu, Ev; // fetched edge
-  absl::flat_hash_set<localTree *> Hu, Hv;            // visited node
-  parlay::sequence<localTree *> Ru, Rv;               // visited node
+  std::queue<localTree *> Qu, Qv;                         // ready to fetch
+  parlay::sequence<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
+  absl::flat_hash_set<localTree *> Hu, Hv;                // visited node
+  parlay::sequence<localTree *> Ru, Rv;                   // visited node
+  uint32_t num_eu, num_ev;
   auto init = [](std::queue<localTree *> &Q,
-                 parlay::sequence<std::pair<size_t, size_t>> &E,
+                 parlay::sequence<std::pair<uint32_t, uint32_t>> &E,
                  parlay::sequence<localTree *> &R,
-                 absl::flat_hash_set<localTree *> &HT, localTree *C) -> void {
+                 absl::flat_hash_set<localTree *> &HT, localTree *C,
+                 uint32_t &num_e) -> void {
     Q = std::queue<localTree *>();
-    E = parlay::sequence<std::pair<size_t, size_t>>();
+    E = parlay::sequence<std::pair<uint32_t, uint32_t>>();
     HT = absl::flat_hash_set<localTree *>();
     R = parlay::sequence<localTree *>();
     Q.push(C);
     HT.insert(C);
     R.push_back(C);
-    E.clear();
+    // E.clear();
+    num_e = 0;
   };
   while (l != 0) {
-    init(Qu, Eu, Ru, Hu, Cu);
-    init(Qv, Ev, Rv, Hv, Cv);
+    init(Qu, Eu, Ru, Hu, Cu, num_eu);
+    init(Qv, Ev, Rv, Hv, Cv, num_ev);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
@@ -694,14 +697,14 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
   // }
 }
 inline void
-SCCWN::placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges,
+SCCWN::placeEdges(parlay::sequence<std::pair<uint32_t, uint32_t>> &edges,
                   uint32_t l) {
   for (auto it : edges) {
     leaves[it.first]->insertToLeaf(it.second, l);
     leaves[it.second]->insertToLeaf(it.first, l);
   }
 }
-inline std::tuple<bool, size_t, size_t>
+inline std::tuple<bool, uint32_t, uint32_t>
 SCCWN::fetchEdge(std::queue<localTree *> &Q, uint32_t l) {
   if (Q.empty())
     return std::make_tuple(false, 0, 0);
