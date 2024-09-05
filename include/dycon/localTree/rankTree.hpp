@@ -46,6 +46,7 @@ private:
   static arr buildFromSequence(arr &rTrees, localTree *node);
   static arr remove(rankTree *T, localTree *node);
   static arr remove(arr &rTrees, rankTree *T, localTree *node);
+  static arr remove(arr &rTrees, arr &dropped, localTree *node);
   static arr build(arr &rTrees, localTree *node);
   static arr insertRankTree(arr &rTrees, rankTree *T, localTree *node);
   static arr Merge(arr &r1, arr &r2, localTree *node);
@@ -205,6 +206,12 @@ inline rankTree::arr rankTree::remove(arr &rTrees, rankTree *T,
   }
   auto remain = rankTree::remove(T, node);
   return rankTree::Merge(rTrees, remain, node);
+}
+inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
+                                      localTree *node) {
+  for (auto it : dropped)
+    remove(rTrees, it, node);
+  return rTrees;
 }
 inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
                                               localTree *node) {
