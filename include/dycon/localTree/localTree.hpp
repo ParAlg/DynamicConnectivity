@@ -1,4 +1,5 @@
 #pragma once
+#include "absl/container/flat_hash_set.h"
 #include "alloc.h"
 #include "leaf.hpp"
 #include "rankTree.hpp"
@@ -48,7 +49,9 @@ public:
   // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
-  static void deleteFromParent(localTree *p);
+  static void deleteFromParent(localTree *son);
+  static localTree *splitFromParent(localTree *p,
+                                    absl::flat_hash_set<localTree *> &nodes);
   static localTree *getParent(localTree *r);
   static localTree *getRoot(localTree *r);
   static localTree *getLevelNode(localTree *r, uint32_t l);
@@ -233,18 +236,52 @@ inline void localTree::deleteEdge(uint32_t v, uint32_t l) {
   this->edgemap = this->vertex->getEdgeMap();
   updateBitMap(this);
 }
-inline void localTree::deleteFromParent(localTree *p) {
+inline void localTree::deleteFromParent(localTree *son) {
   // remove p from its parent
-  if (!p->parent)
+  if (!son->parent)
     return;
-  auto node = getParent(p);
-  node->size -= p->size;
+  auto node = getParent(son);
+  node->size -= son->size;
   auto oval = node->edgemap;
-  node->rTrees = rankTree::remove(node->rTrees, p->parent, node);
+  node->rTrees = rankTree::remove(node->rTrees, son->parent, node);
   node->edgemap = rankTree::getEdgeMap(node->rTrees);
   if (node->edgemap != oval)
     updateBitMap(node);
-  p->parent = nullptr;
+  son->parent = nullptr;
+}
+inline localTree *
+localTree::splitFromParent(localTree *p,
+                           absl::flat_hash_set<localTree *> &nodes) {
+  // delete nodes from p, all nodes have to be p's children and put these nodes
+  // as C's children
+  auto C = localTree::l_alloc->construct();
+  uint32_t _v = 0;
+  uint32_t cl = 0;
+  for (auto it : nodes) {
+    _v += it->getSize();
+    cl = std::max(cl, it->getLevel());
+  }
+  C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
+
+  if (p != nullptr) { // delete nodes from their parent
+    p->size -= _v;
+    parlay::sequence<rankTree *> rTrees(nodes.size());
+    uint32_t i = 0;
+    for (auto it : nodes) {
+      assert(getParent(it) == p);
+      rTrees[i++] = it->parent;
+      it->parent = nullptr;
+    }
+    auto oval = p->edgemap;
+    p->rTrees = rankTree::remove(p->rTrees, rTrees, p);
+    p->edgemap = rankTree::getEdgeMap(p->rTrees);
+    if (p->edgemap != oval)
+      updateBitMap(p);
+  }
+
+  // assign nodes as C's children
+
+  return C;
 }
 inline uint32_t localTree::getEdgeLevel(uint32_t e) {
   return this->vertex->getLevel(e);
