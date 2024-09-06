@@ -5,6 +5,7 @@
 #include "rankTree.hpp"
 #include "stats.hpp"
 #include <cstdint>
+#include <cstdlib>
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 class rankTree;
@@ -25,6 +26,17 @@ private:
   }
 
 public:
+  static void mergeRankTree(localTree *A, localTree *B) {
+    A->rTrees = rankTree::Merge(A->rTrees, B->rTrees, A);
+  }
+  static void addNode(localTree *p, localTree *son) {
+    auto rTree = rankTree::r_alloc->construct(std::log2(son->size), p, son,
+                                              son->edgemap);
+    son->parent = rTree;
+    p->rTrees = rankTree::insertRankTree(p->rTrees, rTree, p);
+    // p->size += son->size;
+  }
+  void setEdgeMap() { this->edgemap = rankTree::getEdgeMap(this->rTrees); }
   static type_allocator<localTree> *l_alloc;
   localTree(uint32_t _id)
       : level(0), size(1), parent(nullptr), vertex(new leaf(_id, this)),
@@ -44,12 +56,15 @@ public:
     assert((1 << l) >= this->size);
     this->level = l;
   }
+  void setSize(uint32_t sz) { this->size = sz; }
   uint32_t getSize() { return this->size; }
   static void merge(localTree *Cu, localTree *Cv);
   // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
   static void deleteFromParent(localTree *son);
+  static void deleteFromParent(localTree *p,
+                               absl::flat_hash_set<localTree *> &nodes);
   static localTree *splitFromParent(localTree *p,
                                     absl::flat_hash_set<localTree *> &nodes);
   static localTree *getParent(localTree *r);
@@ -249,6 +264,30 @@ inline void localTree::deleteFromParent(localTree *son) {
     updateBitMap(node);
   son->parent = nullptr;
 }
+inline void
+localTree::deleteFromParent(localTree *p,
+                            absl::flat_hash_set<localTree *> &nodes) {
+  if (!p)
+    return;
+  parlay::sequence<rankTree *> rTrees(nodes.size());
+  uint32_t i = 0;
+  uint32_t sz = 0;
+  for (auto it : nodes) {
+    assert(getParent(it) == p);
+    rTrees[i++] = it->parent;
+    it->parent = nullptr;
+    sz += it->size;
+  }
+  auto oval = p->edgemap;
+
+  p->rTrees = rankTree::remove(p->rTrees, rTrees, p);
+  p->edgemap = rankTree::getEdgeMap(p->rTrees);
+  if (p->edgemap != oval)
+    updateBitMap(p);
+  if (sz > p->size)
+    std::abort();
+  p->size -= sz;
+}
 inline localTree *
 localTree::splitFromParent(localTree *p,
                            absl::flat_hash_set<localTree *> &nodes) {
@@ -258,26 +297,14 @@ localTree::splitFromParent(localTree *p,
   uint32_t _v = 0;
   uint32_t cl = 0;
   for (auto it : nodes) {
-    _v += it->getSize();
-    cl = std::max(cl, it->getLevel());
-    // localTree::deleteFromParent(it);
+    _v += it->size;
+    cl = std::max(cl, it->level);
   }
   C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
 
   if (p != nullptr) { // delete nodes from their parent
-    p->size -= _v;
-    parlay::sequence<rankTree *> rTrees(nodes.size());
-    uint32_t i = 0;
-    for (auto it : nodes) {
-      assert(getParent(it) == p);
-      rTrees[i++] = it->parent;
-      it->parent = nullptr;
-    }
-    auto oval = p->edgemap;
-    p->rTrees = rankTree::remove(p->rTrees, rTrees, p);
-    p->edgemap = rankTree::getEdgeMap(p->rTrees);
-    if (p->edgemap != oval)
-      updateBitMap(p);
+    // p->size -= _v;
+    deleteFromParent(p, nodes);
   }
   // assign nodes as C's children or sibling
   for (auto it : nodes) {
@@ -292,7 +319,6 @@ localTree::splitFromParent(localTree *p,
       // localTree::addChild(C, it);
     }
   }
-  // C->rTrees = rankTree::build(rTrees, C);
   C->size = _v;
   C->edgemap = rankTree::getEdgeMap(C->rTrees);
   return C;

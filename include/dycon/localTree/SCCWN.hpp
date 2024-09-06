@@ -458,15 +458,21 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           for (auto it : Ru) {
             _v += it->getSize();
             cl = std::max(cl, it->getLevel());
-            localTree::deleteFromParent(it);
           }
           _CP->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
+          localTree::deleteFromParent(CP, Ru);
           for (auto it : Ru) {
-            if (it->getLevel() == _CP->getLevel())
-              localTree::merge(_CP, it);
-            else
-              localTree::addChild(_CP, it);
+            if (it->getLevel() == _CP->getLevel()) {
+              localTree::mergeRankTree(_CP, it);
+              localTree::l_alloc->deallocate(it);
+              // localTree::merge(_CP, it);
+            } else {
+              localTree::addNode(_CP, it);
+              // localTree::addChild(_CP, it);
+            }
           }
+          _CP->setSize(_v);
+          _CP->localTree::setEdgeMap();
           // auto _CP = localTree::splitFromParent(CP, Ru);
           placeEdges(Eu, _CP->getLevel(), true);
           placeEdges(Ev, l);
