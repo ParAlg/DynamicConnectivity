@@ -260,6 +260,7 @@ localTree::splitFromParent(localTree *p,
   for (auto it : nodes) {
     _v += it->getSize();
     cl = std::max(cl, it->getLevel());
+    // localTree::deleteFromParent(it);
   }
   C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
 
@@ -278,9 +279,24 @@ localTree::splitFromParent(localTree *p,
     if (p->edgemap != oval)
       updateBitMap(p);
   }
-
+  return C;
   // assign nodes as C's children
-
+  parlay::sequence<rankTree *> rTrees(rankTree::leaf_threshold);
+  for (auto it : nodes) {
+    if (it->getLevel() == C->getLevel()) {
+      rTrees = rankTree::Merge(rTrees, it->rTrees, C);
+      l_alloc->deallocate(it);
+    } else {
+      auto rTree =
+          rankTree::r_alloc->construct(std::log2(it->size), C, it, it->edgemap);
+      it->parent = rTree;
+      rTrees = rankTree::insertRankTree(rTrees, rTree, C);
+    }
+  }
+  // C->rTrees = rankTree::build(rTrees, C);
+  C->rTrees = rTrees;
+  C->size = _v;
+  C->edgemap = rankTree::getEdgeMap(C->rTrees);
   return C;
 }
 inline uint32_t localTree::getEdgeLevel(uint32_t e) {

@@ -91,20 +91,22 @@ inline void leaf::remove(vertex e, uint32_t l) {
 }
 inline uint32_t leaf::getLevel(vertex e) {
   auto &E = this->E;
-  uint32_t level = MAX_LEVEL + 1;
-  bool flag = false;
+  // uint32_t level = MAX_LEVEL + 1;
+  // bool flag = false;
   for (uint32_t i = 0; i <= MAX_LEVEL; i++) {
     if (E[i] != nullptr && E[i]->contains(e)) {
-      level = i;
-      flag = true;
-      break;
+      // level = i;
+      // flag = true;
+      // break;
+      return i;
     }
   }
+  // if (flag == false)
+  //   std::cout << "level is " << level << std::endl;
+  // assert(flag == true);
 
-  // std::cout << "level is " << level << std::endl;
-  assert(flag == true);
-
-  return level;
+  // return level;
+  return MAX_LEVEL + 1;
 }
 inline bool leaf::checkLevel(uint32_t l) {
   // check if this vertex has level l incident edges.

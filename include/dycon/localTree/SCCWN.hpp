@@ -3,13 +3,16 @@
 #include "dycon/localTree/leaf.hpp"
 #include "localTree.hpp"
 #include "parlay/sequence.h"
+#include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <queue>
+#include <sys/types.h>
 #include <unordered_set>
+#include <utility>
 class SCCWN {
 private:
   static std::tuple<bool, uint32_t, uint32_t>
@@ -23,17 +26,27 @@ private:
               std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
   }
+  struct edge_info {
+    uint32_t uit;
+    uint32_t ul;
+    uint32_t vit;
+    uint32_t vl;
+    edge_info(uint32_t _uit, uint32_t _ul, uint32_t _vit, uint32_t _vl)
+        : uit(_uit), ul(_ul), vit(_vit), vl(_vl) {}
+  };
 
 public:
   uint32_t n;
   static uint32_t lmax;
   parlay::sequence<localTree *> leaves;
+  absl::flat_hash_map<std::pair<uint32_t, uint32_t>, edge_info> G;
   SCCWN(uint32_t _n)
       : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {
     parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
     edge_set::EBallocator = new type_allocator<EBlock>(n);
+    G.reserve(10 * n);
     leaves = parlay::sequence<localTree *>(n);
     for (uint32_t i = 0; i < n; i++)
       leaves[i] = localTree::l_alloc->construct(i);
@@ -112,6 +125,9 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
         uint32_t l = (P == nullptr) ? Cu->getLevel() : P->getLevel();
         leaves[u]->insertToLeaf(v, l);
         leaves[v]->insertToLeaf(u, l);
+        if (u > v)
+          std::swap(u, v);
+        // G.insert(std::pair(std::pair(u, v), edge_info(l, l, l, l)));
         return;
       }
       Pu = localTree::getParent(Cu);
@@ -174,6 +190,9 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   }
   leaves[u]->insertToLeaf(v, l);
   leaves[v]->insertToLeaf(u, l);
+  if (u > v)
+    std::swap(u, v);
+  // G.insert(std::pair(std::pair(u, v), edge_info(l, l, l, l)));
 }
 // inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
 //   if (leaves[u] == nullptr)
@@ -269,8 +288,10 @@ inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
                  ? localTree::l_alloc->construct(pu[uLen - 1], pv[vLen - 1])
                  : localTree::l_alloc->construct(pv[vLen - 1], pu[uLen - 1]);
         localTree::addChild(lca, np);
-      } else
-        np = lca;
+      } else {
+        auto temp = localTree::getParent(lca);
+        np = temp == nullptr ? lca : temp;
+      }
     } else
       np = pushDown(pu, uLen - 1, pv, vLen - 1);
   }
@@ -364,15 +385,16 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             // don't push nCu+nCv may violate size
             return;
           } else if (nCu <= nCv) {
-            auto C = localTree::l_alloc->construct();
-            uint32_t _v = 0;
-            uint32_t cl = 0;
-            for (auto it : Ru) {
-              localTree::deleteFromParent(it);
-              _v += it->getSize();
-              cl = std::max(cl, it->getLevel());
-            }
-            C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
+            // auto C = localTree::l_alloc->construct();
+            // uint32_t _v = 0;
+            // uint32_t cl = 0;
+            // for (auto it : Ru) {
+            //   localTree::deleteFromParent(it);
+            //   _v += it->getSize();
+            //   cl = std::max(cl, it->getLevel());
+            // }
+            // C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
+            auto C = localTree::splitFromParent(CP, Ru);
             for (auto it : Ru) {
               if (it->getLevel() == C->getLevel())
                 localTree::merge(C, it);
