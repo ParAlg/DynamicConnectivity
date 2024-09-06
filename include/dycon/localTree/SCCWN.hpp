@@ -479,8 +479,9 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         } else {
           _CP = localTree::l_alloc->construct();
           _CP->setLevel(l);
-          for (auto it : Ru)
-            localTree::deleteFromParent(it);
+          // for (auto it : Ru)
+          //   localTree::deleteFromParent(it);
+          localTree::deleteFromParent(CP, Ru);
           for (auto it : Ru)
             localTree::addChild(_CP, it);
           auto oldMap = CP->getMap();
@@ -612,8 +613,9 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         } else {
           _CP = localTree::l_alloc->construct();
           _CP->setLevel(l);
-          for (auto it : Rv)
-            localTree::deleteFromParent(it);
+          // for (auto it : Rv)
+          //   localTree::deleteFromParent(it);
+          localTree::deleteFromParent(CP, Rv);
           for (auto it : Rv)
             localTree::addChild(_CP, it);
           auto oldMap = CP->getMap();
