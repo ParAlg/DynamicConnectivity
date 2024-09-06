@@ -26,17 +26,6 @@ private:
   }
 
 public:
-  static void mergeRankTree(localTree *A, localTree *B) {
-    A->rTrees = rankTree::Merge(A->rTrees, B->rTrees, A);
-  }
-  static void addNode(localTree *p, localTree *son) {
-    auto rTree = rankTree::r_alloc->construct(std::log2(son->size), p, son,
-                                              son->edgemap);
-    son->parent = rTree;
-    p->rTrees = rankTree::insertRankTree(p->rTrees, rTree, p);
-    // p->size += son->size;
-  }
-  void setEdgeMap() { this->edgemap = rankTree::getEdgeMap(this->rTrees); }
   static type_allocator<localTree> *l_alloc;
   localTree(uint32_t _id)
       : level(0), size(1), parent(nullptr), vertex(new leaf(_id, this)),
@@ -300,12 +289,10 @@ localTree::splitFromParent(localTree *p,
     _v += it->size;
     cl = std::max(cl, it->level);
   }
-  C->setLevel(std::max(cl, (uint32_t)std::ceil(std::log2(_v))));
+  C->level = std::max(cl, (uint32_t)std::ceil(std::log2(_v)));
 
-  if (p != nullptr) { // delete nodes from their parent
-    // p->size -= _v;
-    deleteFromParent(p, nodes);
-  }
+  deleteFromParent(p, nodes);
+
   // assign nodes as C's children or sibling
   for (auto it : nodes) {
     if (it->getLevel() == C->getLevel()) {
