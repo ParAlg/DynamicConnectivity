@@ -279,22 +279,20 @@ localTree::splitFromParent(localTree *p,
     if (p->edgemap != oval)
       updateBitMap(p);
   }
-  return C;
-  // assign nodes as C's children
-  parlay::sequence<rankTree *> rTrees(rankTree::leaf_threshold);
+  // assign nodes as C's children or sibling
   for (auto it : nodes) {
     if (it->getLevel() == C->getLevel()) {
-      rTrees = rankTree::Merge(rTrees, it->rTrees, C);
+      C->rTrees = rankTree::Merge(C->rTrees, it->rTrees, C);
       l_alloc->deallocate(it);
     } else {
       auto rTree =
           rankTree::r_alloc->construct(std::log2(it->size), C, it, it->edgemap);
       it->parent = rTree;
-      rTrees = rankTree::insertRankTree(rTrees, rTree, C);
+      C->rTrees = rankTree::insertRankTree(C->rTrees, rTree, C);
+      // localTree::addChild(C, it);
     }
   }
   // C->rTrees = rankTree::build(rTrees, C);
-  C->rTrees = rTrees;
   C->size = _v;
   C->edgemap = rankTree::getEdgeMap(C->rTrees);
   return C;
