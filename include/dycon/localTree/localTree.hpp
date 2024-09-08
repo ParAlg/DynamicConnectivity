@@ -51,6 +51,8 @@ public:
   // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
+  static void addChildren(localTree *p,
+                          absl::flat_hash_set<localTree *> &nodes);
   static void deleteFromParent(localTree *son);
   static void deleteFromParent(localTree *p,
                                absl::flat_hash_set<localTree *> &nodes);
@@ -177,6 +179,18 @@ inline void localTree::add2Children(localTree *p, localTree *s1,
   assert(p->level > std::max(s1->level, s2->level));
   assert((1 << p->level) >= p->size);
 }
+inline void localTree::addChildren(localTree *p,
+                                   absl::flat_hash_set<localTree *> &nodes) {
+  // this one does not update bitmap to top because p has no parents
+  for (auto it : nodes) {
+    auto rTree =
+        rankTree::r_alloc->construct(std::log2(it->size), p, it, it->edgemap);
+    it->parent = rTree;
+    p->rTrees = rankTree::insertRankTree(p->rTrees, rTree, p);
+    p->size += it->size;
+  }
+  p->edgemap = rankTree::getEdgeMap(p->rTrees);
+}
 inline localTree *localTree::getParent(localTree *r) {
   if (!r->parent)
     return nullptr;
@@ -295,6 +309,7 @@ localTree::splitFromParent(localTree *p,
   deleteFromParent(p, nodes);
 
   // assign nodes as C's children or sibling
+  // this one does not update bitmap to top because C has no parents
   for (auto it : nodes) {
     if (it->getLevel() == C->getLevel()) {
       C->rTrees = rankTree::Merge(C->rTrees, it->rTrees, C);
