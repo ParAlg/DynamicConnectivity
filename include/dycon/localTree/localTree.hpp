@@ -153,26 +153,27 @@ inline void localTree::add2Children(localTree *p, localTree *s1,
                                     localTree *s2) {
   if (!p)
     return;
-  // auto r1 = new rankTree(std::log2(s1->size), p, s1, s1->edgemap);
   auto r1 =
       rankTree::r_alloc->construct(std::log2(s1->size), p, s1, s1->edgemap);
   s1->parent = r1;
-  p->size += s1->size;
   p->rTrees = rankTree::insertRankTree(p->rTrees, r1, p);
-  p->edgemap = p->edgemap | s1->edgemap;
-  // auto r2 = new rankTree(std::log2(s2->size), p, s2, s2->edgemap);
+
   auto r2 =
       rankTree::r_alloc->construct(std::log2(s2->size), p, s2, s2->edgemap);
   s2->parent = r2;
-  p->size += s2->size;
   p->rTrees = rankTree::insertRankTree(p->rTrees, r2, p);
-  p->edgemap = p->edgemap | s2->edgemap;
-  // p->level = std::ceil(std::log2(p->size));
+
+  p->size += s1->size + s2->size;
+  p->edgemap = p->edgemap | s1->edgemap | s2->edgemap;
   updateBitMap(p);
-  if (p->level <= std::max(s1->level, s2->level) || (1 << p->level) < p->size)
-    std::cout << "assert " << p->level << " " << p->size << " " << s1->level
-              << " " << s1->size << " " << s2->level << " " << s2->size
-              << std::endl;
+
+  // p->level = std::ceil(std::log2(p->size)); this should never happen
+
+  // if (p->level <= std::max(s1->level, s2->level) || (1 << p->level) <
+  // p->size)
+  //   std::cout << "assert " << p->level << " " << p->size << " " << s1->level
+  //             << " " << s1->size << " " << s2->level << " " << s2->size
+  //             << std::endl;
   assert(p->level > std::max(s1->level, s2->level));
   assert((1 << p->level) >= p->size);
 }
