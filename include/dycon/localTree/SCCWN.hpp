@@ -39,17 +39,18 @@ public:
   uint32_t n;
   static uint32_t lmax;
   parlay::sequence<localTree *> leaves;
+  uint32_t self_edge[2] = {0, 0};
   absl::flat_hash_map<std::pair<uint32_t, uint32_t>, edge_info> G;
   SCCWN(uint32_t _n)
       : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {
     parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
-    edge_set::EBallocator = new type_allocator<EBlock>(n);
+    // edge_set::EBallocator = new type_allocator<EBlock>(n);
     G.reserve(10 * n);
     leaves = parlay::sequence<localTree *>(n);
     for (uint32_t i = 0; i < n; i++)
-      leaves[i] = localTree::l_alloc->construct(i);
+      leaves[i] = localTree::l_alloc->create(i);
 
     t.next("constructor");
   }
@@ -58,6 +59,7 @@ public:
     rankTree::r_alloc->~type_allocator();
     localTree::l_alloc->~type_allocator();
   };
+  void insert(uint32_t u, uint32_t v) { insertToLCA(u, v); }
   void insertToLCA(uint32_t u, uint32_t v);
   void insertToRoot(uint32_t u, uint32_t v);
   void insertToBlock(uint32_t u, uint32_t v);
@@ -89,15 +91,15 @@ inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
     localTree *r = localTree::getRoot(leaves[u]);
     if (r->getLevel() == lmax)
       return r;
-    auto p = localTree::l_alloc->construct();
+    auto p = localTree::l_alloc->create();
     p->setLevel(lmax);
     localTree::addChild(p, r);
     return p;
   };
   if (leaves[u] == nullptr)
-    leaves[u] = localTree::l_alloc->construct(u);
+    leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
-    leaves[v] = localTree::l_alloc->construct(v);
+    leaves[v] = localTree::l_alloc->create(v);
   auto Cu = g(u);
   auto Cv = g(v);
   if (Cu != Cv)
@@ -107,9 +109,9 @@ inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
 }
 inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
-    leaves[u] = localTree::l_alloc->construct(u);
+    leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
-    leaves[v] = localTree::l_alloc->construct(v);
+    leaves[v] = localTree::l_alloc->create(v);
   auto Cu = leaves[u];
   auto Cv = leaves[v];
   localTree *Pu = nullptr, *Pv = nullptr;
@@ -185,7 +187,7 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
       l = Cu->getLevel();
     }
   } else {
-    auto r = localTree::l_alloc->construct(Cu, Cv);
+    auto r = localTree::l_alloc->create(Cu, Cv);
     l = r->getLevel();
   }
   leaves[u]->insertToLeaf(v, l);
@@ -196,9 +198,9 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
 }
 // inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
 //   if (leaves[u] == nullptr)
-//     leaves[u] = localTree::l_alloc->construct(u);
+//     leaves[u] = localTree::l_alloc->create(u);
 //   if (leaves[v] == nullptr)
-//     leaves[v] = localTree::l_alloc->construct(v);
+//     leaves[v] = localTree::l_alloc->create(v);
 // auto pv = localTree::getRootPath(leaves[v]);
 // auto pu = localTree::getRootPath(leaves[u]);
 // auto iu = pu.rbegin();
@@ -218,7 +220,7 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
 //       l = Cu->getLevel();
 //     }
 //   } else {
-//     auto r = localTree::l_alloc->construct(Cu, Cv);
+//     auto r = localTree::l_alloc->create(Cu, Cv);
 //     l = r->getLevel();
 //   }
 // } else {
@@ -239,9 +241,9 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
 // modify rank tree
 inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
-    leaves[u] = localTree::l_alloc->construct(u);
+    leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
-    leaves[v] = localTree::l_alloc->construct(v);
+    leaves[v] = localTree::l_alloc->create(v);
   auto pv = localTree::getRootPath(leaves[v]);
   auto pu = localTree::getRootPath(leaves[u]);
   uint32_t uLen = pu.size();
@@ -253,8 +255,8 @@ inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
     if (rootu->getSize() + rootv->getSize() >
         (1 << std::max(rootu->getLevel(), rootv->getLevel())))
       np = rootu->getLevel() >= rootv->getLevel()
-               ? localTree::l_alloc->construct(rootu, rootv)
-               : localTree::l_alloc->construct(rootv, rootu);
+               ? localTree::l_alloc->create(rootu, rootv)
+               : localTree::l_alloc->create(rootv, rootu);
     else {
       if (rootu->getLevel() == rootv->getLevel()) {
         localTree::merge(rootu, rootv);
@@ -285,8 +287,8 @@ inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
         localTree::deleteFromParent(pu[uLen - 1]);
         localTree::deleteFromParent(pv[vLen - 1]);
         np = pu[uLen - 1]->getLevel() >= pv[vLen - 1]->getLevel()
-                 ? localTree::l_alloc->construct(pu[uLen - 1], pv[vLen - 1])
-                 : localTree::l_alloc->construct(pv[vLen - 1], pu[uLen - 1]);
+                 ? localTree::l_alloc->create(pu[uLen - 1], pv[vLen - 1])
+                 : localTree::l_alloc->create(pv[vLen - 1], pu[uLen - 1]);
         localTree::addChild(lca, np);
       } else {
         auto temp = localTree::getParent(lca);
@@ -331,7 +333,7 @@ inline localTree *SCCWN::pushDown(parlay::sequence<localTree *> &pu,
       // } else {
       //   localTree::deleteFromParent(pu[uter]);
       //   localTree::deleteFromParent(pv[vter]);
-      //   auto np = localTree::l_alloc->construct(pu[uter], pv[vter]);
+      //   auto np = localTree::l_alloc->create(pu[uter], pv[vter]);
       //   localTree::addChild(p, np);
       //   return np;
     }
@@ -350,8 +352,11 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto Cu = localTree::getLevelNode(leaves[u], l);
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
-  if (Cu == Cv)
+  if (Cu == Cv) {
+    self_edge[1]++;
     return;
+  }
+  self_edge[0]++;
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
@@ -417,7 +422,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           _CP = *Ru.begin();
           if (localTree::ifSingleton(CP) == true && CP->getMap()[l] == false) {
             localTree::deleteFromParent(*Rv.begin());
-            localTree::l_alloc->deallocate(CP); // delete CP;
+            localTree::l_alloc->free(CP); // delete CP;
             CP = *Rv.begin();
           }
         } else if (nCu <= nCv) {
@@ -425,17 +430,18 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           placeEdges(Eu, _CP->getLevel(), true);
           placeEdges(Ev, l);
         } else {
-          _CP = localTree::l_alloc->construct();
+          _CP = localTree::l_alloc->create();
           _CP->setLevel(l);
           // for (auto it : Ru)
           //   localTree::deleteFromParent(it);
           localTree::deleteFromParent(CP, Ru);
-          for (auto it : Ru)
-            localTree::addChild(_CP, it);
+          // for (auto it : Ru)
+          //   localTree::addChild(_CP, it);
+          localTree::addChildren(_CP, Ru);
           auto oldMap = CP->getMap();
           auto C = localTree::splitFromParent(CP, Rv);
           if (oldMap[l] == false) {
-            localTree::l_alloc->deallocate(CP); // delete CP;
+            localTree::l_alloc->free(CP); // delete CP;
             CP = C;
           } else
             localTree::addChild(CP, C);
@@ -489,7 +495,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
       } else {
         auto GP = localTree::getParent(CP);
         localTree::deleteFromParent(CP);
-        localTree *_CP; // = localTree::l_alloc->construct();
+        localTree *_CP; // = localTree::l_alloc->create();
         if (Ev.empty()) {
           localTree::deleteFromParent(*Rv.begin());
           _CP = *Rv.begin();
@@ -499,15 +505,16 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           placeEdges(Eu, l);
           placeEdges(Ev, _CP->getLevel(), true);
         } else {
-          _CP = localTree::l_alloc->construct();
+          _CP = localTree::l_alloc->create();
           _CP->setLevel(l);
           localTree::deleteFromParent(CP, Rv);
-          for (auto it : Rv)
-            localTree::addChild(_CP, it);
+          // for (auto it : Rv)
+          //   localTree::addChild(_CP, it);
+          localTree::addChildren(_CP, Rv);
           auto oldMap = CP->getMap();
           auto C = localTree::splitFromParent(CP, Ru);
           if (oldMap[l] == false) {
-            localTree::l_alloc->deallocate(CP); // delete CP;
+            localTree::l_alloc->free(CP); // delete CP;
             CP = C;
           } else
             localTree::addChild(CP, C);
