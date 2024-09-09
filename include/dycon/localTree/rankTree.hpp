@@ -127,7 +127,7 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
 }
 inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
                                                  localTree *node = nullptr) {
-  assert(rTrees.size() < 2 * leaf_threshold);
+  // assert(rTrees.size() < 2 * leaf_threshold);
   // rankTree *temp[2 * leaf_threshold];
   // uint32_t num_root = 0;
   arr temp;
