@@ -380,157 +380,162 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
     while (true) {
-      auto eu = fetchEdge(Qu, l);
-      if (std::get<0>(eu) == true) {
-        auto Cuv = localTree::getLevelNode(leaves[std::get<2>(eu)], l);
-        assert(Cuv != nullptr);
-        assert(CP == nullptr || localTree::getParent(Cuv) == CP);
-        if (Rv.find(Cuv) != Rv.end()) {
-          if (Eu.empty()) {
-            // don't push nCu+nCv may violate size
+      if (nCu <= CP->getSize() / 2) {
+        auto eu = fetchEdge(Qu, l);
+        if (std::get<0>(eu) == true) {
+          auto Cuv = localTree::getLevelNode(leaves[std::get<2>(eu)], l);
+          assert(Cuv != nullptr);
+          assert(CP == nullptr || localTree::getParent(Cuv) == CP);
+          if (Rv.find(Cuv) != Rv.end()) {
+            if (Eu.empty()) {
+              // don't push nCu+nCv may violate size
+              return;
+            } else if (nCu <= nCv) {
+              auto C = localTree::splitFromParent(CP, Ru);
+              localTree::addChild(CP, C);
+              placeEdges(Eu, C->getLevel(), true);
+              placeEdges(Ev, l);
+            } else {
+              auto C = localTree::splitFromParent(CP, Rv);
+              localTree::addChild(CP, C);
+              placeEdges(Eu, l);
+              placeEdges(Ev, C->getLevel(), true);
+            }
+            // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
+            // nCv, l); Rstat.push_back(std::move(info));
             return;
+          } else {
+            if (Ru.find(Cuv) == Ru.end()) {
+              Ru.insert(Cuv);
+              Qu.push(Cuv);
+              nCu += Cuv->getSize();
+            }
+            Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
+            leaves[std::get<1>(eu)]->deleteEdge(std::get<2>(eu), l);
+            // leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), l);
+          }
+        } else {
+          auto GP = localTree::getParent(CP);
+          localTree::deleteFromParent(CP);
+          localTree *_CP;
+          if (Eu.empty()) {
+            localTree::deleteFromParent(*Ru.begin());
+            _CP = *Ru.begin();
+            if (localTree::ifSingleton(CP) == true &&
+                CP->getMap()[l] == false) {
+              localTree::deleteFromParent(*Rv.begin());
+              localTree::l_alloc->free(CP); // delete CP;
+              CP = *Rv.begin();
+            }
           } else if (nCu <= nCv) {
-            auto C = localTree::splitFromParent(CP, Ru);
-            localTree::addChild(CP, C);
-            placeEdges(Eu, C->getLevel(), true);
+            _CP = localTree::splitFromParent(CP, Ru);
+            placeEdges(Eu, _CP->getLevel(), true);
             placeEdges(Ev, l);
           } else {
+            _CP = localTree::l_alloc->create();
+            _CP->setLevel(l);
+            // for (auto it : Ru)
+            //   localTree::deleteFromParent(it);
+            localTree::deleteFromParent(CP, Ru);
+            // for (auto it : Ru)
+            //   localTree::addChild(_CP, it);
+            localTree::addChildren(_CP, Ru);
+            auto oldMap = CP->getMap();
             auto C = localTree::splitFromParent(CP, Rv);
-            localTree::addChild(CP, C);
+            if (oldMap[l] == false) {
+              localTree::l_alloc->free(CP); // delete CP;
+              CP = C;
+            } else
+              localTree::addChild(CP, C);
             placeEdges(Eu, l);
             placeEdges(Ev, C->getLevel(), true);
           }
+          localTree::add2Children(GP, CP, _CP);
+          Cu = _CP;
+          Cv = CP;
+          CP = GP;
+          l = CP ? CP->getLevel() : 0;
+
           // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
           // nCv, l); Rstat.push_back(std::move(info));
-          return;
-        } else {
-          if (Ru.find(Cuv) == Ru.end()) {
-            Ru.insert(Cuv);
-            Qu.push(Cuv);
-            nCu += Cuv->getSize();
-          }
-          Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
-          leaves[std::get<1>(eu)]->deleteEdge(std::get<2>(eu), l);
-          // leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), l);
-        }
-      } else {
-        auto GP = localTree::getParent(CP);
-        localTree::deleteFromParent(CP);
-        localTree *_CP;
-        if (Eu.empty()) {
-          localTree::deleteFromParent(*Ru.begin());
-          _CP = *Ru.begin();
-          if (localTree::ifSingleton(CP) == true && CP->getMap()[l] == false) {
-            localTree::deleteFromParent(*Rv.begin());
-            localTree::l_alloc->free(CP); // delete CP;
-            CP = *Rv.begin();
-          }
-        } else if (nCu <= nCv) {
-          _CP = localTree::splitFromParent(CP, Ru);
-          placeEdges(Eu, _CP->getLevel(), true);
-          placeEdges(Ev, l);
-        } else {
-          _CP = localTree::l_alloc->create();
-          _CP->setLevel(l);
-          // for (auto it : Ru)
-          //   localTree::deleteFromParent(it);
-          localTree::deleteFromParent(CP, Ru);
-          // for (auto it : Ru)
-          //   localTree::addChild(_CP, it);
-          localTree::addChildren(_CP, Ru);
-          auto oldMap = CP->getMap();
-          auto C = localTree::splitFromParent(CP, Rv);
-          if (oldMap[l] == false) {
-            localTree::l_alloc->free(CP); // delete CP;
-            CP = C;
-          } else
-            localTree::addChild(CP, C);
-          placeEdges(Eu, l);
-          placeEdges(Ev, C->getLevel(), true);
-        }
-        localTree::add2Children(GP, CP, _CP);
-        Cu = _CP;
-        Cv = CP;
-        CP = GP;
-        l = CP ? CP->getLevel() : 0;
 
-        // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
-        // nCv, l); Rstat.push_back(std::move(info));
-
-        break;
+          break;
+        }
       }
-      auto ev = fetchEdge(Qv, l);
-      if (std::get<0>(ev) == true) {
-        auto Cuv = localTree::getLevelNode(leaves[std::get<2>(ev)], l);
-        assert(Cuv != nullptr);
-        assert(CP == nullptr || localTree::getParent(Cuv) == CP);
-        if (Ru.find(Cuv) != Ru.end()) {
+      if (nCv <= CP->getSize() / 2) {
+        auto ev = fetchEdge(Qv, l);
+        if (std::get<0>(ev) == true) {
+          auto Cuv = localTree::getLevelNode(leaves[std::get<2>(ev)], l);
+          assert(Cuv != nullptr);
+          assert(CP == nullptr || localTree::getParent(Cuv) == CP);
+          if (Ru.find(Cuv) != Ru.end()) {
+            if (Ev.empty()) {
+              placeEdges(Eu, l);
+            } else if (nCu <= nCv) {
+              auto C = localTree::splitFromParent(CP, Ru);
+              localTree::addChild(CP, C);
+              placeEdges(Eu, C->getLevel(), true);
+              placeEdges(Ev, l);
+            } else {
+              auto C = localTree::splitFromParent(CP, Rv);
+              localTree::addChild(CP, C);
+              placeEdges(Eu, l);
+              placeEdges(Ev, C->getLevel(), true);
+            }
+
+            // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
+            // nCv, l); Rstat.push_back(std::move(info));
+            return;
+          } else {
+            if (Rv.find(Cuv) == Rv.end()) {
+              Rv.insert(Cuv);
+              Qv.push(Cuv);
+              nCv += Cuv->getSize();
+            }
+            Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
+            leaves[std::get<1>(ev)]->deleteEdge(std::get<2>(ev), l);
+            // leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), l);
+          }
+        } else {
+          auto GP = localTree::getParent(CP);
+          localTree::deleteFromParent(CP);
+          localTree *_CP; // = localTree::l_alloc->create();
           if (Ev.empty()) {
+            localTree::deleteFromParent(*Rv.begin());
+            _CP = *Rv.begin();
             placeEdges(Eu, l);
-          } else if (nCu <= nCv) {
+          } else if (nCv <= nCu) {
+            _CP = localTree::splitFromParent(CP, Rv);
+            placeEdges(Eu, l);
+            placeEdges(Ev, _CP->getLevel(), true);
+          } else {
+            _CP = localTree::l_alloc->create();
+            _CP->setLevel(l);
+            localTree::deleteFromParent(CP, Rv);
+            // for (auto it : Rv)
+            //   localTree::addChild(_CP, it);
+            localTree::addChildren(_CP, Rv);
+            auto oldMap = CP->getMap();
             auto C = localTree::splitFromParent(CP, Ru);
-            localTree::addChild(CP, C);
+            if (oldMap[l] == false) {
+              localTree::l_alloc->free(CP); // delete CP;
+              CP = C;
+            } else
+              localTree::addChild(CP, C);
             placeEdges(Eu, C->getLevel(), true);
             placeEdges(Ev, l);
-          } else {
-            auto C = localTree::splitFromParent(CP, Rv);
-            localTree::addChild(CP, C);
-            placeEdges(Eu, l);
-            placeEdges(Ev, C->getLevel(), true);
           }
+          localTree::add2Children(GP, CP, _CP);
+          Cu = CP;
+          Cv = _CP;
+          CP = GP;
+          l = CP ? CP->getLevel() : 0;
 
           // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
           // nCv, l); Rstat.push_back(std::move(info));
-          return;
-        } else {
-          if (Rv.find(Cuv) == Rv.end()) {
-            Rv.insert(Cuv);
-            Qv.push(Cuv);
-            nCv += Cuv->getSize();
-          }
-          Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
-          leaves[std::get<1>(ev)]->deleteEdge(std::get<2>(ev), l);
-          // leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), l);
-        }
-      } else {
-        auto GP = localTree::getParent(CP);
-        localTree::deleteFromParent(CP);
-        localTree *_CP; // = localTree::l_alloc->create();
-        if (Ev.empty()) {
-          localTree::deleteFromParent(*Rv.begin());
-          _CP = *Rv.begin();
-          placeEdges(Eu, l);
-        } else if (nCv <= nCu) {
-          _CP = localTree::splitFromParent(CP, Rv);
-          placeEdges(Eu, l);
-          placeEdges(Ev, _CP->getLevel(), true);
-        } else {
-          _CP = localTree::l_alloc->create();
-          _CP->setLevel(l);
-          localTree::deleteFromParent(CP, Rv);
-          // for (auto it : Rv)
-          //   localTree::addChild(_CP, it);
-          localTree::addChildren(_CP, Rv);
-          auto oldMap = CP->getMap();
-          auto C = localTree::splitFromParent(CP, Ru);
-          if (oldMap[l] == false) {
-            localTree::l_alloc->free(CP); // delete CP;
-            CP = C;
-          } else
-            localTree::addChild(CP, C);
-          placeEdges(Eu, C->getLevel(), true);
-          placeEdges(Ev, l);
-        }
-        localTree::add2Children(GP, CP, _CP);
-        Cu = CP;
-        Cv = _CP;
-        CP = GP;
-        l = CP ? CP->getLevel() : 0;
 
-        // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
-        // nCv, l); Rstat.push_back(std::move(info));
-
-        break;
+          break;
+        }
       }
     }
   }
