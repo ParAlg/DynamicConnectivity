@@ -1,4 +1,5 @@
 #pragma once
+#include "absl/container/flat_hash_set.h"
 #include "graph.hpp"
 #include <absl/container/btree_set.h>
 #include <bitset>
@@ -44,7 +45,7 @@ private:
   // std::set<uint32_t> *E[MAX_LEVEL + 1];
   // std::vector<size_t> *E_[MAX_LEVEL + 1];
   // std::unordered_set<size_t> *E_[MAX_LEVEL + 1];
-  absl::btree_set<uint32_t> *E[MAX_LEVEL + 1];
+  absl::flat_hash_set<uint32_t> *E[MAX_LEVEL + 1];
   // edge_set *E[MAX_LEVEL + 1];
   void *parent; // pointer to rank tree of the level logn cluster node
   std::bitset<64> edgemap;
@@ -67,7 +68,7 @@ inline void leaf::insert(vertex e, uint32_t l) {
   //   E[l] = new edge_set();
   // E[l]->insert(e);
   if (E[l] == nullptr)
-    E[l] = new absl::btree_set<uint32_t>();
+    E[l] = new absl::flat_hash_set<uint32_t>();
   E[l]->insert(e);
   this->edgemap[l] = 1;
 }

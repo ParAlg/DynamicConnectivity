@@ -6,8 +6,10 @@
 #include <utility>
 #include <vector>
 template <typename T> class type_allocator {
+  static inline constexpr size_t default_list_bytes = (1 << 18);
+
 public:
-  type_allocator(size_t block_count = 100000)
+  type_allocator(size_t block_count = default_list_bytes / sizeof(T))
       : block_size(sizeof(T)), block_count(block_count), freeList(nullptr),
         allocated_blocks(0), used_blocks(0) {
     addNewPool(block_count); // Create the initial pool
@@ -20,7 +22,7 @@ public:
     }
   }
 
-  template <typename... Args> T *construct(Args &&...args) {
+  template <typename... Args> T *create(Args &&...args) {
     if (!freeList)
       addNewPool(block_count);
     used_blocks++;
@@ -29,7 +31,7 @@ public:
     return new (block) T(std::forward<Args>(args)...);
   }
 
-  T *allocate() {
+  T *alloc() {
     if (!freeList) {
       // No free blocks available, create a new pool
       addNewPool(block_count);
@@ -43,14 +45,18 @@ public:
     return reinterpret_cast<T *>(block);
   }
 
-  void deallocate(T *block) {
+  void free(T *block) {
     used_blocks--;
     // Insert the block back into the freelist
     block->~T();
     *reinterpret_cast<void **>(block) = freeList;
     freeList = block;
   }
-
+  // void destroy(T* ptr) {
+  //   assert(ptr != nullptr);
+  //   ptr->~T();
+  //   free(ptr);
+  // }
   void stats() {
     std::cout << "block size = " << sizeof(T) << ", allocated "
               << allocated_blocks << " blocks, used " << used_blocks

@@ -237,11 +237,8 @@ inline void localTree::updateBitMap(localTree *node) {
       break;
     auto oval = node->edgemap;
     std::bitset<64> nval = 0;
-    for (auto it : node->rTrees) {
+    for (auto it : node->rTrees)
       nval = nval | it->edgemap;
-      if (nval == 1 && oval == 1)
-        break;
-    }
     if (nval == oval)
       break;
     node->edgemap = nval;

@@ -3,9 +3,13 @@
 #include "alloc.h"
 #include <array>
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
-template <typename T, uint32_t B = 8> class DynamicArray {
+#include <new>
+template <typename T, uint32_t B = 8,
+          typename Allocator = type_allocator<std::array<T, B>>>
+class DynamicArray {
 private:
   using EBlock = std::array<T, B>;
   EBlock **blocks;
@@ -16,7 +20,8 @@ private:
 
   //  resize the block array when increasing its capacity
   void resize(T new_capacity) {
-    EBlock **new_block = new EBlock *[new_capacity];
+    EBlock **new_block = reinterpret_cast<EBlock **>(
+        ::operator new(new_capacity * sizeof(EBlock *)));
     memset(new_block, 0, new_capacity * sizeof(EBlock *));
     memcpy(new_block, blocks, used_blocks * sizeof(EBlock *));
     delete[] blocks;
@@ -33,13 +38,14 @@ private:
   }
 
 public:
-  static type_allocator<EBlock> *EBallocator;
-  DynamicArray() : block_capacity(1), num_elements(0), used_blocks(0) {
+  static Allocator *EBallocator;
+  DynamicArray(uint32_t init_blocks = 1)
+      : block_capacity(init_blocks), num_elements(0), used_blocks(0) {
     blocks = new EBlock *[block_capacity];
   }
   ~DynamicArray() {
     for (T i = 0; i < used_blocks; i++) {
-      EBallocator->deallocate(blocks[i]);
+      EBallocator->free(blocks[i]);
     }
     delete[] blocks;
   }
@@ -49,7 +55,7 @@ public:
     if (num_elements % B == 0) { // used blocks are all full
       adjust_capacity();         // check if there are unused blocks
       used_blocks++;
-      blocks[used_blocks - 1] = EBallocator->allocate();
+      blocks[used_blocks - 1] = EBallocator->alloc();
     }
     num_elements++;
     (*blocks[used_blocks - 1])[(num_elements - 1) % B] = element;
@@ -61,7 +67,7 @@ public:
     T e = (*blocks[used_blocks - 1])[(num_elements - 1) % B];
     num_elements--;
     if (num_elements % B == 0) {
-      EBallocator->deallocate(blocks[used_blocks - 1]);
+      EBallocator->free(blocks[used_blocks - 1]);
       blocks[used_blocks - 1] = nullptr;
       used_blocks--;
     }
@@ -96,5 +102,6 @@ public:
   }
   void mem_stat() { EBallocator->stats(); }
 };
-
+template <typename T, uint32_t B, typename Allocator>
+Allocator *DynamicArray<T, B, Allocator>::EBallocator = nullptr;
 #endif
