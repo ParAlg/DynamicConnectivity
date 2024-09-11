@@ -47,7 +47,7 @@ public:
     parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
-    leaf::vector_alloc = new type_allocator<std::vector<vertex>>(n);
+    leaf::vector_alloc = new type_allocator<absl::flat_hash_set<vertex>>(n);
     G.reserve(5 * n);
     leaves = parlay::sequence<localTree *>(n);
     for (uint32_t i = 0; i < n; i++)
