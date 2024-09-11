@@ -8,9 +8,9 @@ class rankTree;
 class localTree {
 private:
   friend class rankTree;
-  using nodeArr = parlay::sequence<localTree *>;
+  using nodeArr = std::vector<localTree *>;
   // Each time manipulating node, check if 6 members are covered.
-  parlay::sequence<rankTree *> rTrees;
+  std::vector<rankTree *> rTrees;
   size_t level;
   size_t size; // number of vertices incident to this cluster node.
   rankTree *parent;

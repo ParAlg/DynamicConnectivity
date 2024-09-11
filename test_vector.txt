@@ -1,0 +1,93 @@
+//replace parlay::seqeunce<localTree *> & rankTree to std::vector
+Why is std::vector so slow? it should have return by value optimization in C++ 20
+//sequence
+3072627
+117185083
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.0047
+Parlay time: Insert batch #0: 48.2169
+Parlay time: Answer queries #0: 0.0019
+Parlay time: Insert batch #1: 54.3378
+Parlay time: Answer queries #1: 0.0020
+Parlay time: Insert batch #2: 58.0571
+Parlay time: Answer queries #2: 0.0021
+Parlay time: Insert batch #3: 61.8586
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Insert batch #4: 65.1688
+Parlay time: Answer queries #4: 0.0020
+Parlay time: Insert batch #5: 67.1537
+Parlay time: Answer queries #5: 0.0020
+Parlay time: Insert batch #6: 68.8743
+Parlay time: Answer queries #6: 0.0021
+Parlay time: Insert batch #7: 70.7002
+Parlay time: Answer queries #7: 0.0020
+Parlay time: Insert batch #8: 71.9949
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 73.8837
+Parlay time: Answer queries #9: 0.0019
+Parlay time: Delete batch #0: 91.2921
+Parlay time: Answer queries #0: 0.0023
+Parlay time: Delete batch #1: 99.1114
+Parlay time: Answer queries #1: 0.0025
+Parlay time: Delete batch #2: 99.8529
+Parlay time: Answer queries #2: 0.0023
+Parlay time: Delete batch #3: 113.4909
+Parlay time: Answer queries #3: 0.0024
+Parlay time: Delete batch #4: 114.0471
+Parlay time: Answer queries #4: 0.0025
+Parlay time: Delete batch #5: 117.8744
+Parlay time: Answer queries #5: 0.0025
+Parlay time: Delete batch #6: 124.6029
+Parlay time: Answer queries #6: 0.0024
+Parlay time: Delete batch #7: 134.7412
+Parlay time: Answer queries #7: 0.0024
+Parlay time: Delete batch #8: 151.6200
+Parlay time: Answer queries #8: 0.0028
+Parlay time: Delete batch #9: 202.0359
+Parlay time: Answer queries #9: 0.0001
+
+
+// std::vector with std move
+3072627
+117185083
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.0215
+Parlay time: Insert batch #0: 45.4468
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Insert batch #1: 50.7569
+Parlay time: Answer queries #1: 0.0020
+Parlay time: Insert batch #2: 55.6265
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Insert batch #3: 58.6290
+Parlay time: Answer queries #3: 0.0021
+Parlay time: Insert batch #4: 61.0494
+Parlay time: Answer queries #4: 0.0022
+Parlay time: Insert batch #5: 63.4945
+Parlay time: Answer queries #5: 0.0020
+Parlay time: Insert batch #6: 64.8689
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Insert batch #7: 67.7986
+Parlay time: Answer queries #7: 0.0021
+Parlay time: Insert batch #8: 68.7412
+Parlay time: Answer queries #8: 0.0021
+Parlay time: Insert batch #9: 68.8474
+Parlay time: Answer queries #9: 0.0020
+Parlay time: Delete batch #0: 86.5679
+Parlay time: Answer queries #0: 0.0024
+Parlay time: Delete batch #1: 97.7180
+Parlay time: Answer queries #1: 0.0024
+Parlay time: Delete batch #2: 96.8599
+Parlay time: Answer queries #2: 0.0023
+Parlay time: Delete batch #3: 108.9740
+Parlay time: Answer queries #3: 0.0024
+Parlay time: Delete batch #4: 108.8242
+Parlay time: Answer queries #4: 0.0023
+Parlay time: Delete batch #5: 112.5518
+Parlay time: Answer queries #5: 0.0022
+Parlay time: Delete batch #6: 115.4764
+Parlay time: Answer queries #6: 0.0022
+Parlay time: Delete batch #7: 122.7973
+Parlay time: Answer queries #7: 0.0024
+Parlay time: Delete batch #8: 141.7410
+Parlay time: Answer queries #8: 0.0023
+Parlay time: Delete batch #9: 172.2287
+Parlay time: Answer queries #9: 0.0001
+

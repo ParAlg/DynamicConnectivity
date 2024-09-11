@@ -1,4 +1,5 @@
 #include "localTree.hpp"
+#include "parlay/sequence.h"
 #include <fstream>
 #include <queue>
 #include <unordered_set>
@@ -6,10 +7,10 @@ class SCCWN {
 private:
   static std::tuple<bool, size_t, size_t> fetchEdge(std::queue<localTree *> &Q,
                                                     size_t l);
-  static localTree *pushDown(parlay::sequence<localTree *> &pu, size_t uter,
-                             parlay::sequence<localTree *> &pv, size_t vter);
+  static localTree *pushDown(std::vector<localTree *> &pu, size_t uter,
+                             std::vector<localTree *> &pv, size_t vter);
   void placeEdges(parlay::sequence<std::pair<size_t, size_t>> &edges, size_t l);
-  void printNodes(parlay::sequence<localTree *> &Nodes) {
+  void printNodes(std::vector<localTree *> &Nodes) {
     std::copy(Nodes.begin(), Nodes.end(),
               std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
@@ -18,8 +19,8 @@ private:
 public:
   size_t n;
   static size_t lmax;
-  parlay::sequence<localTree *> leaves;
-  SCCWN(size_t _n) : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {}
+  std::vector<localTree *> leaves;
+  SCCWN(size_t _n) : n(_n), leaves(std::vector<localTree *>(n, nullptr)) {}
   ~SCCWN() { run_stat("./", false, true, false); };
   void insertToLCA(size_t u, size_t v);
   void insertToRoot(size_t u, size_t v);
@@ -166,10 +167,8 @@ inline void SCCWN::insertToBlock(size_t u, size_t v) {
   leaves[u]->insertToLeaf(v, np->getLevel());
   leaves[v]->insertToLeaf(u, np->getLevel());
 }
-inline localTree *SCCWN::pushDown(parlay::sequence<localTree *> &pu,
-                                  size_t uter,
-                                  parlay::sequence<localTree *> &pv,
-                                  size_t vter) {
+inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, size_t uter,
+                                  std::vector<localTree *> &pv, size_t vter) {
   while (pu[uter]->getSize() + pv[vter]->getSize() <=
          1 << std::max(pu[uter]->getLevel(), pv[vter]->getLevel())) {
     if (pu[uter]->getLevel() < pv[vter]->getLevel()) {
@@ -226,15 +225,15 @@ inline void SCCWN::remove(size_t u, size_t v) {
   std::queue<localTree *> Qu, Qv;                     // ready to fetch
   parlay::sequence<std::pair<size_t, size_t>> Eu, Ev; // fetched edge
   std::unordered_set<localTree *> Hu, Hv;             // visited node
-  parlay::sequence<localTree *> Ru, Rv;               // visited node
+  std::vector<localTree *> Ru, Rv;                    // visited node
   auto init = [](std::queue<localTree *> &Q,
                  parlay::sequence<std::pair<size_t, size_t>> &E,
-                 parlay::sequence<localTree *> &R,
+                 std::vector<localTree *> &R,
                  std::unordered_set<localTree *> &HT, localTree *C) -> void {
     Q = std::queue<localTree *>();
     E = parlay::sequence<std::pair<size_t, size_t>>();
     HT = std::unordered_set<localTree *>();
-    R = parlay::sequence<localTree *>();
+    R = std::vector<localTree *>();
     Q.push(C);
     HT.insert(C);
     R.push_back(C);
@@ -538,8 +537,8 @@ inline bool SCCWN::is_connected(size_t u, size_t v) {
 
 inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
                             bool clear = false, bool stat = true) {
-  parlay::sequence<localTree *> roots(leaves.size(), nullptr);
-  parlay::sequence<localTree *> parents(leaves.size(), nullptr);
+  std::vector<localTree *> roots(leaves.size(), nullptr);
+  std::vector<localTree *> parents(leaves.size(), nullptr);
   parlay::parallel_for(0, roots.size(), [&](size_t i) {
     if (leaves[i])
       roots[i] = localTree::getRoot(leaves[i]);
@@ -553,15 +552,16 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
     printNodes(parents);
   if (verbose)
     printNodes(roots);
-  roots = parlay::remove_duplicates(roots);
+  auto r = parlay::sequence<localTree *>(roots.begin(), roots.end());
+  r = parlay::remove_duplicates(r);
   if (verbose)
     printNodes(roots);
-  parlay::parallel_for(0, roots.size(), [&](size_t i) {
-    if (roots[i]) {
+  parlay::parallel_for(0, r.size(), [&](size_t i) {
+    if (r[i]) {
       // std::ofstream fout;
       // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
       parlay::sequence<stats> info;
-      localTree::traverseTopDown(roots[i], clear, verbose, stat, info);
+      localTree::traverseTopDown(r[i], clear, verbose, stat, info);
       // if (stat) {
       //   parlay::sort_inplace(info, [&](stats x, stats y) { return x.level >
       //   y.level; }); for (auto it : info)
