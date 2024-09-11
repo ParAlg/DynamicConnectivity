@@ -1,11 +1,10 @@
 #ifndef GRAPH
 #define GRAPH
-#include "alloc.h"
-#include "edgeset.hpp"
-#include <array>
 #include <cstdint>
 using vertex = uint32_t;
-using edge_set = DynamicArray<uint32_t, 32>;
-using EBlock = std::array<uint32_t, 32>;
-template <> inline type_allocator<EBlock> *edge_set::EBallocator = nullptr;
+struct Edge_info {
+  //   vertex idu;
+  //   vertex idv;
+  uint32_t level;
+};
 #endif
