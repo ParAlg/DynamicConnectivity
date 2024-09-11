@@ -6,9 +6,9 @@
  */
 #pragma once
 
+#include <absl/container/flat_hash_map.h>
+#include <absl/container/flat_hash_set.h>
 #include <cstdint>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <dynamic_forest.hpp>
@@ -130,9 +130,9 @@ private:
   std::vector<DynamicForest> spanning_forests_;
   // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
   // v by level-i non-tree edges.
-  std::vector<std::vector<std::unordered_set<Vertex>>>
+  std::vector<std::vector<absl::flat_hash_set<Vertex>>>
       non_tree_adjacency_lists_;
   // All edges in the graph.
-  std::unordered_map<UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
+  absl::flat_hash_map<UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
       edges_;
 };

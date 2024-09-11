@@ -1,7 +1,7 @@
 #pragma once
 
+#include <absl/container/flat_hash_map.h>
 #include <cstdint>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -106,7 +106,7 @@ private:
   std::vector<sequence::Element *> free_edge_elements_;
   // Maps undirected edge {u, v} to elements representing directed edges (u, v)
   // and (v, u).
-  std::unordered_map<UndirectedEdge, detail::UndirectedEdgeElements,
-                     UndirectedEdgeHash>
+  absl::flat_hash_map<UndirectedEdge, detail::UndirectedEdgeElements,
+                      UndirectedEdgeHash>
       edges_;
 };
