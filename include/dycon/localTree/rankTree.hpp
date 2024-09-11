@@ -23,7 +23,7 @@ public:
         descendant(_des), edgemap(_emap) {}
   rankTree(rankTree *T1, rankTree *T2);
   ~rankTree(){};
-  using arr = parlay::sequence<rankTree *>;
+  using arr = std::vector<rankTree *>;
   static type_allocator<rankTree> *r_alloc;
   // static parlay::type_allocator<rankTree *> *r_alloc;
 
@@ -121,7 +121,8 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
   arr A;
   for (uint32_t i = 0; i < rTrees.size(); i++) {
     auto B = decompose(rTrees[i], clear);
-    A.append(B);
+    // A.append(B);
+    A.insert(A.end(), B.begin(), B.end());
   }
   return sortByRank(A);
 }

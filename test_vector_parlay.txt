@@ -1,0 +1,76 @@
+// vector 
+//HouseHold5
+2049280
+6503942
+Parlay time: constructor: 0.6094
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.6235
+Parlay time: Insert batch #0: 0.7758
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 0.9316
+Parlay time: Answer queries #1: 0.0004
+Parlay time: Insert batch #2: 1.0919
+Parlay time: Answer queries #2: 0.0006
+Parlay time: Insert batch #3: 1.5727
+Parlay time: Answer queries #3: 0.0013
+Parlay time: Insert batch #4: 1.5829
+Parlay time: Answer queries #4: 0.0018
+Parlay time: Insert batch #5: 1.5809
+Parlay time: Answer queries #5: 0.0019
+Parlay time: Insert batch #6: 1.4700
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Insert batch #7: 1.5701
+Parlay time: Answer queries #7: 0.0019
+Parlay time: Insert batch #8: 1.5481
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 1.4350
+Parlay time: Answer queries #9: 0.0020
+Parlay time: Delete batch #0: 3.5476
+Parlay time: Answer queries #0: 0.0021
+Parlay time: Delete batch #1: 3.8180
+Parlay time: Answer queries #1: 0.0020
+Parlay time: Delete batch #2: 3.9119
+Parlay time: Answer queries #2: 0.0019
+Parlay time: Delete batch #3: 4.5063
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Delete batch #4: 5.0934
+Parlay time: Answer queries #4: 0.0015
+Parlay time: Delete batch #5: 6.0215
+Parlay time: Answer queries #5: 0.0011
+Parlay time: Delete batch #6: 5.6695
+Parlay time: Answer queries #6: 0.0005
+Parlay time: Delete batch #7: 3.2988
+Parlay time: Answer queries #7: 0.0003
+Parlay time: Delete batch #8: 1.8881
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.1536
+Parlay time: Answer queries #9: 0.0001
+
+
+
+3072627
+117185083
+Parlay time: constructor: 0.9291
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.9483
+Parlay time: Insert batch #0: 28.4188
+Parlay time: Answer queries #0: 0.0016
+Parlay time: Insert batch #1: 30.4203
+Parlay time: Answer queries #1: 0.0016
+Parlay time: Insert batch #2: 32.6121
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 32.0942
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Insert batch #4: 32.4533
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 35.4459
+Parlay time: Answer queries #5: 0.0016
+Parlay time: Insert batch #6: 33.3539
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 33.5646
+Parlay time: Answer queries #7: 0.0016
+Parlay time: Insert batch #8: 33.8642
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 34.0643
+Parlay time: Answer queries #9: 0.0016
+
+//vector with std::move 
+// C++20 should automatically optimize it but on fern it runs slower without std::move

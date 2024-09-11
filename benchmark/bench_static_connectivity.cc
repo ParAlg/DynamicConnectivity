@@ -6,21 +6,21 @@
 
 using namespace std;
 void test(parlay::sequence<edges> &instances, parlay::sequence<queries> &q,
-          size_t num_batches, ofstream &faq) {
-  for (size_t i = 0; i < num_batches; i++) {
+          uint32_t num_batches, ofstream &faq) {
+  for (uint32_t i = 0; i < num_batches; i++) {
 
     auto E = instances[i];
     auto Q = q[i];
-    size_t m = E.size();
+    uint32_t m = E.size();
     auto V = utils::avail_vertices(E, utils::num_vertices(E));
     // cout << utils::num_vertices(E) << endl;
-    size_t n = V.size();
+    uint32_t n = V.size();
     parlay::sequence<bool> Ans(Q.size());
     parlay::internal::timer t;
     t.start();
     static_connectivity(E, V, n, m, Q, Ans);
     t.next("parallel union find ");
-    for (size_t j = 0; j < Q.size(); j++)
+    for (uint32_t j = 0; j < Q.size(); j++)
       faq << Ans[j];
   }
 }
@@ -32,8 +32,8 @@ int main(int argc, char **argv) {
   auto IOF = P.IOFileNames();
   string In = IOF.first;
   string Out = IOF.second;
-  size_t num_batches = P.getOptionIntValue("-b", 10);
-  size_t num_queries = P.getOptionIntValue("-q", 1000);
+  uint32_t num_batches = P.getOptionIntValue("-b", 10);
+  uint32_t num_queries = P.getOptionIntValue("-q", 1000);
   // cout << In << endl << Out << endl;
   auto G = utils::break_sym_graph_from_bin(In);
   vertex n = G.size();
@@ -44,14 +44,14 @@ int main(int argc, char **argv) {
   // endl;
 
   auto batch_size = parlay::tabulate(
-      num_batches + 1, [&](size_t i) { return m / num_batches * i; });
+      num_batches + 1, [&](uint32_t i) { return m / num_batches * i; });
   batch_size[num_batches] = m;
 
   // Insertion only graph instances and queries
-  auto instances_ins = parlay::tabulate(num_batches, [&](size_t i) {
+  auto instances_ins = parlay::tabulate(num_batches, [&](uint32_t i) {
     return parlay::to_sequence(E.cut(batch_size[0], batch_size[i + 1]));
   });
-  auto batches_ins = parlay::tabulate(num_batches, [&](size_t i) {
+  auto batches_ins = parlay::tabulate(num_batches, [&](uint32_t i) {
     return parlay::to_sequence(E.cut(batch_size[i], batch_size[i + 1]));
   });
   auto queries_ins =
@@ -59,11 +59,11 @@ int main(int argc, char **argv) {
 
   // Deletion only graph instances and queries.
   auto E_ = parlay::random_shuffle(E);
-  auto instances_del = parlay::tabulate(num_batches, [&](size_t i) {
+  auto instances_del = parlay::tabulate(num_batches, [&](uint32_t i) {
     return parlay::to_sequence(
         E_.cut(batch_size[i + 1], batch_size[num_batches]));
   });
-  auto batches_del = parlay::tabulate(num_batches, [&](size_t i) {
+  auto batches_del = parlay::tabulate(num_batches, [&](uint32_t i) {
     return parlay::to_sequence(E_.cut(batch_size[i], batch_size[i + 1]));
   });
   auto queries_del =

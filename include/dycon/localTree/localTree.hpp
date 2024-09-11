@@ -12,9 +12,9 @@ class rankTree;
 class localTree {
 private:
   friend class rankTree;
-  using nodeArr = parlay::sequence<localTree *>;
+  using nodeArr = std::vector<localTree *>;
   // Each time manipulating node, check if 6 members are covered.
-  parlay::sequence<rankTree *> rTrees;
+  std::vector<rankTree *> rTrees;
   uint32_t level;
   uint32_t size; // number of vertices incident to this cluster node.
   rankTree *parent;
@@ -94,7 +94,7 @@ inline localTree::localTree(localTree *Cu, localTree *Cv) {
       rankTree::r_alloc->create(std::log2(Cv->size), this, Cv, Cv->edgemap);
   Cu->parent = ru;
   Cv->parent = rv;
-  this->rTrees = parlay::sequence<rankTree *>({rv, ru});
+  this->rTrees = std::vector<rankTree *>({rv, ru});
 }
 // inline localTree *localTree::getIfSingleton(localTree *r) {
 //   if (r->rTrees.size() > 1)
@@ -278,7 +278,7 @@ localTree::deleteFromParent(localTree *p,
                             absl::flat_hash_set<localTree *> &nodes) {
   if (!p)
     return;
-  parlay::sequence<rankTree *> rTrees(nodes.size());
+  std::vector<rankTree *> rTrees(nodes.size());
   uint32_t i = 0;
   uint32_t sz = 0;
   for (auto it : nodes) {
