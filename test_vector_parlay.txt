@@ -74,3 +74,72 @@ Parlay time: Answer queries #9: 0.0016
 
 //vector with std::move 
 // C++20 should automatically optimize it but on fern it runs slower without std::move
+2049280
+6503942
+Parlay time: constructor: 0.6172
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.6312
+Parlay time: Insert batch #0: 0.7658
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 0.9127
+Parlay time: Answer queries #1: 0.0004
+Parlay time: Insert batch #2: 0.9723
+Parlay time: Answer queries #2: 0.0006
+Parlay time: Insert batch #3: 1.5968
+Parlay time: Answer queries #3: 0.0012
+Parlay time: Insert batch #4: 1.6651
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 1.5517
+Parlay time: Answer queries #5: 0.0019
+Parlay time: Insert batch #6: 1.5147
+Parlay time: Answer queries #6: 0.0019
+Parlay time: Insert batch #7: 1.5618
+Parlay time: Answer queries #7: 0.0019
+Parlay time: Insert batch #8: 1.5549
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 1.4090
+Parlay time: Answer queries #9: 0.0019
+Parlay time: Delete batch #0: 3.5294
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 3.7240
+Parlay time: Answer queries #1: 0.0024
+Parlay time: Delete batch #2: 3.7755
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Delete batch #3: 4.4020
+Parlay time: Answer queries #3: 0.0026
+Parlay time: Delete batch #4: 4.9638
+Parlay time: Answer queries #4: 0.0015
+Parlay time: Delete batch #5: 5.8657
+Parlay time: Answer queries #5: 0.0010
+Parlay time: Delete batch #6: 5.3936
+Parlay time: Answer queries #6: 0.0005
+Parlay time: Delete batch #7: 3.1425
+Parlay time: Answer queries #7: 0.0003
+Parlay time: Delete batch #8: 1.8606
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.1052
+Parlay time: Answer queries #9: 0.0001
+
+3072627
+117185083
+Parlay time: constructor: 0.9345
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.9539
+Parlay time: Insert batch #0: 31.5557
+Parlay time: Answer queries #0: 0.0018
+Parlay time: Insert batch #1: 33.6729
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 33.6528
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 33.2523
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Insert batch #4: 32.7412
+Parlay time: Answer queries #4: 0.0018
+Parlay time: Insert batch #5: 35.7589
+Parlay time: Answer queries #5: 0.0017
+Parlay time: Insert batch #6: 33.3745
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 33.7170
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 34.1055
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 34.8529
+Parlay time: Answer queries #9: 0.0017

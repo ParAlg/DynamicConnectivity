@@ -45,7 +45,7 @@ private:
   uint32_t getRank() { return rank; }
   static arr decompose(rankTree *T, bool clear);
   static arr decompose(arr &rTrees, bool clear);
-  static arr sortByRank(arr &rTrees);
+  static void sortByRank(arr &rTrees);
   static arr buildFromSequence(arr &rTrees, localTree *node);
   static arr remove(rankTree *T, localTree *node);
   static arr remove(arr &rTrees, rankTree *T, localTree *node);
@@ -113,7 +113,7 @@ inline rankTree::arr rankTree::decompose(rankTree *T, bool clear = false) {
   }
   for (uint32_t i = 0; i < rTrees.size() / 2; i++)
     std::swap(rTrees[i], rTrees[rTrees.size() - i - 1]);
-  return rTrees;
+  return std::move(rTrees);
 }
 inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
   if (rTrees.empty())
@@ -124,7 +124,8 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
     // A.append(B);
     A.insert(A.end(), B.begin(), B.end());
   }
-  return sortByRank(A);
+  sortByRank(A);
+  return std::move(A);
 }
 inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
                                                  localTree *node = nullptr) {
@@ -171,8 +172,9 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
     p += counter / 2;
     // std::cout << " Merge next time happens at" << p << std::endl;
   }
-  arr Seq(temp.begin(), temp.begin() + temp.size());
-  return Seq;
+  // arr Seq(temp.begin(), temp.begin() + temp.size());
+  return arr(temp.begin(), temp.begin() + temp.size());
+  // return std::move(Seq);
 }
 inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
   // arr rTrees;
@@ -199,8 +201,9 @@ inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
   }
   // delete T;
   r_alloc->free(T);
-  arr rTrees(temp, temp + num_root);
-  return rTrees;
+  return arr(temp, temp + num_root);
+  // arr rTrees(temp, temp + num_root);
+  // return std::move(rTrees);
 }
 inline rankTree::arr rankTree::remove(arr &rTrees, rankTree *T,
                                       localTree *node) {
@@ -263,7 +266,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
     if (nTrees.size() > leaf_threshold)
       nTrees = build(nTrees, node);
   }
-  return nTrees;
+  return std::move(nTrees);
   // std::stack<rankTree *> s;
   // for (auto it : rTrees) {
   //   if (marked.contains(it))
@@ -304,7 +307,7 @@ inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
                                               localTree *node) {
   if (rTrees.size() < leaf_threshold) {
     rTrees.push_back(T);
-    return rTrees;
+    return std::move(rTrees);
   }
   for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
     if ((*it)->rank >= T->rank) {
@@ -315,16 +318,15 @@ inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
   rTrees.push_back(T);
   return build(rTrees, node);
 }
-inline rankTree::arr rankTree::sortByRank(arr &rTrees) {
+inline void rankTree::sortByRank(arr &rTrees) {
   auto comp = [&](const rankTree *T1, const rankTree *T2) {
     return T1->rank < T2->rank;
   };
   parlay::sort_inplace(rTrees, comp);
-  return rTrees;
 }
 inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
   if (rTrees.size() < leaf_threshold)
-    return rTrees;
+    return std::move(rTrees);
   // else {
   sortByRank(rTrees);
   return buildFromSequence(rTrees, node);
