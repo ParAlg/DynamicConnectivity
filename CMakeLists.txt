@@ -10,7 +10,8 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 # clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+# gprof
+# set (CMAKE_CXX_FLAGS_RELEASE "-O3 -g -pg")
 message(STATUS "--------------- General configuration -------------")
 message(STATUS "CMake Generator:                ${CMAKE_GENERATOR}")
 message(STATUS "Compiler:                       ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")

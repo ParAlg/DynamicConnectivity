@@ -7,12 +7,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <new>
+#include <vector>
 template <typename T, uint32_t B = 8,
           typename Allocator = type_allocator<std::array<T, B>>>
 class DynamicArray {
 private:
   using EBlock = std::array<T, B>;
-  EBlock **blocks;
+  // EBlock **blocks;
+  std::vector<EBlock *> blocks;
   T block_capacity;
   T used_blocks;
   T num_elements;
@@ -31,20 +33,26 @@ private:
 
   // adjust capacity based on density, full to double, less then 0.5 to shrink
   void adjust_capacity() {
-    if (used_blocks == block_capacity)
-      resize(block_capacity * 2);
-    else if (used_blocks < block_capacity / 2 && block_capacity > 1)
-      resize(block_capacity / 2);
+    if (used_blocks == block_capacity) {
+      block_capacity *= 2;
+      blocks.resize(block_capacity);
+      // resize(block_capacity * 2);
+    } else if (used_blocks < block_capacity / 2 && block_capacity > 1) {
+      block_capacity /= 2;
+      blocks.resize(block_capacity);
+      // resize(block_capacity/2);
+    }
   }
 
 public:
   static Allocator *EBallocator;
   DynamicArray(uint32_t init_blocks = 1)
       : block_capacity(init_blocks), num_elements(0), used_blocks(0) {
-    blocks = new EBlock *[block_capacity];
+    // blocks = new EBlock *[block_capacity];
+    blocks = std::vector<EBlock *>(block_capacity);
   }
   ~DynamicArray() {
-    for (T i = 0; i < used_blocks; i++) {
+    for (T i = 0; i < block_capacity; i++) {
       EBallocator->free(blocks[i]);
     }
     delete[] blocks;

@@ -1,0 +1,179 @@
+mkdir: cannot create directory ‘/home/zhongqi/BatchDynamicConnectivity/data/bench_batch_size’: File exists
+[ 14%] Built target lib_hash
+[ 28%] Built target lib_assert
+[ 42%] Built target lib_graph
+[ 57%] Built target lib_sequence
+[ 71%] Built target lib_dynamic_forest
+[ 85%] Built target lib_dynamic_connectivity
+[ 92%] Linking CXX executable bench_batch_size
+[100%] Built target bench_batch_size
+Running on com-orkut_sym.bin
+#batches = 10 batch size = 1000000
+3072627
+117185083
+Parlay time: 
+preparing for benchmarking sequential hdt: 21.2337
+Parlay time: start benchmarking: 851.7740
+Parlay time: Insert batch #0: 8.0714
+Parlay time: Answer queries #0: 0.0038
+Parlay time: Insert batch #1: 8.1047
+Parlay time: Answer queries #1: 0.0039
+Parlay time: Insert batch #2: 8.1203
+Parlay time: Answer queries #2: 0.0039
+Parlay time: Insert batch #3: 8.1737
+Parlay time: Answer queries #3: 0.0039
+Parlay time: Insert batch #4: 8.1485
+Parlay time: Answer queries #4: 0.0039
+Parlay time: Insert batch #5: 8.1383
+Parlay time: Answer queries #5: 0.0039
+Parlay time: Insert batch #6: 8.1813
+Parlay time: Answer queries #6: 0.0039
+Parlay time: Insert batch #7: 8.1732
+Parlay time: Answer queries #7: 0.0039
+Parlay time: Insert batch #8: 8.1745
+Parlay time: Answer queries #8: 0.0039
+Parlay time: Insert batch #9: 8.1879
+Parlay time: Answer queries #9: 0.0039
+Parlay time: Delete batch #0: 8.9529
+Parlay time: Answer queries #0: 0.0054
+Parlay time: Delete batch #1: 7.1444
+Parlay time: Answer queries #1: 0.0050
+Parlay time: Delete batch #2: 7.6569
+Parlay time: Answer queries #2: 0.0049
+Parlay time: Delete batch #3: 7.7369
+Parlay time: Answer queries #3: 0.0049
+Parlay time: Delete batch #4: 6.5630
+Parlay time: Answer queries #4: 0.0049
+Parlay time: Delete batch #5: 9.3520
+Parlay time: Answer queries #5: 0.0051
+Parlay time: Delete batch #6: 7.5705
+Parlay time: Answer queries #6: 0.0050
+Parlay time: Delete batch #7: 6.5874
+Parlay time: Answer queries #7: 0.0050
+Parlay time: Delete batch #8: 9.6938
+Parlay time: Answer queries #8: 0.0049
+Parlay time: Delete batch #9: 6.8649
+Parlay time: Answer queries #9: 0.0048
+
+Running on soc-LiveJournal1_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/soc-LiveJournal1_sym.bin
+./bench_batch_size.sh: line 61: 1955505 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on twitter_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/twitter_sym.bin
+./bench_batch_size.sh: line 61: 1955698 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on friendster_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/friendster_sym.bin
+./bench_batch_size.sh: line 61: 1955891 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on as-skitter_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/as-skitter_sym.bin
+./bench_batch_size.sh: line 61: 1956084 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on com-youtube_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/com-youtube_sym.bin
+./bench_batch_size.sh: line 61: 1956277 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on wiki-topcats_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/wiki-topcats_sym.bin
+./bench_batch_size.sh: line 61: 1956470 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on enwiki_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/enwiki_sym.bin
+./bench_batch_size.sh: line 61: 1956668 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on graph500-scale25_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/graph500-scale25_sym.bin
+./bench_batch_size.sh: line 61: 1956861 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on sd_arc_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/sd_arc_sym.bin
+./bench_batch_size.sh: line 61: 1957058 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on RoadUSA_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/RoadUSA_sym.bin
+./bench_batch_size.sh: line 61: 1957258 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on Germany_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/Germany_sym.bin
+./bench_batch_size.sh: line 61: 1957451 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on Household_lines_5_sym.bin
+#batches = 10 batch size = 1000000
+2049280
+6503942
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+./bench_batch_size.sh: line 61: 1957644 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on CHEM_5_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/CHEM_5_sym.bin
+./bench_batch_size.sh: line 61: 1957845 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on GeoLifeNoScale_2_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/GeoLifeNoScale_2_sym.bin
+./bench_batch_size.sh: line 61: 1958038 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on GeoLifeNoScale_5_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/GeoLifeNoScale_5_sym.bin
+./bench_batch_size.sh: line 61: 1958231 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on GeoLifeNoScale_10_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/GeoLifeNoScale_10_sym.bin
+./bench_batch_size.sh: line 61: 1958424 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on GeoLifeNoScale_15_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/GeoLifeNoScale_15_sym.bin
+./bench_batch_size.sh: line 61: 1958617 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on GeoLifeNoScale_20_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/GeoLifeNoScale_20_sym.bin
+./bench_batch_size.sh: line 61: 1958810 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on Cosmo50_5_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/Cosmo50_5_sym.bin
+./bench_batch_size.sh: line 61: 1959003 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on grid_1000_10000_03_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/grid_1000_10000_03_sym.bin
+./bench_batch_size.sh: line 61: 1959196 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on grid_1000_10000_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/grid_1000_10000_sym.bin
+./bench_batch_size.sh: line 61: 1959389 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on grid_4000_4000_03_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/grid_4000_4000_03_sym.bin
+./bench_batch_size.sh: line 61: 1959582 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+Running on grid_4000_4000_sym.bin
+#batches = 10 batch size = 1000000
+Error: Cannot open file /home/zhongqi/BatchDynamicConnectivity/data/grid_4000_4000_sym.bin
+./bench_batch_size.sh: line 61: 1959775 Aborted                 (core dumped) ${numactl} ./bench_batch_size -a 6 -b ${num_batches} -s ${batch_size} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_batch_size/${graph}.query
+
+./bench_batch_size.sh: line 66: .bin: command not found
+
+./bench_batch_size.sh: line 68: syntax error near unexpected token `done'
+./bench_batch_size.sh: line 68: `done'

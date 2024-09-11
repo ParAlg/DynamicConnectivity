@@ -1,5 +1,6 @@
 #pragma once
 #include "absl/container/flat_hash_set.h"
+#include "dycon/localTree/alloc.h"
 #include "graph.hpp"
 #include <absl/container/btree_set.h>
 #include <bitset>
@@ -7,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <tuple>
+#include <vector>
 // This is the leaf of the cluster forest.
 // It contains a vertex in the graph and its incident edges.
 // The incident edges are grouped by their level. So we need at
@@ -39,19 +41,21 @@ public:
   vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::tuple<bool, vertex, vertex> fetchEdge(uint32_t l);
+  static type_allocator<std::vector<vertex>> *vector_alloc;
 
 private:
   //   std::map<size_t, std::set<size_t>> E;
   // std::set<uint32_t> *E[MAX_LEVEL + 1];
-  // std::vector<size_t> *E_[MAX_LEVEL + 1];
+  std::vector<vertex> *E_[MAX_LEVEL + 1];
   // std::unordered_set<size_t> *E_[MAX_LEVEL + 1];
   absl::flat_hash_set<uint32_t> *E[MAX_LEVEL + 1];
-  // edge_set *E[MAX_LEVEL + 1];
+  // edge_set *E_[MAX_LEVEL + 1];
   void *parent; // pointer to rank tree of the level logn cluster node
   std::bitset<64> edgemap;
   vertex id;
   vertex size;
 };
+inline type_allocator<std::vector<vertex>> *leaf::vector_alloc = nullptr;
 inline void leaf::linkToRankTree(void *p) { parent = p; }
 inline void leaf::insert(vertex e, uint32_t l) {
   auto &E = this->E;
@@ -62,14 +66,20 @@ inline void leaf::insert(vertex e, uint32_t l) {
   // assert(E[l]->find(e) == E[l]->end());
   // E[l]->insert(e);
   // if (E_[l] == nullptr)
-  //   E_[l] = new std::vector<size_t>;
-  // E_[l]->push_back(e);
+  //   E_[l] = new edge_set();
+  // E_[l]->insert(e);
+  if (E_[l] == nullptr) {
+    // E_[l] = new parlay::sequence<uint32_t>;
+    E_[l] = vector_alloc->create();
+    // E_[l]->reserve(16);
+  }
+  E_[l]->push_back(e);
   // if (E[l] == nullptr)
   //   E[l] = new edge_set();
   // E[l]->insert(e);
-  if (E[l] == nullptr)
-    E[l] = new absl::flat_hash_set<uint32_t>();
-  E[l]->insert(e);
+  // if (E[l] == nullptr)
+  //   E[l] = new absl::flat_hash_set<uint32_t>();
+  // E[l]->insert(e);
   this->edgemap[l] = 1;
 }
 inline std::tuple<bool, vertex, vertex> leaf::fetchEdge(uint32_t l) {

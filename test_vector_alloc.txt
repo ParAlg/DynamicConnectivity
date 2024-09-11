@@ -1,0 +1,100 @@
+// allocate vector without pre creating
+3072627
+117185083
+Parlay time: constructor: 1.3840
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 1.3899
+Parlay time: Insert batch #0: 32.5588
+Parlay time: Answer queries #0: 0.0017
+Parlay time: Insert batch #1: 31.3937
+Parlay time: Answer queries #1: 0.0018
+Parlay time: Insert batch #2: 31.8647
+Parlay time: Answer queries #2: 0.0018
+Parlay time: Insert batch #3: 30.0759
+Parlay time: Answer queries #3: 0.0018
+Parlay time: Insert batch #4: 29.9469
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 32.9725
+Parlay time: Answer queries #5: 0.0018
+Parlay time: Insert batch #6: 29.7163
+Parlay time: Answer queries #6: 0.0018
+Parlay time: Insert batch #7: 29.9678
+Parlay time: Answer queries #7: 0.0018
+Parlay time: Insert batch #8: 30.9190
+Parlay time: Answer queries #8: 0.0018
+Parlay time: Insert batch #9: 30.7276
+Parlay time: Answer queries #9: 0.0017
+// new vector
+3072627
+117185083
+Parlay time: constructor: 1.3883
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 1.3943
+Parlay time: Insert batch #0: 32.9619
+Parlay time: Answer queries #0: 0.0016
+Parlay time: Insert batch #1: 32.0741
+Parlay time: Answer queries #1: 0.0016
+Parlay time: Insert batch #2: 32.4659
+Parlay time: Answer queries #2: 0.0017
+Parlay time: Insert batch #3: 31.1627
+Parlay time: Answer queries #3: 0.0016
+Parlay time: Insert batch #4: 30.7669
+Parlay time: Answer queries #4: 0.0016
+Parlay time: Insert batch #5: 32.7266
+Parlay time: Answer queries #5: 0.0018
+Parlay time: Insert batch #6: 31.1470
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 31.4299
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 30.9633
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 31.0502
+Parlay time: Answer queries #9: 0.0016
+// new parlay::sequence
+3072627
+117185083
+Parlay time: constructor: 1.3768
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 1.3825
+Parlay time: Insert batch #0: 32.6384
+Parlay time: Answer queries #0: 0.0017
+Parlay time: Insert batch #1: 32.0251
+Parlay time: Answer queries #1: 0.0016
+Parlay time: Insert batch #2: 32.4166
+Parlay time: Answer queries #2: 0.0017
+Parlay time: Insert batch #3: 31.5148
+Parlay time: Answer queries #3: 0.0016
+Parlay time: Insert batch #4: 31.2888
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 33.6553
+Parlay time: Answer queries #5: 0.0015
+Parlay time: Insert batch #6: 31.5046
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 32.2686
+Parlay time: Answer queries #7: 0.0016
+Parlay time: Insert batch #8: 31.9650
+Parlay time: Answer queries #8: 0.0016
+Parlay time: Insert batch #9: 32.0168
+Parlay time: Answer queries #9: 0.0017
+//allocate parlay::sequence without pre creating
+3072627
+117185083
+Parlay time: constructor: 1.3464
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 1.3521
+Parlay time: Insert batch #0: 31.7033
+Parlay time: Answer queries #0: 0.0016
+Parlay time: Insert batch #1: 31.4339
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 32.1926
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 30.4642
+Parlay time: Answer queries #3: 0.0016
+Parlay time: Insert batch #4: 30.8552
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 34.0084
+Parlay time: Answer queries #5: 0.0016
+Parlay time: Insert batch #6: 31.0488
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 31.2498
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 32.2976
+Parlay time: Answer queries #8: 0.0016
+Parlay time: Insert batch #9: 31.8952
+Parlay time: Answer queries #9: 0.0016

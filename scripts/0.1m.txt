@@ -1,0 +1,100 @@
+mkdir: cannot create directory ‘/home/zhongqi/BatchDynamicConnectivity/data/bench_batch_size’: File exists
+[ 14%] Built target lib_hash
+[ 28%] Built target lib_assert
+[ 42%] Built target lib_graph
+[ 57%] Built target lib_sequence
+[ 71%] Built target lib_dynamic_forest
+[ 85%] Built target lib_dynamic_connectivity
+[ 92%] Linking CXX executable bench_batch_size
+[100%] Built target bench_batch_size
+Running on com-orkut_sym.bin
+#batches = 10 batch size = 100000
+3072627
+117185083
+Parlay time: 
+preparing for benchmarking comressed CWN with edges inserted to lca: 0.0054
+Parlay time: start benchmarking: 1087.7457
+Parlay time: Insert batch #0: 1.0522
+Parlay time: Answer queries #0: 0.0038
+Parlay time: Insert batch #1: 1.0518
+Parlay time: Answer queries #1: 0.0038
+Parlay time: Insert batch #2: 1.0363
+Parlay time: Answer queries #2: 0.0036
+Parlay time: Insert batch #3: 1.0463
+Parlay time: Answer queries #3: 0.0036
+Parlay time: Insert batch #4: 1.0531
+Parlay time: Answer queries #4: 0.0037
+Parlay time: Insert batch #5: 1.0511
+Parlay time: Answer queries #5: 0.0037
+Parlay time: Insert batch #6: 1.0509
+Parlay time: Answer queries #6: 0.0036
+Parlay time: Insert batch #7: 1.0450
+Parlay time: Answer queries #7: 0.0037
+Parlay time: Insert batch #8: 1.0422
+Parlay time: Answer queries #8: 0.0039
+Parlay time: Insert batch #9: 1.0520
+Parlay time: Answer queries #9: 0.0038
+Parlay time: Delete batch #0: 2.4186
+Parlay time: Answer queries #0: 0.0041
+Parlay time: Delete batch #1: 2.2322
+Parlay time: Answer queries #1: 0.0042
+Parlay time: Delete batch #2: 2.2042
+Parlay time: Answer queries #2: 0.0046
+Parlay time: Delete batch #3: 2.0758
+Parlay time: Answer queries #3: 0.0044
+Parlay time: Delete batch #4: 2.0776
+Parlay time: Answer queries #4: 0.0047
+Parlay time: Delete batch #5: 1.9517
+Parlay time: Answer queries #5: 0.0043
+Parlay time: Delete batch #6: 1.9100
+Parlay time: Answer queries #6: 0.0045
+Parlay time: Delete batch #7: 2.0783
+Parlay time: Answer queries #7: 0.0047
+Parlay time: Delete batch #8: 1.8771
+Parlay time: Answer queries #8: 0.0047
+Parlay time: Delete batch #9: 1.9609
+Parlay time: Answer queries #9: 0.0044
+Parlay time: 
+preparing for benchmarking sequential hdt: 37.5614
+Parlay time: start benchmarking: 896.6853
+Parlay time: Insert batch #0: 0.8105
+Parlay time: Answer queries #0: 0.0037
+Parlay time: Insert batch #1: 0.8079
+Parlay time: Answer queries #1: 0.0036
+Parlay time: Insert batch #2: 0.8078
+Parlay time: Answer queries #2: 0.0037
+Parlay time: Insert batch #3: 0.8033
+Parlay time: Answer queries #3: 0.0036
+Parlay time: Insert batch #4: 0.8079
+Parlay time: Answer queries #4: 0.0036
+Parlay time: Insert batch #5: 0.8107
+Parlay time: Answer queries #5: 0.0037
+Parlay time: Insert batch #6: 0.8097
+Parlay time: Answer queries #6: 0.0037
+Parlay time: Insert batch #7: 0.8136
+Parlay time: Answer queries #7: 0.0037
+Parlay time: Insert batch #8: 0.8094
+Parlay time: Answer queries #8: 0.0037
+Parlay time: Insert batch #9: 0.8191
+Parlay time: Answer queries #9: 0.0037
+Parlay time: Delete batch #0: 1.2797
+Parlay time: Answer queries #0: 0.0057
+Parlay time: Delete batch #1: 0.7527
+Parlay time: Answer queries #1: 0.0058
+Parlay time: Delete batch #2: 0.8490
+Parlay time: Answer queries #2: 0.0054
+Parlay time: Delete batch #3: 0.5447
+Parlay time: Answer queries #3: 0.0053
+Parlay time: Delete batch #4: 0.7357
+Parlay time: Answer queries #4: 0.0054
+Parlay time: Delete batch #5: 0.5801
+Parlay time: Answer queries #5: 0.0051
+Parlay time: Delete batch #6: 0.7552
+Parlay time: Answer queries #6: 0.0054
+Parlay time: Delete batch #7: 2.0419
+Parlay time: Answer queries #7: 0.0055
+Parlay time: Delete batch #8: 0.8009
+Parlay time: Answer queries #8: 0.0054
+Parlay time: Delete batch #9: 0.6553
+Parlay time: Answer queries #9: 0.0054
+

@@ -1,0 +1,80 @@
+mkdir: cannot create directory ‘/home/zhongqi/BatchDynamicConnectivity/data/bench_dynamic’: File exists
+[ 14%] Built target lib_hash
+[ 28%] Built target lib_assert
+[ 42%] Built target lib_graph
+[ 57%] Built target lib_sequence
+[ 71%] Built target lib_dynamic_forest
+[ 85%] Built target lib_dynamic_connectivity
+[ 92%] Linking CXX executable bench_dynamic
+[100%] Built target bench_dynamic
+Running on Household_lines_5_sym.bin
+2049280
+6503942
+Parlay time: start benchmarking comressed CWN with edges inserted to blocked: 0.0072
+Parlay time: Insert batch #0: 1.4854
+Parlay time: Answer queries #0: 0.0007
+Parlay time: Insert batch #1: 1.5493
+Parlay time: Answer queries #1: 0.0008
+Parlay time: Insert batch #2: 2.4342
+Parlay time: Answer queries #2: 0.0013
+Parlay time: Insert batch #3: 3.1385
+Parlay time: Answer queries #3: 0.0030
+Parlay time: Insert batch #4: 3.2985
+Parlay time: Answer queries #4: 0.0035
+Parlay time: Insert batch #5: 3.3126
+Parlay time: Answer queries #5: 0.0029
+Parlay time: Insert batch #6: 3.2717
+Parlay time: Answer queries #6: 0.0047
+Parlay time: Insert batch #7: 3.0194
+Parlay time: Answer queries #7: 0.0029
+Parlay time: Insert batch #8: 3.1681
+Parlay time: Answer queries #8: 0.0035
+Parlay time: Insert batch #9: 3.2838
+Parlay time: Answer queries #9: 0.0031
+Parlay time: Delete batch #0: 4.2880
+Parlay time: Answer queries #0: 0.0037
+Parlay time: Delete batch #1: 5.0712
+Parlay time: Answer queries #1: 0.0047
+Parlay time: Delete batch #2: 5.7815
+Parlay time: Answer queries #2: 0.0036
+Parlay time: Delete batch #3: 7.2703
+Parlay time: Answer queries #3: 0.0036
+Parlay time: Delete batch #4: 8.0960
+Parlay time: Answer queries #4: 0.0043
+Parlay time: Delete batch #5: 10.5856
+Parlay time: Answer queries #5: 0.0025
+Parlay time: Delete batch #6: 10.7066
+Parlay time: Answer queries #6: 0.0016
+Parlay time: Delete batch #7: 6.7221
+Parlay time: Answer queries #7: 0.0008
+Parlay time: Delete batch #8: 3.6346
+Parlay time: Answer queries #8: 0.0003
+Parlay time: Delete batch #9: 2.0015
+Parlay time: Answer queries #9: 0.0001
+
+Running on com-orkut_sym.bin
+3072627
+117185083
+Parlay time: start benchmarking comressed CWN with edges inserted to blocked: 0.0060
+Parlay time: Insert batch #0: 60.4787
+Parlay time: Answer queries #0: 0.0029
+Parlay time: Insert batch #1: 70.5130
+Parlay time: Answer queries #1: 0.0037
+Parlay time: Insert batch #2: 75.7692
+Parlay time: Answer queries #2: 0.0036
+Parlay time: Insert batch #3: 80.0716
+Parlay time: Answer queries #3: 0.0038
+Parlay time: Insert batch #4: 83.5114
+Parlay time: Answer queries #4: 0.0038
+Parlay time: Insert batch #5: 86.9083
+Parlay time: Answer queries #5: 0.0047
+Parlay time: Insert batch #6: 89.2609
+Parlay time: Answer queries #6: 0.0052
+Parlay time: Insert batch #7: 92.5455
+Parlay time: Answer queries #7: 0.0038
+Parlay time: Insert batch #8: 94.6934
+Parlay time: Answer queries #8: 0.0040
+Parlay time: Insert batch #9: 96.2996
+Parlay time: Answer queries #9: 0.0042
+Parlay time: Delete batch #0: 141.6101
+Parlay time: Answer queries #0: 0.0049

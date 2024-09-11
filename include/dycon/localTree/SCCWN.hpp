@@ -1,6 +1,7 @@
 #include "dycon/localTree/alloc.h"
 #include "dycon/localTree/graph.hpp"
 #include "dycon/localTree/leaf.hpp"
+#include "graph.hpp"
 #include "localTree.hpp"
 #include "parlay/sequence.h"
 #include <absl/container/flat_hash_map.h>
@@ -26,13 +27,13 @@ private:
               std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
   }
-  struct edge_info {
+  struct Edge_info {
     uint32_t uit;
     uint32_t ul;
     uint32_t vit;
     uint32_t vl;
-    edge_info(uint32_t _uit, uint32_t _ul, uint32_t _vit, uint32_t _vl)
-        : uit(_uit), ul(_ul), vit(_vit), vl(_vl) {}
+    // edge_info(uint32_t _uit, uint32_t _ul, uint32_t _vit, uint32_t _vl)
+    //     : uit(_uit), ul(_ul), vit(_vit), vl(_vl) {}
   };
 
 public:
@@ -40,14 +41,14 @@ public:
   static uint32_t lmax;
   parlay::sequence<localTree *> leaves;
   uint32_t self_edge[2] = {0, 0};
-  absl::flat_hash_map<std::pair<uint32_t, uint32_t>, edge_info> G;
+  absl::flat_hash_map<std::pair<uint32_t, uint32_t>, Edge_info> G;
   SCCWN(uint32_t _n)
       : n(_n), leaves(parlay::sequence<localTree *>(n, nullptr)) {
     parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
-    // edge_set::EBallocator = new type_allocator<EBlock>(n);
-    G.reserve(10 * n);
+    leaf::vector_alloc = new type_allocator<std::vector<vertex>>(n);
+    G.reserve(5 * n);
     leaves = parlay::sequence<localTree *>(n);
     for (uint32_t i = 0; i < n; i++)
       leaves[i] = localTree::l_alloc->create(i);
@@ -129,7 +130,8 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
         leaves[v]->insertToLeaf(u, l);
         if (u > v)
           std::swap(u, v);
-        // G.insert(std::pair(std::pair(u, v), edge_info(l, l, l, l)));
+        const Edge_info edge_info{.uit = l, .ul = l, .vit = l, .vl = l};
+        G.emplace(std::pair(u, v), std::move(edge_info));
         return;
       }
       Pu = localTree::getParent(Cu);
