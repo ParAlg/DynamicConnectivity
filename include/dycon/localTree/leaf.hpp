@@ -59,7 +59,7 @@ inline void leaf::insert(vertex e, uint32_t l) {
   if (E[l] == nullptr) {
     E[l] = vector_alloc->create();
   }
-  E[l]->insert(e);
+  E[l]->emplace(e);
   this->edgemap[l] = 1;
 }
 inline std::tuple<bool, vertex, vertex> leaf::fetchEdge(uint32_t l) {

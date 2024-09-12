@@ -38,7 +38,7 @@ private:
   localTree *descendant;
   // This is a pointer to the local tree node containing this rank tree
   localTree *Node;
-  const static uint32_t leaf_threshold = 64;
+  const static uint32_t leaf_threshold = 32;
   //
   bool isleaf() { return !lchild && !rchild; }
   void setRank(uint32_t i) { rank = i; }
