@@ -1,6 +1,7 @@
 #pragma once
 #include "absl/container/flat_hash_set.h"
 #include "alloc.h"
+#include "dycon/localTree/graph.hpp"
 #include "leaf.hpp"
 #include "rankTree.hpp"
 #include "stats.hpp"
@@ -47,7 +48,7 @@ public:
   }
   void setSize(uint32_t sz) { this->size = sz; }
   uint32_t getSize() { return this->size; }
-  static void merge(localTree *Cu, localTree *Cv);
+  static ::vertex popTail() static void merge(localTree *Cu, localTree *Cv);
   // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
@@ -62,8 +63,8 @@ public:
   static localTree *getRoot(localTree *r);
   static localTree *getLevelNode(localTree *r, uint32_t l);
   static nodeArr getRootPath(localTree *r);
-  void insertToLeaf(uint32_t v, uint32_t l);
-  void deleteEdge(uint32_t v, uint32_t l);
+  ::vertex insertToLeaf(uint32_t v, uint32_t l);
+  void deleteEdge(uint32_t v, uint32_t l, ::vertex index);
   uint32_t getEdgeLevel(uint32_t e);
   static void traverseTopDown(localTree *root, bool clear, bool verbose,
                               bool stat, parlay::sequence<stats> &info);
@@ -244,17 +245,23 @@ inline void localTree::updateBitMap(localTree *node) {
     node->edgemap = nval;
   }
 }
-inline void localTree::insertToLeaf(uint32_t v, uint32_t l) {
+inline ::vertex localTree::insertToLeaf(uint32_t v, uint32_t l) {
   assert(this->vertex != nullptr);
-  this->vertex->insert(v, l);
+  auto idx = this->vertex->insert(v, l);
+  auto comp = this->vertex->getV(l, idx);
+  if (comp != v) {
+    std::cout << "insertion fail\n";
+    std::abort();
+  }
   auto oval = this->edgemap;
   this->edgemap = this->vertex->getEdgeMap();
   // go up to update
   if (this->edgemap != oval)
     updateBitMap(this);
+  return idx;
 }
-inline void localTree::deleteEdge(uint32_t v, uint32_t l) {
-  this->vertex->remove(v, l);
+inline void localTree::deleteEdge(uint32_t v, uint32_t l, ::vertex index) {
+  this->vertex->remove(v, l, index);
   auto oval = this->edgemap;
   this->edgemap = this->vertex->getEdgeMap();
   if (this->edgemap != oval)

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 void test1() {
-  size_t n = 6;
+  size_t n = 8;
   SCCWN F(n);
   F.lmax = std::log2(n) + 1;
   parlay::sequence<std::pair<size_t, size_t>> e;
