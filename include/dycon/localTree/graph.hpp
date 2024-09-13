@@ -2,9 +2,7 @@
 #define GRAPH
 #include <cstdint>
 using vertex = uint32_t;
-struct Edge_info {
-  //   vertex idu;
-  //   vertex idv;
+struct TreeEdge_info {
   uint32_t level;
 };
 #endif

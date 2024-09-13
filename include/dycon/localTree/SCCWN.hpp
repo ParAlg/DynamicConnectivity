@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <queue>
 #include <sys/types.h>
 #include <unordered_set>
@@ -19,14 +20,25 @@ class SCCWN {
 private:
   static std::tuple<bool, uint32_t, uint32_t>
   fetchEdge(std::queue<localTree *> &Q, uint32_t l);
+  static std::tuple<localTree *, localTree *, uint32_t>
+  getSonLCA(localTree *Cu, localTree *Cv);
   static localTree *pushDown(std::vector<localTree *> &pu, uint32_t uter,
                              std::vector<localTree *> &pv, uint32_t vter);
-  void placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges, uint32_t l,
-                  bool undirected = false);
+  void placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
+                  uint32_t l);
   void printNodes(std::vector<localTree *> &Nodes) {
     std::copy(Nodes.begin(), Nodes.end(),
               std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
+  }
+  void printEdge(std::pair<uint32_t, uint32_t> e, uint32_t l) {
+    std::cout << "(" << e.first << "," << e.second << ") at level " << l
+              << std::endl;
+  }
+  void printEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
+                  uint32_t l) {
+    for (auto it : edges)
+      printEdge(it, l);
   }
 
 public:
@@ -34,8 +46,10 @@ public:
   static uint32_t lmax;
   std::vector<localTree *> leaves;
   uint32_t self_edge[2] = {0, 0};
-  absl::flat_hash_map<std::pair<uint32_t, uint32_t>, Edge_info> nonTreeEdge;
-  absl::flat_hash_map<std::pair<uint32_t, uint32_t>, Edge_info> TreeEdge;
+  // absl::flat_hash_map<std::pair<uint32_t, uint32_t>, Edge_info> nonTreeEdge;
+  absl::flat_hash_set<std::pair<vertex, vertex>> nonTreeEdge;
+  absl::flat_hash_set<std::pair<vertex, vertex>> TreeEdge;
+  // absl::flat_hash_map<std::pair<uint32_t, uint32_t>, TreeEdge_info> TreeEdge;
   SCCWN(uint32_t _n) : n(_n), leaves(std::vector<localTree *>(n, nullptr)) {
     parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
@@ -61,6 +75,31 @@ public:
   bool is_connected(uint32_t u, uint32_t v);
   void remove(uint32_t u, uint32_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
+  void DebugHelper1() {
+    std::vector<localTree *> roots(leaves.size(), nullptr);
+    std::vector<localTree *> parents(leaves.size(), nullptr);
+    parlay::parallel_for(0, roots.size(), [&](uint32_t i) {
+      if (leaves[i])
+        roots[i] = localTree::getRoot(leaves[i]);
+      if (leaves[i])
+        parents[i] = localTree::getParent(leaves[i]);
+    });
+    printNodes(leaves);
+    printNodes(parents);
+    printNodes(roots);
+  }
+  void DebugPrintTreeEdges() {
+    std::cout << "printing tree edges\n";
+    for (auto it : TreeEdge)
+      std::cout << it.first << " " << it.second << " at level "
+                << leaves[it.first]->getEdgeLevel(it.second) << std::endl;
+  }
+  void DebugPrintNonTreeEdges() {
+    std::cout << "printing non tree edges\n";
+    for (auto it : nonTreeEdge)
+      std::cout << it.first << " " << it.second << " at level "
+                << leaves[it.first]->getEdgeLevel(it.second) << std::endl;
+  }
   void checkLevel() {
     for (uint32_t i = 0; i < n; i++) {
       if (leaves[i] != nullptr) {
@@ -102,6 +141,72 @@ inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
   leaves[u]->insertToLeaf(v, lmax);
   leaves[v]->insertToLeaf(u, lmax);
 }
+inline std::tuple<localTree *, localTree *, uint32_t>
+SCCWN::getSonLCA(localTree *Cu, localTree *Cv) {
+  localTree *Pu = nullptr;
+  localTree *Pv = nullptr;
+  localTree *Su = nullptr;
+  localTree *Sv = nullptr;
+  while (true) {
+    while (Cu->getLevel() == Cv->getLevel()) {
+      // if Cu Cv in same level, we traverse to their parents
+      // if one of two do not have parent, we go up to roots for both
+      // because they cannot be in the same CF
+      if (Cu == Cv) { // LCA
+        return std::tuple(Su, Sv, Cu->getLevel());
+      }
+      Pu = localTree::getParent(Cu);
+      Pv = localTree::getParent(Cv);
+      // Since Cu Cv have the same level and are not the same CF node
+      // Then if the parent of one of these two nodes is nullptr, they
+      // cannot be connected;
+      if (Pu == nullptr) {
+        while (Pv != nullptr) {
+          Cv = Pv;
+          Pv = localTree::getParent(Cv);
+        }
+        break;
+      }
+      if (Pv == nullptr) {
+        while (Pu != nullptr) {
+          Cu = Pu;
+          Pu = localTree::getParent(Cu);
+        }
+        break;
+      }
+      Su = Cu;
+      Cu = Pu;
+      Sv = Cv;
+      Cv = Pv;
+    }
+    if (Pu == nullptr && Pv == nullptr)
+      break;
+    if (Cu->getLevel() > Cv->getLevel()) {
+      std::swap(Cu, Cv);
+      std::swap(Su, Sv);
+    }
+    while (Cu->getLevel() < Cv->getLevel()) {
+      Pu = localTree::getParent(Cu);
+      // Cu has lower level, if Cu share LCA with Cv, then Cu's parent
+      // cannot be nullptr
+      if (Pu == nullptr) {
+        Pv = localTree::getParent(Cv);
+        while (Pv != nullptr) {
+          Cv = Pv;
+          Pv = localTree::getParent(Pv);
+        }
+        break;
+      }
+      Su = Cu;
+      Cu = Pu;
+    }
+    if (Pu == nullptr && Pv == nullptr)
+      break;
+    assert(Cu->getLevel() >= Cv->getLevel());
+  }
+  std::cout << "does not find LCA\n";
+  std::abort();
+}
 inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
@@ -124,8 +229,9 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
         leaves[v]->insertToLeaf(u, l);
         if (u > v)
           std::swap(u, v);
-        const Edge_info edge_info{.level = l};
-        nonTreeEdge.emplace(std::pair(u, v), std::move(edge_info));
+        nonTreeEdge.emplace(std::pair(u, v));
+        // const Edge_info edge_info{.level = l};
+        // nonTreeEdge.emplace(std::pair(u, v), std::move(edge_info));
         return;
       }
       Pu = localTree::getParent(Cu);
@@ -190,53 +296,10 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   leaves[v]->insertToLeaf(u, l);
   if (u > v)
     std::swap(u, v);
-  const Edge_info edge_info{.level = l};
-  TreeEdge.emplace(std::pair(u, v), std::move(edge_info));
-  // G.insert(std::pair(std::pair(u, v), edge_info(l, l, l, l)));
+  // TreeEdge.emplace(std::pair(u, v), TreeEdge_info{.level = l});
+  TreeEdge.emplace(std::pair(u, v));
+  // std::cout << "insert tree edge " << u << " " << v << std::endl;
 }
-// inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
-//   if (leaves[u] == nullptr)
-//     leaves[u] = localTree::l_alloc->create(u);
-//   if (leaves[v] == nullptr)
-//     leaves[v] = localTree::l_alloc->create(v);
-// auto pv = localTree::getRootPath(leaves[v]);
-// auto pu = localTree::getRootPath(leaves[u]);
-// auto iu = pu.rbegin();
-// auto iv = pv.rbegin();
-// uint32_t l;
-// if (*iu != *iv) {
-//   auto Cu = *iu;
-//   auto Cv = *iv;
-//   if (Cu->getLevel() < Cv->getLevel())
-//     std::swap(Cu, Cv); // make sure left is higher
-//   if (Cu->getSize() + Cv->getSize() <= (1 << Cu->getLevel())) {
-//     if (Cu->getLevel() == Cv->getLevel()) {
-//       localTree::merge(Cu, Cv);
-//       l = Cu->getLevel();
-//     } else {
-//       localTree::addChild(Cu, Cv);
-//       l = Cu->getLevel();
-//     }
-//   } else {
-//     auto r = localTree::l_alloc->create(Cu, Cv);
-//     l = r->getLevel();
-//   }
-// } else {
-//   localTree *p;
-//   while (*iu == *iv) {
-//     p = *iu;
-//     iu++;
-//     iv++;
-//   }
-//   localTree *gp = localTree::getParent(p);
-//   l = gp == nullptr ? p->getLevel() : gp->getLevel();
-// }
-// leaves[u]->insertToLeaf(v, l);
-// leaves[v]->insertToLeaf(u, l);
-// }
-
-// allocator
-// modify rank tree
 inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
@@ -320,39 +383,47 @@ inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, uint32_t uter,
       localTree::addChild(pu[uter], pv[vter]);
       localTree::addChild(p, pu[uter]);
       uter--;
-      // } else if (p->getLevel() - pu[uter]->getLevel() == 1) {
-      //   localTree::deleteFromParent(pu[uter]);
-      //   localTree::deleteFromParent(pv[vter]);
-      //   localTree::addChild(pu[uter], pv[vter]);
-      //   localTree::addChild(p, pu[uter]);
-      //   uter--;
-      // } else {
-      //   localTree::deleteFromParent(pu[uter]);
-      //   localTree::deleteFromParent(pv[vter]);
-      //   auto np = localTree::l_alloc->create(pu[uter], pv[vter]);
-      //   localTree::addChild(p, np);
-      //   return np;
     }
   }
   assert(localTree::getParent(pu[uter]) == localTree::getParent(pv[vter]));
   return localTree::getParent(pu[uter]);
 }
 inline void SCCWN::remove(uint32_t u, uint32_t v) {
-  // std::cout << u << " " << v << std::endl;
+  std::cout << "remove " << u << " " << v << std::endl;
+  if (u < v)
+    std::swap(u, v);
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
-  uint32_t l = leaves[u]->getSize() < leaves[v]->getSize()
-                   ? leaves[u]->getEdgeLevel(v)
-                   : leaves[v]->getEdgeLevel(u);
-  leaves[u]->deleteEdge(v, l);
-  leaves[v]->deleteEdge(u, l);
-  auto Cu = localTree::getLevelNode(leaves[u], l);
-  auto Cv = localTree::getLevelNode(leaves[v], l);
-  assert(Cu != nullptr && Cv != nullptr);
-  if (Cu == Cv) {
-    self_edge[1]++;
+  uint32_t _l = leaves[u]->getSize() < leaves[v]->getSize()
+                    ? leaves[u]->getEdgeLevel(v)
+                    : leaves[v]->getEdgeLevel(u);
+  leaves[u]->deleteEdge(v, _l);
+  leaves[v]->deleteEdge(u, _l);
+
+  std::pair<vertex, vertex> e_ = u < v ? std::pair(u, v) : std::pair(v, u);
+  auto nTE = nonTreeEdge.find(e_);
+  if (nTE != nonTreeEdge.end()) {
+    assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
+    nonTreeEdge.erase(nTE);
     return;
   }
-  self_edge[0]++;
+  auto e = TreeEdge.find(e_);
+  if (e == TreeEdge.end() || u == v) {
+    std::cout << u << " " << v << " is not in the graph\n";
+    return;
+  }
+  auto [Cu, Cv, l] = getSonLCA(leaves[u], leaves[v]);
+  if (localTree::getParent(Cu) != localTree::getParent(Cv))
+    std::exit(1);
+  TreeEdge.erase(e);
+  // auto Cu = localTree::getLevelNode(leaves[u], _l);
+  // auto Cv = localTree::getLevelNode(leaves[v], _l);
+  // let Cu and Cv to be the son of the LCA of leaves[u], leaves[v]
+  assert(Cu != nullptr && Cv != nullptr);
+  if (Cu == Cv) {
+    std::cout << "trying to delete a nonTreeEdge as Tree Edge\n";
+    std::abort();
+    // return;
+  }
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
@@ -380,25 +451,49 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         auto eu = fetchEdge(Qu, l);
         if (std::get<0>(eu) == true) {
           auto Cuv = localTree::getLevelNode(leaves[std::get<2>(eu)], l);
+          if (Cuv == nullptr) {
+            std::cout << nonTreeEdge.contains(
+                             std::pair(std::get<1>(eu), std::get<2>(eu)))
+                      << " "
+                      << TreeEdge.contains(
+                             std::pair(std::get<1>(eu), std::get<2>(eu)))
+                      << " " << std::get<1>(eu) << " " << std::get<2>(eu)
+                      << " eu" << std::endl;
+            std::abort();
+          }
           assert(Cuv != nullptr);
           assert(CP == nullptr || localTree::getParent(Cuv) == CP);
           if (Rv.find(Cuv) != Rv.end()) {
+            vertex u = std::min(std::get<1>(eu), std::get<2>(eu));
+            vertex v = std::max(std::get<1>(eu), std::get<2>(eu));
+            if (TreeEdge.contains(std::pair(u, v))) {
+              std::cout << "eu deletion " << u << " " << v
+                        << " Tree edge should not be replacement edge\n";
+              for (auto it : TreeEdge)
+                std::cout << "Tree Edge " << it.first << " " << it.second
+                          << std::endl;
+            }
+            // leaves[u]->deleteEdge(v, l);
+            // leaves[v]->deleteEdge(u, l);
+            nonTreeEdge.erase(std::pair(u, v));
+            // TreeEdge.emplace(std::pair(u, v), TreeEdge_info{.level = l});
+            std::cout << u << "," << v << " becomes tree edge at level " << l
+                      << "\n";
+            TreeEdge.emplace(std::pair(u, v));
             if (Eu.empty()) {
               // don't push nCu+nCv may violate size
               return;
             } else if (nCu <= nCv) {
               auto C = localTree::splitFromParent(CP, Ru);
               localTree::addChild(CP, C);
-              placeEdges(Eu, C->getLevel(), true);
+              placeEdges(Eu, C->getLevel());
               placeEdges(Ev, l);
             } else {
               auto C = localTree::splitFromParent(CP, Rv);
               localTree::addChild(CP, C);
               placeEdges(Eu, l);
-              placeEdges(Ev, C->getLevel(), true);
+              placeEdges(Ev, C->getLevel());
             }
-            // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
-            // nCv, l); Rstat.push_back(std::move(info));
             return;
           } else {
             if (Ru.find(Cuv) == Ru.end()) {
@@ -425,16 +520,12 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             }
           } else if (nCu <= nCv) {
             _CP = localTree::splitFromParent(CP, Ru);
-            placeEdges(Eu, _CP->getLevel(), true);
+            placeEdges(Eu, _CP->getLevel());
             placeEdges(Ev, l);
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
-            // for (auto it : Ru)
-            //   localTree::deleteFromParent(it);
             localTree::deleteFromParent(CP, Ru);
-            // for (auto it : Ru)
-            //   localTree::addChild(_CP, it);
             localTree::addChildren(_CP, Ru);
             auto oldMap = CP->getMap();
             auto C = localTree::splitFromParent(CP, Rv);
@@ -444,17 +535,13 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             } else
               localTree::addChild(CP, C);
             placeEdges(Eu, l);
-            placeEdges(Ev, C->getLevel(), true);
+            placeEdges(Ev, C->getLevel());
           }
           localTree::add2Children(GP, CP, _CP);
           Cu = _CP;
           Cv = CP;
           CP = GP;
           l = CP ? CP->getLevel() : 0;
-
-          // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
-          // nCv, l); Rstat.push_back(std::move(info));
-
           break;
         }
       }
@@ -462,25 +549,46 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         auto ev = fetchEdge(Qv, l);
         if (std::get<0>(ev) == true) {
           auto Cuv = localTree::getLevelNode(leaves[std::get<2>(ev)], l);
+          if (Cuv == nullptr) {
+            std::cout << nonTreeEdge.contains(
+                             std::pair(std::get<1>(ev), std::get<2>(ev)))
+                      << " "
+                      << TreeEdge.contains(
+                             std::pair(std::get<1>(ev), std::get<2>(ev)))
+                      << " " << std::get<1>(ev) << " " << std::get<2>(ev)
+                      << " ev" << std::endl;
+            std::abort();
+          }
           assert(Cuv != nullptr);
           assert(CP == nullptr || localTree::getParent(Cuv) == CP);
           if (Ru.find(Cuv) != Ru.end()) {
+            vertex u = std::min(std::get<1>(ev), std::get<2>(ev));
+            vertex v = std::max(std::get<1>(ev), std::get<2>(ev));
+            if (TreeEdge.contains(std::pair(u, v))) {
+              std::cout << "ev deletion " << u << " " << v
+                        << " Tree edge should not be replacement edge\n";
+              printEdges(Eu, l);
+            }
+            // leaves[u]->deleteEdge(v, l);
+            // leaves[v]->deleteEdge(u, l);
+            nonTreeEdge.erase(std::pair(u, v));
+            // TreeEdge.emplace(std::pair(u, v), TreeEdge_info{.level = l});
+            TreeEdge.emplace(std::pair(u, v));
+            std::cout << u << "," << v << " becomes tree edge at level " << l
+                      << "\n";
             if (Ev.empty()) {
               placeEdges(Eu, l);
             } else if (nCu <= nCv) {
               auto C = localTree::splitFromParent(CP, Ru);
               localTree::addChild(CP, C);
-              placeEdges(Eu, C->getLevel(), true);
+              placeEdges(Eu, C->getLevel());
               placeEdges(Ev, l);
             } else {
               auto C = localTree::splitFromParent(CP, Rv);
               localTree::addChild(CP, C);
               placeEdges(Eu, l);
-              placeEdges(Ev, C->getLevel(), true);
+              placeEdges(Ev, C->getLevel());
             }
-
-            // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
-            // nCv, l); Rstat.push_back(std::move(info));
             return;
           } else {
             if (Rv.find(Cuv) == Rv.end()) {
@@ -503,13 +611,11 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           } else if (nCv <= nCu) {
             _CP = localTree::splitFromParent(CP, Rv);
             placeEdges(Eu, l);
-            placeEdges(Ev, _CP->getLevel(), true);
+            placeEdges(Ev, _CP->getLevel());
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
             localTree::deleteFromParent(CP, Rv);
-            // for (auto it : Rv)
-            //   localTree::addChild(_CP, it);
             localTree::addChildren(_CP, Rv);
             auto oldMap = CP->getMap();
             auto C = localTree::splitFromParent(CP, Ru);
@@ -518,7 +624,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               CP = C;
             } else
               localTree::addChild(CP, C);
-            placeEdges(Eu, C->getLevel(), true);
+            placeEdges(Eu, C->getLevel());
             placeEdges(Ev, l);
           }
           localTree::add2Children(GP, CP, _CP);
@@ -526,10 +632,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           Cv = _CP;
           CP = GP;
           l = CP ? CP->getLevel() : 0;
-
-          // Radius info(1, Ru.size(), Eu.size(), nCu, Rv.size(), Ev.size(),
-          // nCv, l); Rstat.push_back(std::move(info));
-
           break;
         }
       }
@@ -558,28 +660,16 @@ inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
   if (verbose)
     printNodes(roots);
   parlay::sequence<localTree *> r(roots.begin(), roots.end());
-  // roots = parlay::remove_duplicates(roots);
   r = parlay::remove_duplicates(r);
-  // if (verbose)
-  //   printNodes(r);
   parlay::parallel_for(0, r.size(), [&](uint32_t i) {
     if (r[i]) {
-      // std::ofstream fout;
-      // if (stat) fout.open(filepath + "/" + std::to_string(i) + ".txt");
       parlay::sequence<stats> info;
       localTree::traverseTopDown(r[i], clear, verbose, stat, info);
-      // if (stat) {
-      //   parlay::sort_inplace(info, [&](stats x, stats y) { return x.level >
-      //   y.level; }); for (auto it : info)
-      //     fout << it.level << " " << it.fanout << " " << it.height << " "
-      //     << it.size << std::endl;
-      //   fout.close();
-      // }
     }
   });
 }
 inline void SCCWN::placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
-                              uint32_t l, bool undirected) {
+                              uint32_t l) {
   for (auto it : edges) {
     leaves[it.first]->insertToLeaf(it.second, l);
     leaves[it.second]->insertToLeaf(it.first, l);
