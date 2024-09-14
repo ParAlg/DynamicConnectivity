@@ -118,6 +118,11 @@ inline void CWN::remove(size_t u, size_t v) {
   // std::cout << "deleteEdge (u,v) " << iv << std::endl;
   assert(lu == lv);
   size_t l = lu;
+  // std::cout << u << "  " << v << std::endl;
+  assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
+  size_t l = leaves[u]->getEdgeLevel(v);
+  leaves[u]->deleteEdge(v, l);
+  leaves[v]->deleteEdge(u, l);
   auto Cu = localTree::getLevelNode(leaves[u], l);
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);

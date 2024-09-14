@@ -1,0 +1,235 @@
+[  0%] Built target lib_hash
+[  0%] Built target absl_utf8_for_code_point
+[  1%] Built target absl_spinlock_wait
+[  1%] Built target absl_log_severity
+[  5%] Built target absl_int128
+[  5%] Built target absl_exponential_biased
+[  7%] Built target absl_civil_time
+[  9%] Built target lib_assert
+[ 15%] Built target absl_time_zone
+[ 16%] Built target absl_decode_rust_punycode
+[ 18%] Built target absl_raw_logging_internal
+[ 22%] Built target lib_graph
+[ 22%] Built target lib_sequence
+[ 24%] Built target absl_demangle_rust
+[ 24%] Built target absl_bad_variant_access
+[ 26%] Built target absl_throw_delegate
+[ 28%] Built target absl_bad_optional_access
+[ 30%] Built target absl_debugging_internal
+[ 32%] Built target absl_cordz_functions
+[ 35%] Built target absl_base
+[ 35%] Built target absl_demangle_internal
+[ 37%] Built target absl_stacktrace
+[ 39%] Built target absl_tracing_internal
+[ 41%] Built target absl_crc_cpu_detect
+[ 43%] Built target absl_string_view
+[ 47%] Built target absl_city
+[ 47%] Built target absl_malloc_internal
+[ 49%] Built target absl_strings_internal
+[ 49%] Built target absl_low_level_hash
+[ 50%] Built target absl_crc_internal
+[ 50%] Built target absl_graphcycles_internal
+[ 60%] Built target absl_strings
+[ 62%] Built target absl_symbolize
+[ 64%] Built target absl_hash
+[ 67%] Built target absl_time
+[ 73%] Built target absl_str_format_internal
+[ 73%] Built target absl_kernel_timeout_internal
+[ 77%] Built target absl_crc32c
+[ 77%] Built target absl_crc_cord_state
+[ 84%] Built target absl_synchronization
+[ 86%] Built target absl_hashtablez_sampler
+[ 88%] Built target absl_cordz_handle
+[ 92%] Built target absl_cord_internal
+[ 92%] Built target absl_cordz_info
+[ 94%] Built target absl_cord
+[ 96%] Built target absl_raw_hash_set
+[ 96%] Built target lib_dynamic_forest
+[ 98%] Built target lib_dynamic_connectivity
+[ 98%] Building CXX object benchmark/CMakeFiles/bench_dynamic.dir/bench_dynamic.cc.o
+[100%] Linking CXX executable bench_dynamic
+[100%] Built target bench_dynamic
+Running on Household_lines_5_sym.bin
+2049280
+6503942
+Parlay time: constructor: 0.6006
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.6045
+Parlay time: Insert batch #0: 0.9676
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 0.9668
+Parlay time: Answer queries #1: 0.0003
+Parlay time: Insert batch #2: 1.1845
+Parlay time: Answer queries #2: 0.0006
+Parlay time: Insert batch #3: 1.5088
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 1.6354
+Parlay time: Answer queries #4: 0.0018
+Parlay time: Insert batch #5: 1.4171
+Parlay time: Answer queries #5: 0.0020
+Parlay time: Insert batch #6: 1.5170
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Insert batch #7: 1.2336
+Parlay time: Answer queries #7: 0.0020
+Parlay time: Insert batch #8: 1.5235
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 1.4073
+Parlay time: Answer queries #9: 0.0020
+Parlay time: Delete batch #0: 4.3116
+Parlay time: Answer queries #0: 0.0021
+Parlay time: Delete batch #1: 4.3291
+Parlay time: Answer queries #1: 0.0022
+Parlay time: Delete batch #2: 4.5856
+Parlay time: Answer queries #2: 0.0022
+Parlay time: Delete batch #3: 5.3884
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 5.8227
+Parlay time: Answer queries #4: 0.0016
+Parlay time: Delete batch #5: 7.4318
+Parlay time: Answer queries #5: 0.0010
+Parlay time: Delete batch #6: 6.8816
+Parlay time: Answer queries #6: 0.0006
+Parlay time: Delete batch #7: 4.2375
+Parlay time: Answer queries #7: 0.0003
+Parlay time: Delete batch #8: 2.3379
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.5182
+Parlay time: Answer queries #9: 0.0001
+
+Running on com-orkut_sym.bin
+3072627
+117185083
+Parlay time: constructor: 0.8948
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.9009
+Parlay time: Insert batch #0: 28.0144
+Parlay time: Answer queries #0: 0.0017
+Parlay time: Insert batch #1: 28.6498
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 27.9987
+Parlay time: Answer queries #2: 0.0017
+Parlay time: Insert batch #3: 28.4296
+Parlay time: Answer queries #3: 0.0018
+Parlay time: Insert batch #4: 29.0734
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 29.7775
+Parlay time: Answer queries #5: 0.0017
+Parlay time: Insert batch #6: 30.0795
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 30.5764
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 31.1625
+Parlay time: Answer queries #8: 0.0018
+Parlay time: Insert batch #9: 32.1618
+Parlay time: Answer queries #9: 0.0017
+Parlay time: Delete batch #0: 50.2793
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 52.7168
+Parlay time: Answer queries #1: 0.0020
+Parlay time: Delete batch #2: 54.0961
+Parlay time: Answer queries #2: 0.0019
+Parlay time: Delete batch #3: 56.9214
+Parlay time: Answer queries #3: 0.0018
+Parlay time: Delete batch #4: 58.0966
+Parlay time: Answer queries #4: 0.0018
+Parlay time: Delete batch #5: 60.8002
+Parlay time: Answer queries #5: 0.0019
+Parlay time: Delete batch #6: 63.8256
+Parlay time: Answer queries #6: 0.0019
+Parlay time: Delete batch #7: 69.0637
+Parlay time: Answer queries #7: 0.0018
+Parlay time: Delete batch #8: 80.8487
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Delete batch #9: 111.8547
+Parlay time: Answer queries #9: 0.0001
+
+Running on com-youtube_sym.bin
+1157828
+2987624
+Parlay time: constructor: 0.3343
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.3367
+Parlay time: Insert batch #0: 0.3511
+Parlay time: Answer queries #0: 0.0008
+Parlay time: Insert batch #1: 0.4948
+Parlay time: Answer queries #1: 0.0009
+Parlay time: Insert batch #2: 0.5034
+Parlay time: Answer queries #2: 0.0010
+Parlay time: Insert batch #3: 0.5193
+Parlay time: Answer queries #3: 0.0012
+Parlay time: Insert batch #4: 0.4777
+Parlay time: Answer queries #4: 0.0010
+Parlay time: Insert batch #5: 0.4728
+Parlay time: Answer queries #5: 0.0011
+Parlay time: Insert batch #6: 0.5071
+Parlay time: Answer queries #6: 0.0012
+Parlay time: Insert batch #7: 0.6732
+Parlay time: Answer queries #7: 0.0012
+Parlay time: Insert batch #8: 0.5207
+Parlay time: Answer queries #8: 0.0013
+Parlay time: Insert batch #9: 0.5590
+Parlay time: Answer queries #9: 0.0013
+Parlay time: Delete batch #0: 1.4916
+Parlay time: Answer queries #0: 0.0012
+Parlay time: Delete batch #1: 1.5124
+Parlay time: Answer queries #1: 0.0039
+Parlay time: Delete batch #2: 1.4058
+Parlay time: Answer queries #2: 0.0012
+Parlay time: Delete batch #3: 1.5318
+Parlay time: Answer queries #3: 0.0011
+Parlay time: Delete batch #4: 1.4617
+Parlay time: Answer queries #4: 0.0011
+Parlay time: Delete batch #5: 1.4673
+Parlay time: Answer queries #5: 0.0009
+Parlay time: Delete batch #6: 1.5902
+Parlay time: Answer queries #6: 0.0009
+Parlay time: Delete batch #7: 1.4677
+Parlay time: Answer queries #7: 0.0008
+Parlay time: Delete batch #8: 1.5404
+Parlay time: Answer queries #8: 0.0006
+Parlay time: Delete batch #9: 1.6507
+Parlay time: Answer queries #9: 0.0001
+
+Running on stackoverflow_sym.bin
+6024271
+28183518
+Parlay time: constructor: 1.8207
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 1.8322
+Parlay time: Insert batch #0: 5.7735
+Parlay time: Answer queries #0: 0.0013
+Parlay time: Insert batch #1: 6.5186
+Parlay time: Answer queries #1: 0.0014
+Parlay time: Insert batch #2: 6.4335
+Parlay time: Answer queries #2: 0.0014
+Parlay time: Insert batch #3: 6.3757
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 6.5242
+Parlay time: Answer queries #4: 0.0014
+Parlay time: Insert batch #5: 6.3550
+Parlay time: Answer queries #5: 0.0015
+Parlay time: Insert batch #6: 6.4643
+Parlay time: Answer queries #6: 0.0015
+Parlay time: Insert batch #7: 6.4335
+Parlay time: Answer queries #7: 0.0015
+Parlay time: Insert batch #8: 6.7117
+Parlay time: Answer queries #8: 0.0019
+Parlay time: Insert batch #9: 6.3660
+Parlay time: Answer queries #9: 0.0016
+Parlay time: Delete batch #0: 10.9189
+Parlay time: Answer queries #0: 0.0016
+Parlay time: Delete batch #1: 10.9669
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Delete batch #2: 11.7060
+Parlay time: Answer queries #2: 0.0015
+Parlay time: Delete batch #3: 11.8916
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Delete batch #4: 11.8988
+Parlay time: Answer queries #4: 0.0015
+Parlay time: Delete batch #5: 12.5795
+Parlay time: Answer queries #5: 0.0016
+Parlay time: Delete batch #6: 12.7931
+Parlay time: Answer queries #6: 0.0014
+Parlay time: Delete batch #7: 12.8329
+Parlay time: Answer queries #7: 0.0014
+Parlay time: Delete batch #8: 13.6523
+Parlay time: Answer queries #8: 0.0012
+Parlay time: Delete batch #9: 16.6036
+Parlay time: Answer queries #9: 0.0003
+

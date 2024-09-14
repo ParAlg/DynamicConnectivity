@@ -1,0 +1,48 @@
+mkdir: cannot create directory ‘/home/zhongqi/BatchDynamicConnectivity/data/bench_dynamic’: File exists
+[ 14%] Built target lib_hash
+[ 28%] Built target lib_assert
+[ 42%] Built target lib_graph
+[ 57%] Built target lib_sequence
+[ 71%] Built target lib_dynamic_forest
+[ 85%] Built target lib_dynamic_connectivity
+[ 92%] Building CXX object benchmark/CMakeFiles/bench_dynamic.dir/bench_dynamic.cc.o
+[100%] Linking CXX executable bench_dynamic
+[100%] Built target bench_dynamic
+Running on Household_lines_5_sym.bin
+2049280
+6503942
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.0069
+Parlay time: Insert batch #0: 1.4237
+Parlay time: Answer queries #0: 0.0006
+Parlay time: Insert batch #1: 1.5253
+Parlay time: Answer queries #1: 0.0007
+Parlay time: Insert batch #2: 2.2684
+Parlay time: Answer queries #2: 0.0013
+Parlay time: Insert batch #3: 2.7088
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Insert batch #4: 2.9086
+Parlay time: Answer queries #4: 0.0025
+Parlay time: Insert batch #5: 2.7579
+Parlay time: Answer queries #5: 0.0035
+Parlay time: Insert batch #6: 2.6534
+Parlay time: Answer queries #6: 0.0027
+Parlay time: Insert batch #7: 2.7904
+Parlay time: Answer queries #7: 0.0034
+Parlay time: Insert batch #8: 2.7069
+Parlay time: Answer queries #8: 0.0026
+Parlay time: Insert batch #9: 2.5275
+Parlay time: Answer queries #9: 0.0031
+./bench_dynamic.sh: line 62: 2313234 Segmentation fault      (core dumped) ${numactl} ./bench_dynamic -a 4 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
+
+Running on com-orkut_sym.bin
+3072627
+117185083
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.0048
+Parlay time: Insert batch #0: 44.3695
+Parlay time: Answer queries #0: 0.0019
+Parlay time: Insert batch #1: 50.2978
+Parlay time: Answer queries #1: 0.0019
+Parlay time: Insert batch #2: 53.5860
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Insert batch #3: 56.1492
+Parlay time: Answer queries #3: 0.0019

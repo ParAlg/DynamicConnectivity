@@ -1,16 +1,17 @@
 #pragma once
 #include "graph_utils.hpp"
+#include <cstdint>
 #include <fstream>
 #include <vector>
 
 using namespace std;
-using vertex = size_t;
+using vertex = uint32_t;
 using utils = graph_utils<vertex>;
 using edge = utils::edge;
 using edges = utils::edges;
 using query = utils::query;
 using queries = utils::queries;
-using Pair = std::pair<size_t, size_t>;
+using Pair = std::pair<uint32_t, uint32_t>;
 template <typename vertex> struct union_find {
   parlay::sequence<vertex> parents;
   union_find(vertex n)
@@ -30,18 +31,18 @@ template <typename vertex> struct union_find {
   }
 };
 inline void static_connectivity(parlay::sequence<edge> &E,
-                                parlay::sequence<vertex> &V, size_t &n,
-                                size_t &m, parlay::sequence<query> &Q,
+                                parlay::sequence<vertex> &V, uint32_t &n,
+                                uint32_t &m, parlay::sequence<query> &Q,
                                 parlay::sequence<bool> &Ans) {
 
-  size_t maxID = utils::num_vertices(E);
+  uint32_t maxID = utils::num_vertices(E);
   union_find<vertex> UF(maxID);
-  for (size_t i = 0; i < m; i++)
+  for (uint32_t i = 0; i < m; i++)
     UF.link(E[i].first, E[i].second);
   if (!m) {
-    parlay::parallel_for(0, Q.size(), [&](size_t i) { Ans[i] = 0; });
+    parlay::parallel_for(0, Q.size(), [&](uint32_t i) { Ans[i] = 0; });
     return;
   }
-  for (size_t i = 0; i < Q.size(); i++)
+  for (uint32_t i = 0; i < Q.size(); i++)
     Ans[i] = (UF.find(Q[i].first) == UF.find(Q[i].second)) ? true : false;
 }

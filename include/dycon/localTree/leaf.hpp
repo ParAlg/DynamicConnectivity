@@ -1,11 +1,14 @@
-#ifndef LT_LEAF
-#define LT_LEAF
-#include "edgeset.hpp"
+#pragma once
+#include "absl/container/flat_hash_set.h"
+#include "dycon/localTree/alloc.h"
+#include "graph.hpp"
+#include <absl/container/btree_set.h>
 #include <bitset>
 #include <cassert>
-#include <cstddef>
-#include <map>
-#include <utility>
+#include <cstdint>
+#include <cstring>
+#include <tuple>
+#include <vector>
 // This is the leaf of the cluster forest.
 // It contains a vertex in the graph and its incident edges.
 // The incident edges are grouped by their level. So we need at
@@ -17,106 +20,77 @@
 // 3.Given an edge(u,v), use O(logn) to find the level of the edge.
 // 4.Given a level l, use O(loglogn) to determine if there are any
 // incident edges in that level
-const size_t MAX_LEVEL = 33;
+#define MAX_LEVEL 32
 class leaf {
 public:
-  leaf(size_t _id = 0, void *p = nullptr)
+  // using incident_edges = std::map<size_t, std::set<size_t>>;
+  // using edge_lists = std::pair<size_t, std::set<size_t>>;
+
+  leaf(vertex _id = 0, void *p = nullptr)
       : parent(p), edgemap(), size(0), id(_id) {
-    // memset(E, 0, sizeof(DynamicArray<size_t, 64> *) * 32);
-    for (size_t i = 0; i < MAX_LEVEL; i++)
-      E[i] = new DynamicArray<size_t, 64>;
-  }
-  ~leaf() {
-    for (size_t i = 0; i < MAX_LEVEL; i++)
-      delete E[i];
-  }
-  void insert(size_t e, size_t l);
-  void remove_lazy(size_t e, size_t l);
-  void remove(size_t e, size_t ith, size_t l);
-  std::pair<size_t, size_t> getEdgeInfo(size_t e);
-  bool hasLevelEdge(size_t l);
-  void flattenLevel(size_t l) { E[l]->print_all(); }
-  size_t getNumEdges(size_t l) { return E[l]->get_size(); }
-  std::tuple<bool, size_t, size_t> fetchEdge(size_t l);
-  void linkToRankTree(void *p) { parent = p; }
+    memset(E, 0, sizeof(E));
+  };
+  void insert(vertex e, uint32_t l);
+  void remove(vertex e, uint32_t l);
+  uint32_t getLevel(uint32_t e);
+  bool checkLevel(uint32_t l);
+  void linkToRankTree(void *p);
   void *getParent() { return parent; }
-  bool hasLevelEdgeEdge(size_t l) { return edgemap[l]; }
-  size_t getSize() { return size; }
-  size_t getID() { return id; }
+  bool checkLevelEdge(uint32_t l) { return edgemap[l]; }
+  vertex getSize() { return size; }
+  vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
-  void flatten();
+  std::tuple<bool, vertex, vertex> fetchEdge(uint32_t l);
+  static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
 
 private:
-  size_t size;
-  // store level of edge (id,v)
-  // map<id,<level,ith in array>>;
-  std::map<size_t, std::pair<size_t, size_t>> L;
-  void *parent; // pointer to rank tree of the level logn cluster node
+  absl::flat_hash_set<vertex> *E[MAX_LEVEL + 1];
+  void *parent;
   std::bitset<64> edgemap;
-  size_t id;
-  DynamicArray<size_t, 64> *E[MAX_LEVEL];
+  vertex id;
+  vertex size;
 };
-inline void leaf::insert(size_t e, size_t l) {
-  this->size++;    // #incident vertices
-  E[l]->insert(e); // add to dynamic array
+inline type_allocator<absl::flat_hash_set<vertex>> *leaf::vector_alloc =
+    nullptr;
+inline void leaf::linkToRankTree(void *p) { parent = p; }
+inline void leaf::insert(vertex e, uint32_t l) {
+  auto &E = this->E;
+  size++;
+  if (E[l] == nullptr) {
+    E[l] = vector_alloc->create();
+  }
+  E[l]->emplace(e);
   this->edgemap[l] = 1;
-  //  <other_endpoint,<level,ith in the array>>
-  this->L.insert(std::make_pair(e, std::make_pair(l, E[l]->get_size())));
 }
-// remove the last one from the array
-inline void leaf::remove_lazy(size_t e, size_t l) {
-  if (E[l]->tail() != e) {
-    std::cout << this->id << " " << e << " " << E[l]->tail() << " " << " "
-              << E[l]->get_size() << std::endl;
-    flatten();
-  }
-
-  assert(e == E[l]->tail()); // delete the correct edge
-  this->size--;              // #incident vertices
-  this->L.erase(e);          // not incident vertex anymore
-  E[l]->pop();               // pop from tail of the array
-  if (E[l]->is_empty())      // bitmap
-    this->edgemap[l] = 0;
-}
-inline void leaf::remove(size_t e, size_t ith, size_t l) {
-  if (E[l]->at(ith) != e) {
-    std::cout << this->id << " " << e << " " << E[l]->at(ith) << " " << ith
-              << " " << E[l]->get_size() << std::endl;
-    E[l]->print_all();
-  }
-  // since we swap the ith to the E[l]->num_elementh
-  //  we also need to update the ith info for the new one at ith
-  assert(E[l]->at(ith) == e); // delete the correct edge
-  L[E[l]->tail()] = std::make_pair(l, ith);
-  // L[e] = std::make_pair(l, E[l]->get_size());
-  this->size--;      // #incident vertices
-  this->L.erase(e);  // not incident vertex anymore
-  E[l]->remove(ith); // remove specific element
-  if (E[l]->is_empty())
-    this->edgemap[l] = 0;
-}
-
-inline std::pair<size_t, size_t> leaf::getEdgeInfo(size_t e) {
-  auto it = L.find(e);
-  assert(it != L.end());
-  return it->second;
-}
-inline bool leaf::hasLevelEdge(size_t l) {
-  // check if this vertex has level l incident edges.
-  assert(!(E[l]->is_empty()) == this->edgemap[l]);
-  return !E[l]->is_empty();
-}
-inline std::tuple<bool, size_t, size_t> leaf::fetchEdge(size_t l) {
-  if (this->edgemap[l] == 0)
+inline std::tuple<bool, vertex, vertex> leaf::fetchEdge(uint32_t l) {
+  auto &E = this->E;
+  if (E[l] == nullptr || E[l]->empty())
     return std::make_tuple(false, 0, 0);
-  return std::make_tuple(true, id, E[l]->tail());
+  auto e = std::make_tuple(true, id, *(E[l]->begin()));
+  return e;
 }
-inline void leaf::flatten() {
-  for (size_t i = 0; i < MAX_LEVEL; i++) {
-    if (this->edgemap[i]) {
-      std::cout << "flatten level " << i << " edges\n";
-      E[i]->print_all();
+inline void leaf::remove(vertex e, uint32_t l) {
+  this->size--;
+  auto &E = this->E;
+  assert(E[l] != nullptr && !E[l]->empty());
+  E[l]->erase(e);
+  if (E[l]->empty()) {
+    vector_alloc->free(E[l]);
+    E[l] = nullptr;
+    this->edgemap[l] = 0;
+  }
+}
+inline uint32_t leaf::getLevel(vertex e) {
+  auto &E = this->E;
+  for (uint32_t i = 0; i <= MAX_LEVEL; i++) {
+    if (E[i] != nullptr && E[i]->contains(e)) {
+      return i;
     }
   }
+  return MAX_LEVEL + 2;
 }
-#endif
+inline bool leaf::checkLevel(uint32_t l) {
+  // check if this vertex has level l incident edges.
+  assert(this->edgemap[l] == (E[l] != nullptr && E[l]->empty()));
+  return this->edgemap[l];
+}
