@@ -33,9 +33,9 @@ void test1() {
   auto db1 = parlay::random_shuffle(del);
   for (size_t i = 0; i < db1.size(); i++) {
     F.remove(db1[i].first, db1[i].second);
-    F.DebugPrintNonTreeEdges();
-    F.DebugPrintTreeEdges();
-    F.DebugHelper1();
+    // F.DebugPrintNonTreeEdges();
+    // F.DebugPrintTreeEdges();
+    // F.DebugHelper1();
   }
   //   auto ib1 = parlay::random_shuffle(db1);
   //   for (size_t i = 0; i < ib1.size(); i++)

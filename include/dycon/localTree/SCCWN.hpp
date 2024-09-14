@@ -389,7 +389,7 @@ inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, uint32_t uter,
   return localTree::getParent(pu[uter]);
 }
 inline void SCCWN::remove(uint32_t u, uint32_t v) {
-  std::cout << "remove " << u << " " << v << std::endl;
+  // std::cout << "remove " << u << " " << v << std::endl;
   if (u < v)
     std::swap(u, v);
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
@@ -429,7 +429,8 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
 
   std::queue<localTree *> Qu, Qv;                    // ready to fetch
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
-  absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
+  absl::flat_hash_set<localTree *> Ru, Rv;           // visited node by u and v
+  absl::flat_hash_map<localTree *, std::pair<uint32_t, uint32_t>> H;
   auto init = [](std::queue<localTree *> &Q,
                  std::vector<std::pair<uint32_t, uint32_t>> &E,
                  absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
@@ -443,6 +444,20 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   while (l != 0) {
     init(Qu, Eu, Ru, Cu);
     init(Qv, Ev, Rv, Cv);
+    H = absl::flat_hash_map<localTree *, std::pair<uint32_t, uint32_t>>();
+    auto preFetch = [&](localTree *C, uint32_t l) {
+      auto e = localTree::fetchEdge(C, l);
+      if (std::get<0>(e) == true) {
+        auto C_ = localTree::getLevelNode(leaves[std::get<2>(e)], l);
+        if (C_ != C) {
+          vertex u = std::min(std::get<1>(e), std::get<2>(e));
+          vertex v = std::max(std::get<1>(e), std::get<2>(e));
+          H.emplace(C, std::pair(u, v));
+        }
+      }
+    };
+    preFetch(Cu, l);
+    preFetch(Cv, l);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
@@ -467,18 +482,35 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             vertex u = std::min(std::get<1>(eu), std::get<2>(eu));
             vertex v = std::max(std::get<1>(eu), std::get<2>(eu));
             if (TreeEdge.contains(std::pair(u, v))) {
-              std::cout << "eu deletion " << u << " " << v
-                        << " Tree edge should not be replacement edge\n";
-              for (auto it : TreeEdge)
-                std::cout << "Tree Edge " << it.first << " " << it.second
+              // std::cout << "eu deletion " << u << " " << v
+              //           << " Tree edge should not be replacement edge\n";
+              auto TreeEdgeCandidancy = H.find(Cuv);
+              if (TreeEdgeCandidancy == H.end()) {
+                std::cout << "eu deletion " << u << " " << v
+                          << " Tree edge should not be replacement edge\n";
+                std::cout << H.size() << " " << Ru.size() << " " << Rv.size()
+                          << " " << Cuv << std::endl;
+                std::cout << nCu << " " << nCv << " " << CP->getSize()
                           << std::endl;
+                for (auto it : H)
+                  std::cout << it.first << std::endl;
+                for (auto it : Ru)
+                  std::cout << it << std::endl;
+                for (auto it : Rv)
+                  std::cout << it << std::endl;
+                printEdges(Eu, l);
+                printEdges(Ev, l);
+                std::abort();
+              }
+              u = TreeEdgeCandidancy->second.first;
+              v = TreeEdgeCandidancy->second.second;
             }
             // leaves[u]->deleteEdge(v, l);
             // leaves[v]->deleteEdge(u, l);
             nonTreeEdge.erase(std::pair(u, v));
             // TreeEdge.emplace(std::pair(u, v), TreeEdge_info{.level = l});
-            std::cout << u << "," << v << " becomes tree edge at level " << l
-                      << "\n";
+            // std::cout << u << "," << v << " becomes tree edge at level " << l
+            //           << "\n";
             TreeEdge.emplace(std::pair(u, v));
             if (Eu.empty()) {
               // don't push nCu+nCv may violate size
@@ -496,14 +528,18 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             }
             return;
           } else {
+            vertex u = std::min(std::get<1>(eu), std::get<2>(eu));
+            vertex v = std::max(std::get<1>(eu), std::get<2>(eu));
+            if (H.find(Cuv) == H.end())
+              H.emplace(Cuv, std::pair(u, v));
             if (Ru.find(Cuv) == Ru.end()) {
               Ru.insert(Cuv);
               Qu.push(Cuv);
               nCu += Cuv->getSize();
             }
-            Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
-            leaves[std::get<1>(eu)]->deleteEdge(std::get<2>(eu), l);
-            leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), l);
+            Eu.push_back(std::make_pair(u, v));
+            leaves[u]->deleteEdge(v, l);
+            leaves[v]->deleteEdge(u, l);
           }
         } else {
           auto GP = localTree::getParent(CP);
@@ -565,17 +601,26 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             vertex u = std::min(std::get<1>(ev), std::get<2>(ev));
             vertex v = std::max(std::get<1>(ev), std::get<2>(ev));
             if (TreeEdge.contains(std::pair(u, v))) {
-              std::cout << "ev deletion " << u << " " << v
-                        << " Tree edge should not be replacement edge\n";
-              printEdges(Eu, l);
+              // std::cout << "ev deletion " << u << " " << v
+              //           << " Tree edge should not be replacement edge\n";
+              // printEdges(Eu, l);
+
+              auto TreeEdgeCandidancy = H.find(Cuv);
+              if (TreeEdgeCandidancy == H.end()) {
+                std::cout << "ev deletion " << u << " " << v
+                          << " Tree edge should not be replacement edge\n";
+                std::abort();
+              }
+              u = TreeEdgeCandidancy->second.first;
+              v = TreeEdgeCandidancy->second.second;
             }
             // leaves[u]->deleteEdge(v, l);
             // leaves[v]->deleteEdge(u, l);
             nonTreeEdge.erase(std::pair(u, v));
             // TreeEdge.emplace(std::pair(u, v), TreeEdge_info{.level = l});
             TreeEdge.emplace(std::pair(u, v));
-            std::cout << u << "," << v << " becomes tree edge at level " << l
-                      << "\n";
+            // std::cout << u << "," << v << " becomes tree edge at level " << l
+            //           << "\n";
             if (Ev.empty()) {
               placeEdges(Eu, l);
             } else if (nCu <= nCv) {
@@ -591,14 +636,18 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             }
             return;
           } else {
+            vertex u = std::min(std::get<1>(ev), std::get<2>(ev));
+            vertex v = std::max(std::get<1>(ev), std::get<2>(ev));
+            if (H.find(Cuv) == H.end())
+              H.emplace(Cuv, std::pair(u, v));
             if (Rv.find(Cuv) == Rv.end()) {
               Rv.insert(Cuv);
               Qv.push(Cuv);
               nCv += Cuv->getSize();
             }
-            Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
-            leaves[std::get<1>(ev)]->deleteEdge(std::get<2>(ev), l);
-            leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), l);
+            Ev.push_back(std::make_pair(u, v));
+            leaves[u]->deleteEdge(v, l);
+            leaves[v]->deleteEdge(u, l);
           }
         } else {
           auto GP = localTree::getParent(CP);
