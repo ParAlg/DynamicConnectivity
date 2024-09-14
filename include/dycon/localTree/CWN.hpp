@@ -1,6 +1,4 @@
 #include "localTree.hpp"
-#include <cassert>
-#include <cstddef>
 #include <fstream>
 #include <queue>
 #include <unordered_set>
@@ -34,7 +32,7 @@ public:
   void remove(size_t u, size_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
 };
-inline size_t CWN::lmax = 32;
+inline size_t CWN::lmax = 63;
 // 0/1 num Ru,Eu,Rv,Ev,CP->getLevel()
 inline bool CWN::verbose = false;
 inline void CWN::insertToRoot(size_t u, size_t v) {
@@ -109,15 +107,6 @@ inline void CWN::insertToBlock(size_t u, size_t v) {
   leaves[v]->insertToLeaf(u, l);
 }
 inline void CWN::remove(size_t u, size_t v) {
-  // std::cout << u << " " << v << std::endl;
-  auto [lu, iu] = leaves[u]->getEdgeInfo(v);
-  auto [lv, iv] = leaves[v]->getEdgeInfo(u);
-  leaves[u]->deleteEdge(v, iu, lu);
-  // std::cout << "deleteEdge (u,v) " << iu << std::endl;
-  leaves[v]->deleteEdge(u, iv, lv);
-  // std::cout << "deleteEdge (u,v) " << iv << std::endl;
-  assert(lu == lv);
-  size_t l = lu;
   // std::cout << u << "  " << v << std::endl;
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
   size_t l = leaves[u]->getEdgeLevel(v);
@@ -203,14 +192,8 @@ inline void CWN::remove(size_t u, size_t v) {
             nCu += Cuv->getSize();
           }
           Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
-          // std::cout << "deleteEdgeLazy U " << std::get<1>(eu) << " "
-          //           << std::get<2>(eu) << std::endl;
-          leaves[std::get<1>(eu)]->deleteEdgeLazy(std::get<2>(eu), l);
-          // std::cout << "deleteEdgeLazy U " << std::get<2>(eu) << " "
-          //           << std::get<1>(eu) << std::endl;
-          auto [lu, iu] = leaves[std::get<2>(eu)]->getEdgeInfo(std::get<1>(eu));
-          assert(lu == l);
-          leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), iu, l);
+          leaves[std::get<1>(eu)]->deleteEdge(std::get<2>(eu), l);
+          leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), l);
         }
       } else {
         auto GP = localTree::getParent(CP);
@@ -305,14 +288,8 @@ inline void CWN::remove(size_t u, size_t v) {
             nCv += Cuv->getSize();
           }
           Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
-          // std::cout << "deleteEdgeLazy V " << std::get<1>(ev) << " "
-          //           << std::get<2>(ev) << std::endl;
-          leaves[std::get<1>(ev)]->deleteEdgeLazy(std::get<2>(ev), l);
-          auto [lv, iv] = leaves[std::get<2>(ev)]->getEdgeInfo(std::get<1>(ev));
-          assert(l == lv);
-          leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), iv, l);
-          // std::cout << "deleteEdge V " << std::get<2>(ev) << " "
-          //           << std::get<1>(ev) << std::endl;
+          leaves[std::get<1>(ev)]->deleteEdge(std::get<2>(ev), l);
+          leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), l);
         }
       } else {
         auto GP = localTree::getParent(CP);
