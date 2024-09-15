@@ -305,36 +305,31 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
-  // std::queue<localTree *> Qu, Qv;                    // ready to fetch
-  fetchQueue<localTree *> Qu, Qv;
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
   absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
   fetchQueue<localTree *> LTNodeQ_U,
       LTNodeQ_V;                      // localTree nodes ready to fetch
   fetchQueue<fetchLeaf> lfQ_U, lfQ_V; // vertices ready to fetch
-  auto init = [](fetchQueue<localTree *> &Q, fetchQueue<localTree *> &LTNodeQ,
-                 fetchQueue<fetchLeaf> &lfQ,
+  auto init = [](fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
                  std::vector<std::pair<uint32_t, uint32_t>> &E,
                  absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
-    Q = fetchQueue<localTree *>();
     LTNodeQ = fetchQueue<localTree *>();
     lfQ = fetchQueue<fetchLeaf>();
     E = std::vector<std::pair<uint32_t, uint32_t>>();
     R = absl::flat_hash_set<localTree *>();
     LTNodeQ.push(C);
-    Q.push(C);
     R.insert(C);
     E.reserve(128);
   };
   while (l != 0) {
-    init(Qu, LTNodeQ_U, lfQ_U, Eu, Ru, Cu);
-    init(Qv, LTNodeQ_V, lfQ_V, Ev, Rv, Cv);
+    init(LTNodeQ_U, lfQ_U, Eu, Ru, Cu);
+    init(LTNodeQ_V, lfQ_V, Ev, Rv, Cv);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
     while (true) {
       if (nCu <= CP->getSize() / 2) {
-        auto eu = fetchEdge(Qu, l);
+        auto eu = fetchEdge(LTNodeQ_U, l);
         if (std::get<0>(eu) == true) {
           auto Cuv = localTree::getLevelNode(leaves[std::get<2>(eu)], l);
           assert(Cuv != nullptr);
@@ -344,12 +339,12 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               // don't push nCu+nCv may violate size
               return;
             } else if (nCu <= nCv) {
-              auto C = localTree::splitFromParent(CP, Qu);
+              auto C = localTree::splitFromParent(CP, LTNodeQ_U);
               localTree::addChild(CP, C);
               placeEdges(Eu, C->getLevel(), true);
               placeEdges(Ev, l);
             } else {
-              auto C = localTree::splitFromParent(CP, Qv);
+              auto C = localTree::splitFromParent(CP, LTNodeQ_V);
               localTree::addChild(CP, C);
               placeEdges(Eu, l);
               placeEdges(Ev, C->getLevel(), true);
@@ -358,7 +353,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           } else {
             if (Ru.find(Cuv) == Ru.end()) {
               Ru.insert(Cuv);
-              Qu.push(Cuv);
+              LTNodeQ_U.push(Cuv);
               nCu += Cuv->getSize();
             }
             Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
@@ -379,16 +374,16 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               CP = *Rv.begin();
             }
           } else if (nCu <= nCv) {
-            _CP = localTree::splitFromParent(CP, Qu);
+            _CP = localTree::splitFromParent(CP, LTNodeQ_U);
             placeEdges(Eu, _CP->getLevel(), true);
             placeEdges(Ev, l);
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
-            localTree::deleteFromParent(CP, Qu);
-            localTree::addChildren(_CP, Qu);
+            localTree::deleteFromParent(CP, LTNodeQ_U);
+            localTree::addChildren(_CP, LTNodeQ_U);
             auto oldMap = CP->getMap();
-            auto C = localTree::splitFromParent(CP, Qv);
+            auto C = localTree::splitFromParent(CP, LTNodeQ_V);
             if (oldMap[l] == false) {
               localTree::l_alloc->free(CP); // delete CP;
               CP = C;
@@ -406,7 +401,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         }
       }
       if (nCv <= CP->getSize() / 2) {
-        auto ev = fetchEdge(Qv, l);
+        auto ev = fetchEdge(LTNodeQ_V, l);
         if (std::get<0>(ev) == true) {
           auto Cuv = localTree::getLevelNode(leaves[std::get<2>(ev)], l);
           assert(Cuv != nullptr);
@@ -415,12 +410,12 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             if (Ev.empty()) {
               placeEdges(Eu, l);
             } else if (nCu <= nCv) {
-              auto C = localTree::splitFromParent(CP, Qu);
+              auto C = localTree::splitFromParent(CP, LTNodeQ_U);
               localTree::addChild(CP, C);
               placeEdges(Eu, C->getLevel(), true);
               placeEdges(Ev, l);
             } else {
-              auto C = localTree::splitFromParent(CP, Qv);
+              auto C = localTree::splitFromParent(CP, LTNodeQ_V);
               localTree::addChild(CP, C);
               placeEdges(Eu, l);
               placeEdges(Ev, C->getLevel(), true);
@@ -429,7 +424,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           } else {
             if (Rv.find(Cuv) == Rv.end()) {
               Rv.insert(Cuv);
-              Qv.push(Cuv);
+              LTNodeQ_V.push(Cuv);
               nCv += Cuv->getSize();
             }
             Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
@@ -445,16 +440,16 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             _CP = *Rv.begin();
             placeEdges(Eu, l);
           } else if (nCv <= nCu) {
-            _CP = localTree::splitFromParent(CP, Qv);
+            _CP = localTree::splitFromParent(CP, LTNodeQ_V);
             placeEdges(Eu, l);
             placeEdges(Ev, _CP->getLevel(), true);
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
-            localTree::deleteFromParent(CP, Qv);
-            localTree::addChildren(_CP, Qv);
+            localTree::deleteFromParent(CP, LTNodeQ_V);
+            localTree::addChildren(_CP, LTNodeQ_V);
             auto oldMap = CP->getMap();
-            auto C = localTree::splitFromParent(CP, Qu);
+            auto C = localTree::splitFromParent(CP, LTNodeQ_U);
             if (oldMap[l] == false) {
               localTree::l_alloc->free(CP); // delete CP;
               CP = C;

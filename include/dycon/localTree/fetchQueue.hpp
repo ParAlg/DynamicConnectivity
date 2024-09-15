@@ -1,7 +1,6 @@
 #ifndef FETCH_QUEUE
 #define FETCH_QUEUE
 #include "graph.hpp"
-#include <cstddef>
 #include <vector>
 template <typename T> class fetchQueue {
 private:
