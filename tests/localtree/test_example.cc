@@ -33,7 +33,12 @@ void test1() {
   //   for (size_t i = 0; i < ins.size(); i++)
   //     F.remove(ins[i].first, ins[i].second);
 }
+void test2() {
+  SCCWN F(8);
+  F.test_fetch();
+}
 int main() {
-  test1();
+  // test1();
+  test2();
   return 0;
 }

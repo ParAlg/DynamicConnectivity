@@ -5,11 +5,13 @@
 #include "leaf.hpp"
 #include "localTree.hpp"
 #include "parlay/internal/group_by.h"
+#include "parlay/primitives.h"
 #include "parlay/sequence.h"
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <utility>
@@ -68,24 +70,7 @@ public:
   bool is_connected(uint32_t u, uint32_t v);
   void remove(uint32_t u, uint32_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
-  void checkLevel() {
-    for (uint32_t i = 0; i < n; i++) {
-      if (leaves[i] != nullptr) {
-        auto r = leaves[i];
-        while (localTree::getParent(r) != nullptr) {
-          if (localTree::getParent(r)->getLevel() <= r->getLevel()) {
-            std::cout << "parent level = "
-                      << localTree::getParent(r)->getLevel()
-                      << " parent size = " << localTree::getParent(r)->getSize()
-                      << " child level = " << r->getLevel()
-                      << " child size = " << r->getSize() << std::endl;
-            exit(0);
-          }
-          r = localTree::getParent(r);
-        }
-      }
-    }
-  }
+  void test_fetch();
 };
 inline uint32_t SCCWN::lmax = 63;
 inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
@@ -553,4 +538,54 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
     }
   }
   return std::nullopt;
+}
+inline void SCCWN::test_fetch() {
+  this->insert(0, 1);
+  this->insert(2, 3);
+  this->insert(4, 5);
+  this->insert(6, 7);
+  this->insert(0, 2);
+  this->insert(1, 3);
+  this->insert(4, 6);
+  this->insert(5, 7);
+  this->insert(1, 5);
+  this->insert(2, 6);
+  parlay::sequence<localTree *> nodes = parlay::tabulate(
+      8, [&](auto i) { return localTree::getParent(leaves[i]); });
+  fetchQueue<localTree *> Q1;
+  fetchQueue<fetchLeaf> L1;
+  for (auto it : nodes)
+    Q1.push(it);
+  while (true) {
+    auto e = fetchEdge(Q1, L1, 1);
+    if (e == std::nullopt)
+      break;
+    std::cout << "fetching " << e->first << " " << e->second << " at level 1\n";
+  }
+
+  nodes = parlay::tabulate(
+      8, [&](auto i) { return localTree::getParent(leaves[i]); });
+  fetchQueue<localTree *> Q2;
+  fetchQueue<fetchLeaf> L2;
+  for (auto it : nodes)
+    Q2.push(it);
+  while (true) {
+    auto e = fetchEdge(Q2, L2, 2);
+    if (e == std::nullopt)
+      break;
+    std::cout << "fetching " << e->first << " " << e->second << " at level 2\n";
+  }
+
+  nodes = parlay::tabulate(
+      8, [&](auto i) { return localTree::getParent(leaves[i]); });
+  fetchQueue<localTree *> Q3;
+  fetchQueue<fetchLeaf> L3;
+  for (auto it : nodes)
+    Q3.push(it);
+  while (true) {
+    auto e = fetchEdge(Q3, L3, 3);
+    if (e == std::nullopt)
+      break;
+    std::cout << "fetching " << e->first << " " << e->second << " at level 3\n";
+  }
 }
