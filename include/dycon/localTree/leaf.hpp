@@ -2,7 +2,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "dycon/localTree/alloc.h"
 #include "graph.hpp"
-#include <absl/container/btree_set.h>
+#include <absl/container/btree_map.h>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
@@ -28,7 +28,7 @@ public:
 
   leaf(vertex _id = 0, void *p = nullptr)
       : parent(p), edgemap(), size(0), id(_id) {
-    memset(E, 0, sizeof(E));
+    E.clear();
   };
   void insert(vertex e, uint32_t l);
   void remove(vertex e, uint32_t l);
@@ -44,7 +44,8 @@ public:
   static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
 
 private:
-  absl::flat_hash_set<vertex> *E[MAX_LEVEL + 1];
+  // absl::flat_hash_set<vertex> *E[MAX_LEVEL + 1];
+  absl::btree_map<uint16_t, absl::flat_hash_set<vertex> *> E;
   void *parent;
   std::bitset<64> edgemap;
   vertex id;
@@ -56,41 +57,58 @@ inline void leaf::linkToRankTree(void *p) { parent = p; }
 inline void leaf::insert(vertex e, uint32_t l) {
   auto &E = this->E;
   size++;
-  if (E[l] == nullptr) {
-    E[l] = vector_alloc->create();
+  auto it = E.find((uint16_t)l);
+  if (it == E.end()) {
+    this->edgemap[l] = 1;
+    auto hset = vector_alloc->create();
+    hset->emplace(e);
+    E.emplace(l, hset);
+    return;
   }
-  E[l]->emplace(e);
-  this->edgemap[l] = 1;
+  it->second->emplace(e);
 }
 inline std::tuple<bool, vertex, vertex> leaf::fetchEdge(uint32_t l) {
-  auto &E = this->E;
-  if (E[l] == nullptr || E[l]->empty())
+  auto it = E.find((uint16_t)l);
+  if (it == E.end() || it->second->empty())
     return std::make_tuple(false, 0, 0);
-  auto e = std::make_tuple(true, id, *(E[l]->begin()));
-  return e;
+  // if (E[l] == nullptr || E[l]->empty())
+  //   return std::make_tuple(false, 0, 0);
+  // auto e = std::make_tuple(true, id, *(E[l]->begin()));
+  // return e;
+  return std::make_tuple(true, id, *(it->second->begin()));
 }
 inline void leaf::remove(vertex e, uint32_t l) {
   this->size--;
-  auto &E = this->E;
-  assert(E[l] != nullptr && !E[l]->empty());
-  E[l]->erase(e);
-  if (E[l]->empty()) {
-    vector_alloc->free(E[l]);
-    E[l] = nullptr;
-    this->edgemap[l] = 0;
+  auto it = E.find((uint16_t)l);
+  it->second->erase(e);
+  if (it->second->empty()) {
+    vector_alloc->free(it->second);
+    E.erase(it);
+    edgemap[l] = 0;
   }
+  // auto &E = this->E;
+  // assert(E[l] != nullptr && !E[l]->empty());
+  // E[l]->erase(e);
+  // if (E[l]->empty()) {
+  //   vector_alloc->free(E[l]);
+  //   E[l] = nullptr;
+  //   this->edgemap[l] = 0;
+  // }
 }
 inline uint32_t leaf::getLevel(vertex e) {
   auto &E = this->E;
-  for (uint32_t i = 0; i <= MAX_LEVEL; i++) {
-    if (E[i] != nullptr && E[i]->contains(e)) {
-      return i;
-    }
-  }
+  for (auto it : E)
+    if (it.second->contains(e))
+      return (uint32_t)it.first;
+  // for (uint32_t i = 0; i <= MAX_LEVEL; i++) {
+  //   if (E[i] != nullptr && E[i]->contains(e)) {
+  //     return i;
+  //   }
+  // }
   return MAX_LEVEL + 2;
 }
 inline bool leaf::checkLevel(uint32_t l) {
   // check if this vertex has level l incident edges.
-  assert(this->edgemap[l] == (E[l] != nullptr && E[l]->empty()));
+  // assert(this->edgemap[l] == (E[l] != nullptr && E[l]->empty()));
   return this->edgemap[l];
 }
