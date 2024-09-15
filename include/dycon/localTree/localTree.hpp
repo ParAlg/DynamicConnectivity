@@ -65,6 +65,8 @@ public:
   static nodeArr getRootPath(localTree *r);
   void insertToLeaf(uint32_t v, uint32_t l);
   void deleteEdge(uint32_t v, uint32_t l);
+  void addEdge(uint32_t v, uint32_t l);
+  void removeEdge(uint32_t v, uint32_t l);
   uint32_t getEdgeLevel(uint32_t e);
   static void updateBitMap(localTree *node);
   static void traverseTopDown(localTree *root, bool clear, bool verbose,
@@ -75,6 +77,7 @@ public:
   fetchLeaf(localTree *root, uint32_t l);
   // static localTree *getIfSingleton(localTree *r);
   static bool ifSingleton(localTree *r);
+  static absl::flat_hash_set<::vertex> *getEdgeSet(localTree *r, uint32_t l);
 };
 inline type_allocator<localTree> *localTree::l_alloc = nullptr;
 inline localTree::~localTree() {
@@ -384,4 +387,9 @@ localTree::fetchLeaf(localTree *root, uint32_t l) {
       return fetchLeaf(rankTree::fetchLeaf(it, l)->descendant, l);
   }
   return std::nullopt;
+}
+inline absl::flat_hash_set<::vertex> *localTree::getEdgeSet(localTree *r,
+                                                            uint32_t l) {
+  assert(r->level == 0);
+  return r->vertex->getLevelEdge(l);
 }

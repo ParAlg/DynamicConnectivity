@@ -42,6 +42,7 @@ public:
   vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::tuple<bool, vertex, vertex> fetchEdge(uint32_t l);
+  absl::flat_hash_set<vertex> *getLevelEdge(uint32_t l);
   std::pair<vertex, absl::flat_hash_set<vertex> *> getLevelEdgeSet(uint32_t l);
   static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
 
@@ -119,4 +120,9 @@ leaf::getLevelEdgeSet(uint32_t l) {
   auto e = E.find(l);
   assert(e != E.end());
   return std::pair(id, e->second);
+}
+inline absl::flat_hash_set<vertex> *leaf::getLevelEdge(uint32_t l) {
+  auto e = E.find(l);
+  assert(e != E.end());
+  return e->second;
 }

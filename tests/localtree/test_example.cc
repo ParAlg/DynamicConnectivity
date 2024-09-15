@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 void test1() {
-  size_t n = 6;
+  size_t n = 128;
   SCCWN F(n);
   F.lmax = std::log2(n) + 1;
   parlay::sequence<std::pair<size_t, size_t>> e;
@@ -24,6 +24,7 @@ void test1() {
   //   F.remove(2, 14);
   auto del = ins;
   auto db1 = parlay::random_shuffle(del);
+  std::cout << "start delete\n";
   for (size_t i = 0; i < db1.size(); i++) {
     F.remove(db1[i].first, db1[i].second);
   }
@@ -35,10 +36,10 @@ void test1() {
 }
 void test2() {
   SCCWN F(8);
-  F.test_fetch();
+  // F.test_fetch();
 }
 int main() {
-  // test1();
-  test2();
+  test1();
+  // test2();
   return 0;
 }
