@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <tuple>
-#include <vector>
+#include <utility>
 // This is the leaf of the cluster forest.
 // It contains a vertex in the graph and its incident edges.
 // The incident edges are grouped by their level. So we need at
@@ -36,11 +36,13 @@ public:
   bool checkLevel(uint32_t l);
   void linkToRankTree(void *p);
   void *getParent() { return parent; }
+  void setLevel(uint32_t l, bool val) { edgemap[l] = val; }
   bool checkLevelEdge(uint32_t l) { return edgemap[l]; }
   vertex getSize() { return size; }
   vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::tuple<bool, vertex, vertex> fetchEdge(uint32_t l);
+  std::pair<vertex, absl::flat_hash_set<vertex> *> getLevelEdgeSet(uint32_t l);
   static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
 
 private:
@@ -111,4 +113,10 @@ inline bool leaf::checkLevel(uint32_t l) {
   // check if this vertex has level l incident edges.
   // assert(this->edgemap[l] == (E[l] != nullptr && E[l]->empty()));
   return this->edgemap[l];
+}
+inline std::pair<vertex, absl::flat_hash_set<vertex> *>
+leaf::getLevelEdgeSet(uint32_t l) {
+  auto e = E.find(l);
+  assert(e != E.end());
+  return std::pair(id, e->second);
 }

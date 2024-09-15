@@ -1,4 +1,5 @@
 #include "alloc.h"
+#include "dycon/helpers/union_find.hpp"
 #include "fetchQueue.hpp"
 #include "graph.hpp"
 #include "leaf.hpp"
@@ -8,17 +9,22 @@
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
+#include <cassert>
 #include <cstdint>
 #include <optional>
 #include <utility>
+#include <vector>
 class SCCWN {
 private:
+  struct fetchLeaf {
+    vertex id;
+    absl::flat_hash_set<vertex> *edges;
+    absl::flat_hash_set<vertex>::iterator eit;
+  };
   static std::tuple<bool, uint32_t, uint32_t>
   fetchEdge(fetchQueue<localTree *> &Q, uint32_t l);
-  static std::optional<std::pair<vertex, vertex>>
-  fetchEdge(fetchQueue<localTree *> &LTNodeQ,
-            fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
-                                  absl::flat_hash_set<vertex>::iterator>> &lfQ,
+  std::optional<std::pair<vertex, vertex>>
+  fetchEdge(fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
             uint32_t l);
   static localTree *pushDown(std::vector<localTree *> &pu, uint32_t uter,
                              std::vector<localTree *> &pv, uint32_t vter);
@@ -304,22 +310,18 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
   absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
   fetchQueue<localTree *> LTNodeQ_U,
-      LTNodeQ_V; // localTree nodes ready to fetch
-  fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
-                        absl::flat_hash_set<vertex>::iterator>>
-      lfQ_U, lfQ_V; // vertices ready to fetch
-  auto init =
-      [](fetchQueue<localTree *> &Q, fetchQueue<localTree *> &LTNodeQ,
-         fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
-                               absl::flat_hash_set<vertex>::iterator>> &lfQ,
-         std::vector<std::pair<uint32_t, uint32_t>> &E,
-         absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
+      LTNodeQ_V;                      // localTree nodes ready to fetch
+  fetchQueue<fetchLeaf> lfQ_U, lfQ_V; // vertices ready to fetch
+  auto init = [](fetchQueue<localTree *> &Q, fetchQueue<localTree *> &LTNodeQ,
+                 fetchQueue<fetchLeaf> &lfQ,
+                 std::vector<std::pair<uint32_t, uint32_t>> &E,
+                 absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
     Q = fetchQueue<localTree *>();
     LTNodeQ = fetchQueue<localTree *>();
-    lfQ = fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
-                                absl::flat_hash_set<vertex>::iterator>>();
+    lfQ = fetchQueue<fetchLeaf>();
     E = std::vector<std::pair<uint32_t, uint32_t>>();
     R = absl::flat_hash_set<localTree *>();
+    LTNodeQ.push(C);
     Q.push(C);
     R.insert(C);
     E.reserve(128);
@@ -525,11 +527,35 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &Q, uint32_t l) {
   }
   return e;
 }
-inline std::optional<std::pair<vertex, vertex>> SCCWN::fetchEdge(
-    fetchQueue<localTree *> &LTNodeQ,
-    fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
-                          absl::flat_hash_set<vertex>::iterator>> &lfQ,
-    uint32_t l) {
-
+inline std::optional<std::pair<vertex, vertex>>
+SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
+                 uint32_t l) {
+  while (!lfQ.empty()) {
+    auto e = lfQ.front();
+    if (/*leaves[e.id]->getMap()[l] == 1 && */ e.eit != e.edges->end()) {
+      vertex v = *(e.eit);
+      e.eit++;
+      return std::pair(e.id, v);
+    }
+    leaves[e.id]->setBitMap(l, 0);
+    localTree::updateBitMap(leaves[e.id]);
+    lfQ.pop();
+  }
+  while (!LTNodeQ.empty()) {
+    auto LTNode = LTNodeQ.front();
+    if (LTNode->getMap()[l] == 0) {
+      LTNodeQ.pop();
+    } else {
+      auto fetched = localTree::fetchLeaf(LTNode, l);
+      assert(fetched != std::nullopt);
+      auto eit = fetched->second->begin();
+      vertex u = fetched->first;
+      vertex v = *eit;
+      eit++;
+      const fetchLeaf fl = {.id = u, .edges = fetched->second, .eit = eit};
+      lfQ.push(std::move(fl));
+      return std::pair(u, v);
+    }
+  }
   return std::nullopt;
 }

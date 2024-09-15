@@ -6,6 +6,7 @@
 #include "stats.hpp"
 #include <cstdint>
 #include <cstdlib>
+#include <optional>
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 #include <utility>
@@ -21,7 +22,6 @@ private:
   rankTree *parent;
   leaf *vertex;
   std::bitset<64> edgemap;
-  static void updateBitMap(localTree *node);
   template <localTree *> static bool comp(localTree *x, localTree *y) {
     return x->size < y->size;
   }
@@ -40,6 +40,7 @@ public:
   };
   localTree(localTree *Cu, localTree *Cv);
   ~localTree();
+  void setBitMap(uint32_t l, bool val) { this->edgemap[l] = val; }
   uint32_t getLevel() { return this->level; }
   std::bitset<64> getMap() { return this->edgemap; }
   void setLevel(uint32_t l) {
@@ -66,10 +67,13 @@ public:
   void insertToLeaf(uint32_t v, uint32_t l);
   void deleteEdge(uint32_t v, uint32_t l);
   uint32_t getEdgeLevel(uint32_t e);
+  static void updateBitMap(localTree *node);
   static void traverseTopDown(localTree *root, bool clear, bool verbose,
                               bool stat, parlay::sequence<stats> &info);
   static std::tuple<bool, uint32_t, uint32_t> fetchEdge(localTree *root,
                                                         uint32_t l);
+  static std::optional<std::pair<::vertex, absl::flat_hash_set<::vertex> *>>
+  fetchLeaf(localTree *root, uint32_t l);
   // static localTree *getIfSingleton(localTree *r);
   static bool ifSingleton(localTree *r);
 };
@@ -371,4 +375,16 @@ localTree::fetchEdge(localTree *root, uint32_t l) {
     }
   }
   return std::make_tuple(false, 0, 0);
+}
+inline std::optional<std::pair<::vertex, absl::flat_hash_set<::vertex> *>>
+localTree::fetchLeaf(localTree *root, uint32_t l) {
+  if (root->level == 0) {
+    assert(root->vertex != nullptr);
+    return root->vertex->getLevelEdgeSet(l);
+  }
+  for (auto it : root->rTrees) {
+    if (it->edgemap[l] == 1)
+      return fetchLeaf(rankTree::fetchLeaf(it, l)->descendant, l);
+  }
+  return std::nullopt;
 }

@@ -1,14 +1,12 @@
 #include "../helpers/assert.hpp"
 #include "absl/container/flat_hash_set.h"
 #include "alloc.h"
-#include "parlay/alloc.h"
 #include "stats.hpp"
 #include <bitset>
 #include <cassert>
 #include <cstdint>
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
-#include <stack>
 class localTree;
 // todo
 //  build

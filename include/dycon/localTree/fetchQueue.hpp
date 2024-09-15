@@ -10,7 +10,8 @@ private:
 public:
   fetchQueue<T>() : content(std::vector<T>()), head(0) {}
   ~fetchQueue<T>() {}
-  void push(T x) { content.emplace_back(x); }
+  //   void push(T x) { content.emplace_back(x); }
+  void push(const T &x) { content.emplace_back(std::move(x)); }
   T &front() { return content[head]; }
   bool empty() { return head == content.size(); }
   void pop() { head++; }
