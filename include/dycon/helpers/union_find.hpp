@@ -1,5 +1,6 @@
 #pragma once
 #include "graph_utils.hpp"
+#include "parlay/parallel.h"
 #include <cstdint>
 #include <fstream>
 #include <vector>
@@ -36,6 +37,7 @@ inline void static_connectivity(parlay::sequence<edge> &E,
                                 parlay::sequence<bool> &Ans) {
 
   uint32_t maxID = utils::num_vertices(E);
+  parlay::execute_with_scheduler(1, [&] { union_find<vertex> UF(maxID); });
   union_find<vertex> UF(maxID);
   for (uint32_t i = 0; i < m; i++)
     UF.link(E[i].first, E[i].second);

@@ -1,7 +1,7 @@
-#include "dycon/localTree/alloc.h"
-#include "dycon/localTree/graph.hpp"
-#include "dycon/localTree/leaf.hpp"
+#include "alloc.h"
+#include "fetchQueue.hpp"
 #include "graph.hpp"
+#include "leaf.hpp"
 #include "localTree.hpp"
 #include "parlay/internal/group_by.h"
 #include "parlay/sequence.h"
@@ -9,12 +9,17 @@
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
 #include <cstdint>
-#include <queue>
+#include <optional>
 #include <utility>
 class SCCWN {
 private:
   static std::tuple<bool, uint32_t, uint32_t>
-  fetchEdge(std::queue<localTree *> &Q, uint32_t l);
+  fetchEdge(fetchQueue<localTree *> &Q, uint32_t l);
+  static std::optional<std::pair<vertex, vertex>>
+  fetchEdge(fetchQueue<localTree *> &LTNodeQ,
+            fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
+                                  absl::flat_hash_set<vertex>::iterator>> &lfQ,
+            uint32_t l);
   static localTree *pushDown(std::vector<localTree *> &pu, uint32_t uter,
                              std::vector<localTree *> &pv, uint32_t vter);
   void placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges, uint32_t l,
@@ -294,13 +299,25 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
-  std::queue<localTree *> Qu, Qv;                    // ready to fetch
+  // std::queue<localTree *> Qu, Qv;                    // ready to fetch
+  fetchQueue<localTree *> Qu, Qv;
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
   absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
-  auto init = [](std::queue<localTree *> &Q,
-                 std::vector<std::pair<uint32_t, uint32_t>> &E,
-                 absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
-    Q = std::queue<localTree *>();
+  fetchQueue<localTree *> LTNodeQ_U,
+      LTNodeQ_V; // localTree nodes ready to fetch
+  fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
+                        absl::flat_hash_set<vertex>::iterator>>
+      lfQ_U, lfQ_V; // vertices ready to fetch
+  auto init =
+      [](fetchQueue<localTree *> &Q, fetchQueue<localTree *> &LTNodeQ,
+         fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
+                               absl::flat_hash_set<vertex>::iterator>> &lfQ,
+         std::vector<std::pair<uint32_t, uint32_t>> &E,
+         absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
+    Q = fetchQueue<localTree *>();
+    LTNodeQ = fetchQueue<localTree *>();
+    lfQ = fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
+                                absl::flat_hash_set<vertex>::iterator>>();
     E = std::vector<std::pair<uint32_t, uint32_t>>();
     R = absl::flat_hash_set<localTree *>();
     Q.push(C);
@@ -308,8 +325,8 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     E.reserve(128);
   };
   while (l != 0) {
-    init(Qu, Eu, Ru, Cu);
-    init(Qv, Ev, Rv, Cv);
+    init(Qu, LTNodeQ_U, lfQ_U, Eu, Ru, Cu);
+    init(Qv, LTNodeQ_V, lfQ_V, Ev, Rv, Cv);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
@@ -494,7 +511,7 @@ inline void SCCWN::placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
   }
 }
 inline std::tuple<bool, uint32_t, uint32_t>
-SCCWN::fetchEdge(std::queue<localTree *> &Q, uint32_t l) {
+SCCWN::fetchEdge(fetchQueue<localTree *> &Q, uint32_t l) {
   if (Q.empty())
     return std::make_tuple(false, 0, 0);
   auto node = Q.front();
@@ -507,4 +524,12 @@ SCCWN::fetchEdge(std::queue<localTree *> &Q, uint32_t l) {
     e = localTree::fetchEdge(node, l);
   }
   return e;
+}
+inline std::optional<std::pair<vertex, vertex>> SCCWN::fetchEdge(
+    fetchQueue<localTree *> &LTNodeQ,
+    fetchQueue<std::tuple<vertex, absl::flat_hash_set<vertex>,
+                          absl::flat_hash_set<vertex>::iterator>> &lfQ,
+    uint32_t l) {
+
+  return std::nullopt;
 }
