@@ -1,6 +1,7 @@
 #ifndef FETCH_QUEUE
 #define FETCH_QUEUE
 #include "graph.hpp"
+#include <cstddef>
 #include <vector>
 template <typename T> class fetchQueue {
 private:
@@ -15,6 +16,7 @@ public:
   T &front() { return content[head]; }
   bool empty() { return head == content.size(); }
   void pop() { head++; }
+  vertex size() { return content.size(); }
   using iterator = typename std::vector<T>::iterator;
   using const_iterator = typename std::vector<T>::const_iterator;
   iterator begin() { return content.begin(); }

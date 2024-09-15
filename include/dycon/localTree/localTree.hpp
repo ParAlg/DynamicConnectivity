@@ -1,6 +1,7 @@
 #pragma once
 #include "absl/container/flat_hash_set.h"
 #include "alloc.h"
+#include "fetchQueue.hpp"
 #include "leaf.hpp"
 #include "rankTree.hpp"
 #include "stats.hpp"
@@ -53,13 +54,11 @@ public:
   // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
-  static void addChildren(localTree *p,
-                          absl::flat_hash_set<localTree *> &nodes);
+  static void addChildren(localTree *p, fetchQueue<localTree *> &nodes);
   static void deleteFromParent(localTree *son);
-  static void deleteFromParent(localTree *p,
-                               absl::flat_hash_set<localTree *> &nodes);
+  static void deleteFromParent(localTree *p, fetchQueue<localTree *> &nodes);
   static localTree *splitFromParent(localTree *p,
-                                    absl::flat_hash_set<localTree *> &nodes);
+                                    fetchQueue<localTree *> &nodes);
   static localTree *getParent(localTree *r);
   static localTree *getRoot(localTree *r);
   static localTree *getLevelNode(localTree *r, uint32_t l);
@@ -189,7 +188,7 @@ inline void localTree::add2Children(localTree *p, localTree *s1,
   assert((1 << p->level) >= p->size);
 }
 inline void localTree::addChildren(localTree *p,
-                                   absl::flat_hash_set<localTree *> &nodes) {
+                                   fetchQueue<localTree *> &nodes) {
   // this one does not update bitmap to top because p has no parents
   for (auto it : nodes) {
     auto rTree =
@@ -278,9 +277,8 @@ inline void localTree::deleteFromParent(localTree *son) {
     updateBitMap(node);
   son->parent = nullptr;
 }
-inline void
-localTree::deleteFromParent(localTree *p,
-                            absl::flat_hash_set<localTree *> &nodes) {
+inline void localTree::deleteFromParent(localTree *p,
+                                        fetchQueue<localTree *> &nodes) {
   if (!p)
     return;
   std::vector<rankTree *> rTrees(nodes.size());
@@ -302,9 +300,8 @@ localTree::deleteFromParent(localTree *p,
     std::abort();
   p->size -= sz;
 }
-inline localTree *
-localTree::splitFromParent(localTree *p,
-                           absl::flat_hash_set<localTree *> &nodes) {
+inline localTree *localTree::splitFromParent(localTree *p,
+                                             fetchQueue<localTree *> &nodes) {
   // delete nodes from p, all nodes have to be p's children and put these nodes
   // as C's children
   auto C = localTree::l_alloc->create();
