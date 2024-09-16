@@ -356,13 +356,13 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           localTree::deleteFromParent(CP);
           localTree *_CP;
           if (Eu.empty()) {
-            localTree::deleteFromParent(*Ru.begin());
-            _CP = *Ru.begin();
+            _CP = *LTNodeQ_U.begin();
+            localTree::deleteFromParent(*LTNodeQ_U.begin());
             if (localTree::ifSingleton(CP) == true &&
                 CP->getMap()[l] == false) {
-              localTree::deleteFromParent(*Rv.begin());
+              localTree::deleteFromParent(*LTNodeQ_V.begin());
               localTree::l_alloc->free(CP); // delete CP;
-              CP = *Rv.begin();
+              CP = *LTNodeQ_V.begin();
             }
           } else if (nCu <= nCv) {
             _CP = localTree::splitFromParent(CP, LTNodeQ_U);
@@ -433,8 +433,8 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           localTree::deleteFromParent(CP);
           localTree *_CP; // = localTree::l_alloc->create();
           if (Ev.empty()) {
-            localTree::deleteFromParent(*Rv.begin());
-            _CP = *Rv.begin();
+            _CP = *LTNodeQ_V.begin();
+            localTree::deleteFromParent(*LTNodeQ_V.begin());
             restoreBitMap(lfQ_U, l, 1);
           } else if (nCv <= nCu) {
             _CP = localTree::splitFromParent(CP, LTNodeQ_V);
