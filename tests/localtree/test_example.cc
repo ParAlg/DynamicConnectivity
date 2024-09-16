@@ -1,6 +1,5 @@
 #include <cmath>
 #include <dycon/localTree/SCCWN.hpp>
-#include <fstream>
 #include <iostream>
 void test1() {
   size_t n = 128;

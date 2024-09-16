@@ -1,0 +1,179 @@
+Restore Head+change postion to push
+2049280
+6503942
+Parlay time: constructor: 0.3206
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.3343
+Parlay time: Insert batch #0: 0.9171
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 1.1595
+Parlay time: Answer queries #1: 0.0003
+Parlay time: Insert batch #2: 1.3516
+Parlay time: Answer queries #2: 0.0009
+Parlay time: Insert batch #3: 1.4823
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 1.4462
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 1.7330
+Parlay time: Answer queries #5: 0.0019
+Parlay time: Insert batch #6: 1.4657
+Parlay time: Answer queries #6: 0.0019
+Parlay time: Insert batch #7: 1.4157
+Parlay time: Answer queries #7: 0.0021
+Parlay time: Insert batch #8: 1.5048
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 1.6867
+Parlay time: Answer queries #9: 0.0020
+Parlay time: Delete batch #0: 3.5902
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 3.7463
+Parlay time: Answer queries #1: 0.0021
+Parlay time: Delete batch #2: 3.8570
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Delete batch #3: 4.4247
+Parlay time: Answer queries #3: 0.0019
+Parlay time: Delete batch #4: 4.9822
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Delete batch #5: 5.8311
+Parlay time: Answer queries #5: 0.0012
+Parlay time: Delete batch #6: 5.4902
+Parlay time: Answer queries #6: 0.0005
+Parlay time: Delete batch #7: 3.4999
+Parlay time: Answer queries #7: 0.0004
+Parlay time: Delete batch #8: 2.2976
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.8669
+Parlay time: Answer queries #9: 0.0001
+3072627
+117185083
+Parlay time: constructor: 0.4954
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.5145
+Parlay time: Insert batch #0: 32.1368
+Parlay time: Answer queries #0: 0.0016
+Parlay time: Insert batch #1: 34.5422
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 35.0385
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 34.3368
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Insert batch #4: 35.1452
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 36.7086
+Parlay time: Answer queries #5: 0.0016
+Parlay time: Insert batch #6: 35.8466
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 36.2299
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 36.4998
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 36.7737
+Parlay time: Answer queries #9: 0.0016
+Parlay time: Delete batch #0: 45.0782
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 48.0659
+Parlay time: Answer queries #1: 0.0019
+Parlay time: Delete batch #2: 51.0551
+Parlay time: Answer queries #2: 0.0019
+Parlay time: Delete batch #3: 54.1557
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 57.4016
+Parlay time: Answer queries #4: 0.0019
+Parlay time: Delete batch #5: 60.4315
+Parlay time: Answer queries #5: 0.0021
+Parlay time: Delete batch #6: 65.1927
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Delete batch #7: 71.5536
+Parlay time: Answer queries #7: 0.0053
+Parlay time: Delete batch #8: 82.6218
+Parlay time: Answer queries #8: 0.0019
+Parlay time: Delete batch #9: 106.0805
+Parlay time: Answer queries #9: 0.0001
+
+One more hash table to decrease push to queue
+2049280
+6503942
+Parlay time: constructor: 0.3306
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.3441
+Parlay time: Insert batch #0: 0.9722
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 1.2127
+Parlay time: Answer queries #1: 0.0004
+Parlay time: Insert batch #2: 1.4071
+Parlay time: Answer queries #2: 0.0007
+Parlay time: Insert batch #3: 1.5142
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 1.4929
+Parlay time: Answer queries #4: 0.0018
+Parlay time: Insert batch #5: 1.7816
+Parlay time: Answer queries #5: 0.0020
+Parlay time: Insert batch #6: 1.5416
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Insert batch #7: 1.4959
+Parlay time: Answer queries #7: 0.0019
+Parlay time: Insert batch #8: 1.5858
+Parlay time: Answer queries #8: 0.0021
+Parlay time: Insert batch #9: 1.6247
+Parlay time: Answer queries #9: 0.0021
+Parlay time: Delete batch #0: 3.3367
+Parlay time: Answer queries #0: 0.0021
+Parlay time: Delete batch #1: 4.0385
+Parlay time: Answer queries #1: 0.0022
+Parlay time: Delete batch #2: 4.0982
+Parlay time: Answer queries #2: 0.0021
+Parlay time: Delete batch #3: 4.4551
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 5.2707
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Delete batch #5: 5.7889
+Parlay time: Answer queries #5: 0.0012
+Parlay time: Delete batch #6: 5.8012
+Parlay time: Answer queries #6: 0.0006
+Parlay time: Delete batch #7: 3.4139
+Parlay time: Answer queries #7: 0.0004
+Parlay time: Delete batch #8: 2.1303
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.3742
+Parlay time: Answer queries #9: 0.0001
+3072627
+117185083
+Parlay time: constructor: 0.5022
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.5217
+Parlay time: Insert batch #0: 34.4592
+Parlay time: Answer queries #0: 0.0017
+Parlay time: Insert batch #1: 35.2042
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 35.9342
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 35.9087
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Insert batch #4: 35.8040
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 37.5775
+Parlay time: Answer queries #5: 0.0017
+Parlay time: Insert batch #6: 36.7172
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 37.0580
+Parlay time: Answer queries #7: 0.0018
+Parlay time: Insert batch #8: 37.3256
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 37.5738
+Parlay time: Answer queries #9: 0.0016
+Parlay time: Delete batch #0: 46.2284
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 49.6503
+Parlay time: Answer queries #1: 0.0021
+Parlay time: Delete batch #2: 52.7396
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Delete batch #3: 56.0209
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 59.2520
+Parlay time: Answer queries #4: 0.0020
+Parlay time: Delete batch #5: 62.3884
+Parlay time: Answer queries #5: 0.0022
+Parlay time: Delete batch #6: 66.8238
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Delete batch #7: 73.6168
+Parlay time: Answer queries #7: 0.0020
+Parlay time: Delete batch #8: 84.5188
+Parlay time: Answer queries #8: 0.0019
+Parlay time: Delete batch #9: 108.9620
+Parlay time: Answer queries #9: 0.0001

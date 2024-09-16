@@ -11,7 +11,6 @@
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <utility>
@@ -525,6 +524,10 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
                  uint32_t l) {
   while (!lfQ.empty()) {
     fetchLeaf &e = lfQ.front();
+    if (leaves[e.id]->getMap()[l] == 0) {
+      lfQ.pop();
+      continue;
+    }
     if (leaves[e.id]->getMap()[l] == 1 && e.eit != e.edges->end()) {
       vertex v = *(e.eit);
       e.eit++;
@@ -607,8 +610,7 @@ inline void SCCWN::test_fetch() {
 inline void SCCWN::restoreBitMap(fetchQueue<fetchLeaf> &lfQ, uint32_t l,
                                  bool nval) {
   for (auto it : lfQ) {
-    bool oval = leaves[it.id]->getMap()[l];
-    if (oval != nval) {
+    if (leaves[it.id]->getMap()[l] != nval) {
       leaves[it.id]->setBitMap(l, nval);
       localTree::updateBitMap(leaves[it.id]);
     }
