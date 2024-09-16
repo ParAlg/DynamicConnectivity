@@ -11,11 +11,7 @@ declare -a undir_graph=(
  "wiki-topcats_sym"
  "enwiki_sym"
  "pokec_sym"
-#
-#  # # Web
-#  "sd_arc_sym"
-# #
-# #
+
 # #  # # Road
 # #
 #  "RoadUSA_sym"
@@ -24,19 +20,6 @@ declare -a undir_graph=(
 #   # # k-NN
 #   "Household_lines_5_sym"
 #   "CHEM_5_sym"
-#  "GeoLifeNoScale_2_sym"
-#  "GeoLifeNoScale_5_sym"
-#  "GeoLifeNoScale_10_sym"
-#  "GeoLifeNoScale_15_sym"
-#  "GeoLifeNoScale_20_sym"
-#  "Cosmo50_5_sym"
-
-#  # # Synthetic
-#  "grid_1000_10000_03_sym"
-#  "grid_1000_10000_sym"
-#  "grid_4000_4000_03_sym"
-#  "grid_4000_4000_sym"
-
 )
 
 declare numactl=""
