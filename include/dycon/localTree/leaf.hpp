@@ -38,6 +38,8 @@ public:
   void *getParent() { return parent; }
   void setLevel(uint32_t l, bool val) { edgemap[l] = val; }
   bool checkLevelEdge(uint32_t l) { return edgemap[l]; }
+  std::bitset<64> changeLevel(std::vector<::vertex> &nghs, uint32_t oval,
+                              uint32_t nval);
   vertex getSize() { return size; }
   vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
@@ -125,4 +127,41 @@ inline absl::flat_hash_set<vertex> *leaf::getLevelEdge(uint32_t l) {
   auto e = E.find(l);
   assert(e != E.end());
   return e->second;
+}
+inline std::bitset<64> leaf::changeLevel(std::vector<::vertex> &nghs,
+                                         uint32_t oval, uint32_t nval) {
+  auto oit = E.find(oval);
+  auto nit = E.find(nval);
+  assert(oit != E.end() && nghs.size() <= oit->second->size());
+  if (nghs.size() > oit->second->size()) {
+    std::cout << "fetched more edge\n";
+    std::abort();
+  }
+  if (nghs.size() == oit->second->size()) {
+    this->edgemap[oval] = 0;
+    this->edgemap[nval] = 1;
+    if (nit == E.end()) {
+      E.emplace(nval, oit->second);
+    } else {
+      auto eset = nit->second;
+      for (auto it : nghs)
+        eset->emplace(it);
+      vector_alloc->free(oit->second);
+    }
+    E.erase(oval);
+    return this->edgemap;
+  }
+  this->edgemap[nval] = 1;
+  absl::flat_hash_set<::vertex> *neset;
+  absl::flat_hash_set<::vertex> *oeset = oit->second;
+  if (nit == E.end()) {
+    neset = vector_alloc->create();
+    E.emplace(nval, neset);
+  } else
+    neset = nit->second;
+  for (auto it : nghs) {
+    neset->emplace(it);
+    oeset->erase(it);
+  }
+  return this->edgemap;
 }

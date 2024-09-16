@@ -11,7 +11,6 @@
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <utility>
@@ -33,8 +32,8 @@ private:
                              std::vector<localTree *> &pv, uint32_t vter);
   void placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
                   uint32_t l);
-  void changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
-                   uint32_t oval, uint32_t nval);
+  void changeLevel(absl::flat_hash_map<vertex, std::vector<vertex>> &edges,
+                   fetchQueue<fetchLeaf> &lfQ, uint32_t oval, uint32_t nval);
   void printNodes(std::vector<localTree *> &Nodes) {
     std::copy(Nodes.begin(), Nodes.end(),
               std::ostream_iterator<localTree *>(std::cout, ","));
@@ -291,17 +290,17 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
-  std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
-  absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
+  absl::flat_hash_map<vertex, std::vector<vertex>> Eu, Ev; // fetched edge
+  absl::flat_hash_set<localTree *> Ru, Rv;                 // visited node
   fetchQueue<localTree *> LTNodeQ_U,
       LTNodeQ_V;                      // localTree nodes ready to fetch
   fetchQueue<fetchLeaf> lfQ_U, lfQ_V; // vertices ready to fetch
   auto init = [](fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
-                 std::vector<std::pair<uint32_t, uint32_t>> &E,
+                 absl::flat_hash_map<vertex, std::vector<vertex>> &E,
                  absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
     LTNodeQ = fetchQueue<localTree *>();
     lfQ = fetchQueue<fetchLeaf>();
-    E = std::vector<std::pair<uint32_t, uint32_t>>();
+    E = absl::flat_hash_map<vertex, std::vector<vertex>>();
     R = absl::flat_hash_set<localTree *>();
     LTNodeQ.push(C);
     R.insert(C);
@@ -315,11 +314,8 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     assert(Cu != Cv);
     while (true) {
       if (nCu <= CP->getSize() / 2) {
-        // auto eu = fetchEdge(LTNodeQ_U, l);
         auto eu = fetchEdge(LTNodeQ_U, lfQ_U, l);
-        // if (std::get<0>(eu) == true) {
         if (eu != std::nullopt) {
-          // auto Cuv = localTree::getLevelNode(leaves[std::get<2>(eu)], l);
           if (leaves[eu->second]->getMap()[l] == 1) {
             auto Cuv = localTree::getLevelNode(leaves[eu->second], l);
             assert(Cuv != nullptr);
@@ -332,16 +328,12 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_U);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_V, l, 1);
-                changeLevel(Eu, l, C->getLevel());
-                // placeEdges(Eu, C->getLevel());
-                // placeEdges(Ev, l);
+                changeLevel(Eu, lfQ_U, l, C->getLevel());
               } else {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_V);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_U, l, 1);
-                changeLevel(Ev, l, C->getLevel());
-                // placeEdges(Eu, l);
-                // placeEdges(Ev, C->getLevel());
+                changeLevel(Ev, lfQ_V, l, C->getLevel());
               }
               return;
             } else {
@@ -349,17 +341,21 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 Ru.insert(Cuv);
                 LTNodeQ_U.push(Cuv);
                 nCu += Cuv->getSize();
-                if (leaves[eu->second]->getMap()[l] == 1) {
-                  auto eset = localTree::getEdgeSet(leaves[eu->second], l);
-                  fetchLeaf info = {
-                      .id = eu->second, .edges = eset, .eit = eset->begin()};
-                  lfQ_U.push(std::move(info));
-                }
               }
-              // Eu.push_back(std::make_pair(std::get<1>(eu), std::get<2>(eu)));
-              // leaves[std::get<1>(eu)]->deleteEdge(std::get<2>(eu), l);
-              // leaves[std::get<2>(eu)]->deleteEdge(std::get<1>(eu), l);
-              Eu.emplace_back(std::pair(eu->first, eu->second));
+              auto it = Eu.find(eu->first);
+              if (it != Eu.end())
+                it->second.emplace_back(eu->second);
+              else
+                Eu.emplace(eu->first, std::vector<vertex>{eu->second});
+              it = Eu.find(eu->second);
+              if (it == Eu.end()) {
+                auto eset = localTree::getEdgeSet(leaves[eu->second], l);
+                fetchLeaf info = {
+                    .id = eu->second, .edges = eset, .eit = eset->begin()};
+                lfQ_U.push(std::move(info));
+                Eu.emplace(eu->second, std::vector<vertex>{eu->first});
+              } else
+                it->second.emplace_back(eu->first);
             }
           }
         } else {
@@ -378,9 +374,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
           } else if (nCu <= nCv) {
             _CP = localTree::splitFromParent(CP, LTNodeQ_U);
             restoreBitMap(lfQ_V, l, 1);
-            changeLevel(Eu, l, _CP->getLevel());
-            // placeEdges(Eu, _CP->getLevel());
-            // placeEdges(Ev, l);
+            changeLevel(Eu, lfQ_U, l, _CP->getLevel());
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
@@ -394,9 +388,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             } else
               localTree::addChild(CP, C);
             restoreBitMap(lfQ_U, l, 1);
-            changeLevel(Ev, l, C->getLevel());
-            // placeEdges(Eu, l);
-            // placeEdges(Ev, C->getLevel());
+            changeLevel(Ev, lfQ_V, l, C->getLevel());
           }
           localTree::add2Children(GP, CP, _CP);
           Cu = _CP;
@@ -407,11 +399,8 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
         }
       }
       if (nCv <= CP->getSize() / 2) {
-        // auto ev = fetchEdge(LTNodeQ_V, l);
         auto ev = fetchEdge(LTNodeQ_V, lfQ_V, l);
-        // if (std::get<0>(ev) == true) {
         if (ev != std::nullopt) {
-          // auto Cuv = localTree::getLevelNode(leaves[std::get<2>(ev)], l);
           if (leaves[ev->second]->getMap()[l] == 1) {
             auto Cuv = localTree::getLevelNode(leaves[ev->second], l);
             assert(Cuv != nullptr);
@@ -419,21 +408,16 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             if (Ru.find(Cuv) != Ru.end()) {
               if (Ev.empty()) {
                 restoreBitMap(lfQ_U, l, 1);
-                // placeEdges(Eu, l);
               } else if (nCu <= nCv) {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_U);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_V, l, 1);
-                changeLevel(Eu, l, C->getLevel());
-                // placeEdges(Eu, C->getLevel());
-                // placeEdges(Ev, l);
+                changeLevel(Eu, lfQ_U, l, C->getLevel());
               } else {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_V);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_U, l, 1);
-                changeLevel(Ev, l, C->getLevel());
-                // placeEdges(Eu, l);
-                // placeEdges(Ev, C->getLevel());
+                changeLevel(Ev, lfQ_V, l, C->getLevel());
               }
               return;
             } else {
@@ -442,16 +426,20 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 LTNodeQ_V.push(Cuv);
                 nCv += Cuv->getSize();
               }
-              if (leaves[ev->second]->getMap()[l] == 1) {
+              auto it = Ev.find(ev->first);
+              if (it != Ev.end())
+                it->second.emplace_back(ev->second);
+              else
+                Ev.emplace(ev->first, std::vector<vertex>{ev->second});
+              it = Ev.find(ev->second);
+              if (it == Ev.end()) {
                 auto eset = localTree::getEdgeSet(leaves[ev->second], l);
                 fetchLeaf info = {
                     .id = ev->second, .edges = eset, .eit = eset->begin()};
                 lfQ_V.push(std::move(info));
-              }
-              // Ev.push_back(std::make_pair(std::get<1>(ev), std::get<2>(ev)));
-              // leaves[std::get<1>(ev)]->deleteEdge(std::get<2>(ev), l);
-              // leaves[std::get<2>(ev)]->deleteEdge(std::get<1>(ev), l);
-              Ev.push_back(std::pair(ev->first, ev->second));
+                Ev.emplace(ev->second, std::vector<vertex>{ev->first});
+              } else
+                it->second.emplace_back(ev->first);
             }
           }
         } else {
@@ -462,13 +450,10 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             localTree::deleteFromParent(*Rv.begin());
             _CP = *Rv.begin();
             restoreBitMap(lfQ_U, l, 1);
-            // placeEdges(Eu, l);
           } else if (nCv <= nCu) {
             _CP = localTree::splitFromParent(CP, LTNodeQ_V);
             restoreBitMap(lfQ_U, l, 1);
-            changeLevel(Ev, l, _CP->getLevel());
-            // placeEdges(Eu, l);
-            // placeEdges(Ev, _CP->getLevel());
+            changeLevel(Ev, lfQ_V, l, _CP->getLevel());
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
@@ -482,9 +467,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             } else
               localTree::addChild(CP, C);
             restoreBitMap(lfQ_V, l, 1);
-            changeLevel(Eu, l, C->getLevel());
-            // placeEdges(Eu, C->getLevel());
-            // placeEdges(Ev, l);
+            changeLevel(Eu, lfQ_U, l, C->getLevel());
           }
           localTree::add2Children(GP, CP, _CP);
           Cu = CP;
@@ -636,7 +619,6 @@ inline void SCCWN::test_fetch() {
 }
 inline void SCCWN::restoreBitMap(fetchQueue<fetchLeaf> &lfQ, uint32_t l,
                                  bool nval) {
-  // std::cout << "enter restoreBitMap\n";
   for (auto it : lfQ) {
     bool oval = leaves[it.id]->getMap()[l];
     if (oval != nval) {
@@ -644,17 +626,13 @@ inline void SCCWN::restoreBitMap(fetchQueue<fetchLeaf> &lfQ, uint32_t l,
       localTree::updateBitMap(leaves[it.id]);
     }
   }
-  // std::cout << "end restoreBitMap\n";
 }
 inline void
-SCCWN::changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
-                   uint32_t oval, uint32_t nval) {
-  // std::cout << "enter changeLevel\n";
-  for (auto it : edges) {
-    leaves[it.first]->deleteEdge(it.second, oval);
-    leaves[it.second]->deleteEdge(it.first, oval);
-    leaves[it.first]->insertToLeaf(it.second, nval);
-    leaves[it.second]->insertToLeaf(it.first, nval);
+SCCWN::changeLevel(absl::flat_hash_map<vertex, std::vector<vertex>> &edges,
+                   fetchQueue<fetchLeaf> &lfQ, uint32_t oval, uint32_t nval) {
+  for (auto it : lfQ) {
+    auto nghs = edges.find(it.id);
+    if (nghs != edges.end())
+      leaves[it.id]->changeLevel(nghs->second, oval, nval);
   }
-  // std::cout << "end restoreBitMap\n";
 }

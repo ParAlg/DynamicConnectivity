@@ -67,6 +67,7 @@ public:
   void deleteEdge(uint32_t v, uint32_t l);
   void addEdge(uint32_t v, uint32_t l);
   void removeEdge(uint32_t v, uint32_t l);
+  void changeLevel(std::vector<::vertex> &nghs, uint32_t oval, uint32_t nval);
   uint32_t getEdgeLevel(uint32_t e);
   static void updateBitMap(localTree *node);
   static void traverseTopDown(localTree *root, bool clear, bool verbose,
@@ -392,4 +393,13 @@ inline absl::flat_hash_set<::vertex> *localTree::getEdgeSet(localTree *r,
                                                             uint32_t l) {
   assert(r->level == 0);
   return r->vertex->getLevelEdge(l);
+}
+inline void localTree::changeLevel(std::vector<::vertex> &nghs, uint32_t oval,
+                                   uint32_t nval) {
+  if (nghs.empty())
+    return;
+  auto omap = this->edgemap;
+  this->edgemap = this->vertex->changeLevel(nghs, oval, nval);
+  if (this->edgemap != omap)
+    localTree::updateBitMap(this);
 }
