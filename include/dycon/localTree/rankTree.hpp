@@ -138,9 +138,9 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
     if (p == rTrees.size() - 1) {
       rTrees[p]->parent = nullptr;
       rTrees[p]->Node = node;
-      // Seq.push_back(rTrees[p]);
+      // Seq.emplace_back(rTrees[p]);
       // temp[num_root++] = rTrees[p];
-      temp.push_back(rTrees[p]);
+      temp.emplace_back(rTrees[p]);
       // std::cout << "push " << p << std::endl;
       break;
     }
@@ -152,9 +152,9 @@ inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
     if (counter % 2 == 1) {
       rTrees[p]->parent = nullptr;
       rTrees[p]->Node = node;
-      // Seq.push_back(rTrees[p]);
+      // Seq.emplace_back(rTrees[p]);
       // temp[num_root++] = rTrees[p];
-      temp.push_back(rTrees[p]);
+      temp.emplace_back(rTrees[p]);
       p++;
       counter--;
     }
@@ -183,13 +183,13 @@ inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
     if (p->lchild == T) {
       p->rchild->Node = node;
       p->rchild->parent = nullptr;
-      // rTrees.push_back(p->rchild);
+      // rTrees.emplace_back(p->rchild);
       temp[num_root++] = p->rchild;
     }
     if (p->rchild == T) {
       p->lchild->Node = node;
       p->lchild->parent = nullptr;
-      // rTrees.push_back(p->lchild);
+      // rTrees.emplace_back(p->lchild);
       temp[num_root++] = p->lchild;
     }
     // delete T;
@@ -225,7 +225,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   for (auto it : dropped) {
     auto p = it;
     while (p != nullptr && marked.contains(p) == false) {
-      marked.insert(p);
+      marked.emplace(p);
       p = p->parent;
     }
   }
@@ -233,7 +233,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   nTrees.reserve(rTrees.size());
   for (auto it : rTrees)
     if (marked.contains(it) == false)
-      nTrees.push_back(it);
+      nTrees.emplace_back(it);
   for (auto it : dropped) {
     rankTree *r = it;
     while (r != nullptr /*&& marked.contains(r) == true*/) {
@@ -243,13 +243,13 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
         r->lchild->parent = nullptr;
         r->lchild->Node = node;
         if (marked.contains(r->lchild) == false)
-          nTrees.push_back(r->lchild);
+          nTrees.emplace_back(r->lchild);
       }
       if (r->rchild) {
         r->rchild->parent = nullptr;
         r->rchild->Node = node;
         if (marked.contains(r->rchild) == false)
-          nTrees.push_back(r->rchild);
+          nTrees.emplace_back(r->rchild);
       }
       auto p = r->parent;
       if (p) {
@@ -270,7 +270,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   //   if (marked.contains(it))
   //     s.push(it);
   //   else
-  //     nTrees.push_back(it);
+  //     nTrees.emplace_back(it);
   // }
   // while (!s.empty()) {
   //   rankTree *r = s.top();
@@ -278,7 +278,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   //     if (marked.contains(r->lchild))
   //       s.push(r->lchild);
   //     else {
-  //       nTrees.push_back(r->lchild);
+  //       nTrees.emplace_back(r->lchild);
   //       if (nTrees.size() == leaf_threshold) {
   //         sortByRank(nTrees);
   //         nTrees = build(nTrees, node);
@@ -289,7 +289,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   //     if (marked.contains(r->rchild))
   //       s.push(r->rchild);
   //     else {
-  //       nTrees.push_back(r->rchild);
+  //       nTrees.emplace_back(r->rchild);
   //       if (nTrees.size() == leaf_threshold) {
   //         sortByRank(nTrees);
   //         nTrees = build(nTrees, node);
@@ -304,7 +304,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
 inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
                                               localTree *node) {
   if (rTrees.size() < leaf_threshold) {
-    rTrees.push_back(T);
+    rTrees.emplace_back(T);
     return std::move(rTrees);
   }
   for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
@@ -313,7 +313,7 @@ inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
       return build(rTrees, node);
     }
   }
-  rTrees.push_back(T);
+  rTrees.emplace_back(T);
   return build(rTrees, node);
 }
 inline void rankTree::sortByRank(arr &rTrees) {
@@ -340,13 +340,13 @@ inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
   //       std::swap(rTrees[i], rTrees[i + 1]);
   //     rTrees[i]->Node = node;
   //     rTrees[i]->parent = nullptr;
-  //     // Seq.push_back(rTrees[i]);
+  //     // Seq.emplace_back(rTrees[i]);
   //     temp[num_root++] = rTrees[i];
   //   }
   // }
   // rTrees[rTrees.size() - 1]->Node = node;
   // rTrees[rTrees.size() - 1]->parent = nullptr;
-  // // Seq.push_back(rTrees[rTrees.size() - 1]);
+  // // Seq.emplace_back(rTrees[rTrees.size() - 1]);
   // temp[num_root++] = rTrees[rTrees.size() - 1];
   // arr Seq(temp, temp + num_root);
   // return Seq;
@@ -367,7 +367,7 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   }
   for (auto it : r2) {
     it->Node = node;
-    r1.push_back(it);
+    r1.emplace_back(it);
   }
   return build(r1, node);
   // rankTree *temp[2 * leaf_threshold];
@@ -391,7 +391,7 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   //     while (q < r2.size()) {
   //       r2[q]->Node = node;
   //       r2[q]->parent = nullptr;
-  //       // Seq.push_back(r2[q]);
+  //       // Seq.emplace_back(r2[q]);
   //       temp[num_root++] = r2[q];
   //       q++;
   //     }
@@ -401,7 +401,7 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   //     while (p < r1.size()) {
   //       r1[p]->Node = node;
   //       r1[p]->parent = nullptr;
-  //       // Seq.push_back(r1[p]);
+  //       // Seq.emplace_back(r1[p]);
   //       temp[num_root++] = r1[p];
   //       p++;
   //     }
@@ -410,13 +410,13 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   //   if (r1[p]->rank > r2[q]->rank) {
   //     r2[q]->Node = node;
   //     r2[q]->parent = nullptr;
-  //     // Seq.push_back(r2[q]);
+  //     // Seq.emplace_back(r2[q]);
   //     temp[num_root++] = r2[q];
   //     q++;
   //   } else {
   //     r1[p]->Node = node;
   //     r1[p]->parent = nullptr;
-  //     // Seq.push_back(r1[p]);
+  //     // Seq.emplace_back(r1[p]);
   //     temp[num_root++] = r1[p];
   //     p++;
   //   }

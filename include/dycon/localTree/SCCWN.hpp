@@ -291,19 +291,21 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
-  absl::flat_hash_set<localTree *> Ru, Rv;           // visited node
+  absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> Ru,
+      Rv; // visited node
   fetchQueue<localTree *> LTNodeQ_U,
       LTNodeQ_V;                      // localTree nodes ready to fetch
   fetchQueue<fetchLeaf> lfQ_U, lfQ_V; // vertices ready to fetch
   auto init = [](fetchQueue<localTree *> &LTNodeQ, fetchQueue<fetchLeaf> &lfQ,
                  std::vector<std::pair<uint32_t, uint32_t>> &E,
-                 absl::flat_hash_set<localTree *> &R, localTree *C) -> void {
+                 absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> &R,
+                 localTree *C) -> void {
     LTNodeQ = fetchQueue<localTree *>();
     lfQ = fetchQueue<fetchLeaf>();
     E = std::vector<std::pair<uint32_t, uint32_t>>();
-    R = absl::flat_hash_set<localTree *>();
+    R = absl::flat_hash_map<localTree *, std::pair<vertex, vertex>>();
     LTNodeQ.push(C);
-    R.insert(C);
+    R.emplace(C, std::pair(0, 0));
     E.reserve(128);
   };
   while (l != 0) {
@@ -338,7 +340,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               return;
             } else {
               if (Ru.find(Cuv) == Ru.end()) {
-                Ru.insert(Cuv);
+                Ru.emplace(Cuv, std::pair(0, 0));
                 LTNodeQ_U.push(Cuv);
                 nCu += Cuv->getSize();
               }
@@ -415,7 +417,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               return;
             } else {
               if (Rv.find(Cuv) == Rv.end()) {
-                Rv.insert(Cuv);
+                Rv.emplace(Cuv, std::pair(0, 0));
                 LTNodeQ_V.push(Cuv);
                 nCv += Cuv->getSize();
               }
