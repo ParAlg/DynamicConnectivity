@@ -19,6 +19,14 @@
 #include <vector>
 class SCCWN {
 private:
+  std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
+  absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> Ru,
+      Rv; // visited node
+  fetchQueue<localTree *> LTNodeQ_U,
+      LTNodeQ_V; // localTree nodes ready to fetch
+  fetchQueue<vertex, absl::flat_hash_set<vertex>::iterator> lfQ_U,
+      lfQ_V; // vertices ready to fetch
+  absl::flat_hash_set<vertex> Lu, Lv;
   static std::tuple<bool, uint32_t, uint32_t>
   fetchEdge(fetchQueue<localTree *> &Q, uint32_t l);
   std::optional<std::pair<vertex, vertex>>
@@ -290,29 +298,29 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
 
-  std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
-  absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> Ru,
-      Rv; // visited node
-  fetchQueue<localTree *> LTNodeQ_U,
-      LTNodeQ_V; // localTree nodes ready to fetch
-  fetchQueue<vertex, absl::flat_hash_set<vertex>::iterator> lfQ_U,
-      lfQ_V; // vertices ready to fetch
   auto init = [](fetchQueue<localTree *> &LTNodeQ,
                  fetchQueue<vertex, absl::flat_hash_set<vertex>::iterator> &lfQ,
                  std::vector<std::pair<uint32_t, uint32_t>> &E,
+                 absl::flat_hash_set<vertex> &L,
                  absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> &R,
                  localTree *C) -> void {
-    LTNodeQ = fetchQueue<localTree *>();
-    lfQ = fetchQueue<vertex, absl::flat_hash_set<vertex>::iterator>();
-    E = std::vector<std::pair<uint32_t, uint32_t>>();
-    R = absl::flat_hash_map<localTree *, std::pair<vertex, vertex>>();
+    // LTNodeQ = fetchQueue<localTree *>();
+    // lfQ = fetchQueue<vertex, absl::flat_hash_set<vertex>::iterator>();
+    // E = std::vector<std::pair<uint32_t, uint32_t>>();
+    // R = absl::flat_hash_map<localTree *, std::pair<vertex, vertex>>();
+    // L = absl::flat_hash_set<vertex>();
+    LTNodeQ.clear();
+    lfQ.clear();
+    E.clear();
+    R.clear();
+    L.clear();
     LTNodeQ.push(C);
     R.emplace(C, std::pair(0, 0));
     E.reserve(128);
   };
   while (l != 0) {
-    init(LTNodeQ_U, lfQ_U, Eu, Ru, Cu);
-    init(LTNodeQ_V, lfQ_V, Ev, Rv, Cv);
+    init(LTNodeQ_U, lfQ_U, Eu, Lu, Ru, Cu);
+    init(LTNodeQ_V, lfQ_V, Ev, Lv, Rv, Cv);
     auto nCu = Cu->getSize();
     auto nCv = Cv->getSize();
     assert(Cu != Cv);
@@ -346,8 +354,11 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 LTNodeQ_U.push(Cuv);
                 nCu += Cuv->getSize();
               }
-              if (leaves[eu->second]->getMap()[l] == 1)
+              if (!Lu.contains(eu->second) &&
+                  leaves[eu->second]->getMap()[l] == 1) {
+                Lu.emplace(eu->second);
                 lfQ_U.push(eu->second);
+              }
               Eu.emplace_back(std::pair(eu->first, eu->second));
             }
           }
@@ -419,8 +430,11 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 LTNodeQ_V.push(Cuv);
                 nCv += Cuv->getSize();
               }
-              if (leaves[ev->second]->getMap()[l] == 1)
+              if (!Lv.contains(ev->second) &&
+                  leaves[ev->second]->getMap()[l] == 1) {
+                Lv.emplace(ev->second);
                 lfQ_V.push(ev->second);
+              }
               Ev.emplace_back(std::pair(ev->first, ev->second));
             }
           }

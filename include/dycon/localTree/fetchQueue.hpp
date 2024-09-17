@@ -26,5 +26,9 @@ public:
   const_iterator end() const { return content.end(); }
   _M_Data pos;
   _M_Data tail;
+  void clear() {
+    head = 0;
+    content.clear();
+  }
 };
 #endif
