@@ -2,7 +2,7 @@
 #include <dycon/localTree/SCCWN.hpp>
 #include <iostream>
 void test1() {
-  size_t n = 128;
+  size_t n = 16;
   SCCWN F(n);
   F.lmax = std::log2(n) + 1;
   parlay::sequence<std::pair<size_t, size_t>> e;

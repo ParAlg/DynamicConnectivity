@@ -2,14 +2,16 @@
 #define FETCH_QUEUE
 #include "graph.hpp"
 #include <vector>
-template <typename T> class fetchQueue {
+#include <xmmintrin.h>
+template <typename T, typename _M_Data = typename std::vector<T>::iterator>
+class fetchQueue {
 private:
   std::vector<T> content;
   vertex head;
 
 public:
-  fetchQueue<T>() : content(std::vector<T>()), head(0) {}
-  ~fetchQueue<T>() {}
+  fetchQueue<T, _M_Data>() : content(std::vector<T>()), head(0) {}
+  ~fetchQueue<T, _M_Data>() { content.clear(); }
   //   void push(T x) { content.emplace_back(x); }
   void push(const T &x) { content.emplace_back(std::move(x)); }
   T &front() { return content[head]; }
@@ -22,5 +24,7 @@ public:
   const_iterator begin() const { return content.begin(); }
   iterator end() { return content.end(); }
   const_iterator end() const { return content.end(); }
+  _M_Data pos;
+  _M_Data tail;
 };
 #endif
