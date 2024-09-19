@@ -1,8 +1,8 @@
 #pragma once
-#include "absl/container/flat_hash_set.h"
 #include "dycon/localTree/alloc.h"
 #include "graph.hpp"
 #include <absl/container/btree_map.h>
+#include <absl/container/btree_set.h>
 #include <bitset>
 #include <cassert>
 #include <cstdint>
@@ -23,9 +23,6 @@
 #define MAX_LEVEL 32
 class leaf {
 public:
-  // using incident_edges = std::map<size_t, std::set<size_t>>;
-  // using edge_lists = std::pair<size_t, std::set<size_t>>;
-
   leaf(vertex _id = 0, void *p = nullptr)
       : parent(p), edgemap(), size(0), id(_id) {
     E.clear();
@@ -44,20 +41,22 @@ public:
   vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::tuple<bool, vertex, vertex> fetchEdge(uint32_t l);
-  absl::flat_hash_set<vertex> *getLevelEdge(uint32_t l);
-  std::pair<vertex, absl::flat_hash_set<vertex> *> getLevelEdgeSet(uint32_t l);
-  static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
+  // absl::flat_hash_set<vertex> *getLevelEdge(uint32_t l);
+  edge_set *getLevelEdge(uint32_t l);
+  // std::pair<vertex, absl::flat_hash_set<vertex> *> getLevelEdgeSet(uint32_t
+  // l);
+  std::pair<vertex, edge_set *> getLevelEdgeSet(uint32_t l);
+  // static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
+  static type_allocator<edge_set> *vector_alloc;
 
 private:
-  // absl::flat_hash_set<vertex> *E[MAX_LEVEL + 1];
-  absl::btree_map<uint16_t, absl::flat_hash_set<vertex> *> E;
+  absl::btree_map<uint16_t, edge_set *> E;
   void *parent;
   std::bitset<64> edgemap;
   vertex id;
   vertex size;
 };
-inline type_allocator<absl::flat_hash_set<vertex>> *leaf::vector_alloc =
-    nullptr;
+inline type_allocator<edge_set> *leaf::vector_alloc = nullptr;
 inline void leaf::linkToRankTree(void *p) { parent = p; }
 inline void leaf::insert(vertex e, uint32_t l) {
   auto &E = this->E;
@@ -76,10 +75,6 @@ inline std::tuple<bool, vertex, vertex> leaf::fetchEdge(uint32_t l) {
   auto it = E.find((uint16_t)l);
   if (it == E.end() || it->second->empty())
     return std::make_tuple(false, 0, 0);
-  // if (E[l] == nullptr || E[l]->empty())
-  //   return std::make_tuple(false, 0, 0);
-  // auto e = std::make_tuple(true, id, *(E[l]->begin()));
-  // return e;
   return std::make_tuple(true, id, *(it->second->begin()));
 }
 inline void leaf::remove(vertex e, uint32_t l) {
@@ -91,39 +86,21 @@ inline void leaf::remove(vertex e, uint32_t l) {
     E.erase(it);
     edgemap[l] = 0;
   }
-  // auto &E = this->E;
-  // assert(E[l] != nullptr && !E[l]->empty());
-  // E[l]->erase(e);
-  // if (E[l]->empty()) {
-  //   vector_alloc->free(E[l]);
-  //   E[l] = nullptr;
-  //   this->edgemap[l] = 0;
-  // }
 }
 inline uint32_t leaf::getLevel(vertex e) {
   auto &E = this->E;
   for (auto it : E)
     if (it.second->contains(e))
       return (uint32_t)it.first;
-  // for (uint32_t i = 0; i <= MAX_LEVEL; i++) {
-  //   if (E[i] != nullptr && E[i]->contains(e)) {
-  //     return i;
-  //   }
-  // }
   return MAX_LEVEL + 2;
 }
-inline bool leaf::checkLevel(uint32_t l) {
-  // check if this vertex has level l incident edges.
-  // assert(this->edgemap[l] == (E[l] != nullptr && E[l]->empty()));
-  return this->edgemap[l];
-}
-inline std::pair<vertex, absl::flat_hash_set<vertex> *>
-leaf::getLevelEdgeSet(uint32_t l) {
+inline bool leaf::checkLevel(uint32_t l) { return this->edgemap[l]; }
+inline std::pair<vertex, edge_set *> leaf::getLevelEdgeSet(uint32_t l) {
   auto e = E.find(l);
   assert(e != E.end());
   return std::pair(id, e->second);
 }
-inline absl::flat_hash_set<vertex> *leaf::getLevelEdge(uint32_t l) {
+inline edge_set *leaf::getLevelEdge(uint32_t l) {
   auto e = E.find(l);
   assert(e != E.end());
   return e->second;
@@ -133,10 +110,6 @@ inline std::bitset<64> leaf::changeLevel(std::vector<::vertex> &nghs,
   auto oit = E.find(oval);
   auto nit = E.find(nval);
   assert(oit != E.end() && nghs.size() <= oit->second->size());
-  if (nghs.size() > oit->second->size()) {
-    std::cout << "fetched more edge\n";
-    std::abort();
-  }
   if (nghs.size() == oit->second->size()) {
     this->edgemap[oval] = 0;
     this->edgemap[nval] = 1;
@@ -152,8 +125,8 @@ inline std::bitset<64> leaf::changeLevel(std::vector<::vertex> &nghs,
     return this->edgemap;
   }
   this->edgemap[nval] = 1;
-  absl::flat_hash_set<::vertex> *neset;
-  absl::flat_hash_set<::vertex> *oeset = oit->second;
+  edge_set *neset;
+  edge_set *oeset = oit->second;
   if (nit == E.end()) {
     neset = vector_alloc->create();
     E.emplace(nval, neset);

@@ -3,6 +3,7 @@
 #include "parlay/sequence.h"
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <dycon/helpers/graph_utils.hpp>
 #include <dycon/helpers/parse_command_line.hpp>
 #include <dycon/localTree/CWN.hpp>
@@ -172,6 +173,9 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
     }
     t.next("Answer queries #" + std::to_string(i));
   }
+  uint32_t NTE = 0;
+  uint32_t TE = 0;
+  uint32_t SLE = 0;
   for (uint32_t i = 0; i < num_batches; i++) {
     for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
@@ -179,6 +183,11 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
+    std::cout << "nonTreeEdge " << F.NTE - NTE << " SelfLoopEdge "
+              << F.SLE - SLE << " TreeEdge " << F.TE - TE << std::endl;
+    NTE = F.NTE;
+    SLE = F.SLE;
+    TE = F.TE;
     for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
@@ -232,6 +241,9 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
     }
     t.next("Answer queries #" + std::to_string(i));
   }
+  uint32_t NTE = 0;
+  uint32_t TE = 0;
+  uint32_t SLE = 0;
   for (uint32_t i = 0; i < num_batches; i++) {
     for (uint32_t j = 0; j < batches_del[i].size(); j++) {
       long u = batches_del[i][j].first;
@@ -239,6 +251,11 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
       F.remove(u, v);
     }
     t.next("Delete batch #" + std::to_string(i));
+    std::cout << "nonTreeEdge " << F.NTE - NTE << " SelfLoopEdge "
+              << F.SLE - SLE << " TreeEdge " << F.TE - TE << std::endl;
+    NTE = F.NTE;
+    SLE = F.SLE;
+    TE = F.TE;
     for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
