@@ -27,6 +27,9 @@ private:
   fetchQueue<vertex, edge_set::iterator> lfQ_U,
       lfQ_V; // vertices ready to fetch
   absl::flat_hash_set<vertex> Lu, Lv;
+  // above are the data structures used to do the tick tock replacement edge
+  // search
+
   static std::tuple<bool, uint32_t, uint32_t>
   fetchEdge(fetchQueue<localTree *> &Q, uint32_t l);
   std::optional<std::pair<vertex, vertex>>
@@ -61,8 +64,6 @@ public:
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
     leaf::vector_alloc = new type_allocator<edge_set>(n);
-    nonTreeEdge.reserve(5 * n);
-    TreeEdge.reserve(n);
     leaves = std::vector<localTree *>(n);
     for (uint32_t i = 0; i < n; i++)
       leaves[i] = localTree::l_alloc->create(i);
