@@ -35,6 +35,7 @@
 // 2. Once we get to high levels, the subgraphs and corresponding spanning
 // forests are small. It's not worth it to do anything sophisticated at that
 // point -- brute force search instead.
+#include "absl/container/btree_set.h"
 #include <dynamic_graph/dynamic_connectivity.hpp>
 
 #include <utilities/assert.hpp>
@@ -72,12 +73,10 @@ DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
   const int8_t num_levels = FloorLog2(num_vertices_) + 1;
   spanning_forests_ = std::vector<DynamicForest>{
       static_cast<uint32_t>(num_levels), DynamicForest(num_vertices_)};
-  non_tree_adjacency_lists_ =
-      std::vector<std::vector<absl::flat_hash_set<Vertex>>>{
-          static_cast<uint32_t>(num_levels),
-          std::vector<absl::flat_hash_set<Vertex>>{
-              static_cast<uint32_t>(num_vertices_),
-              absl::flat_hash_set<Vertex>{}}};
+  non_tree_adjacency_lists_ = std::vector<std::vector<absl::btree_set<Vertex>>>{
+      static_cast<uint32_t>(num_levels),
+      std::vector<absl::btree_set<Vertex>>{static_cast<uint32_t>(num_vertices_),
+                                           absl::btree_set<Vertex>{}}};
 }
 
 DynamicConnectivity::~DynamicConnectivity() {}
@@ -117,7 +116,6 @@ void DynamicConnectivity::AddEdgeToAdjacencyList(const UndirectedEdge &edge,
     adj_list_2.emplace(edge.first);
   }
 }
-
 void DynamicConnectivity::DeleteEdgeFromAdjacencyList(
     const UndirectedEdge &edge, detail::Level level) {
   {
@@ -211,7 +209,7 @@ void DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge &edge,
       break;
     }
 
-    absl::flat_hash_set<Vertex> &adj_list{
+    absl::btree_set<Vertex> &adj_list{
         non_tree_adjacency_lists_[level][*vertex_with_incident_edges]};
     while (!adj_list.empty()) {
       const auto &adj_it{adj_list.begin()};

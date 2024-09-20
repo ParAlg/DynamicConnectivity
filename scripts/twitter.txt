@@ -147,3 +147,12 @@ Parlay time: Delete batch #5: 1006.5774
 Parlay time: Answer queries #5: 3.9291
 Parlay time: Delete batch #6: 1174.9553
 Parlay time: Answer queries #6: 3.5537
+Parlay time: Delete batch #7: 1465.2925
+Parlay time: Answer queries #7: 3.4068
+Parlay time: Delete batch #8: 1935.3378
+Parlay time: Answer queries #8: 3.1098
+Parlay time: Delete batch #9: 3444.9665
+Parlay time: Answer queries #9: 0.0894
+
+Running on friendster_sym.bin
+

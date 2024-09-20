@@ -259,8 +259,6 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
     for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-      if (i == 9 && j > 440 && j < 450)
-        F.getInfo(queries_del[i][j].first, queries_del[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }

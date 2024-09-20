@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <absl/container/btree_set.h>
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
 #include <cstdint>
@@ -130,8 +131,9 @@ private:
   std::vector<DynamicForest> spanning_forests_;
   // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
   // v by level-i non-tree edges.
-  std::vector<std::vector<absl::flat_hash_set<Vertex>>>
-      non_tree_adjacency_lists_;
+  // std::vector<std::vector<absl::flat_hash_set<Vertex>>>
+  //     non_tree_adjacency_lists_;
+  std::vector<std::vector<absl::btree_set<Vertex>>> non_tree_adjacency_lists_;
   // All edges in the graph.
   absl::flat_hash_map<UndirectedEdge, detail::EdgeInfo, UndirectedEdgeHash>
       edges_;
