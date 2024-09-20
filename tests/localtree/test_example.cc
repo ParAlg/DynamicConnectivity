@@ -65,8 +65,8 @@ void test3() {
     F.remove(ins[i].first, ins[i].second);
 }
 int main() {
-  // test1();
+  test1();
   // test2();
-  test3();
+  // test3();
   return 0;
 }

@@ -71,12 +71,12 @@ DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
                     "The number of vertices must be positive");
   const int8_t num_levels = FloorLog2(num_vertices_) + 1;
   spanning_forests_ = std::vector<DynamicForest>{
-      static_cast<std::size_t>(num_levels), DynamicForest(num_vertices_)};
+      static_cast<uint32_t>(num_levels), DynamicForest(num_vertices_)};
   non_tree_adjacency_lists_ =
       std::vector<std::vector<absl::flat_hash_set<Vertex>>>{
-          static_cast<std::size_t>(num_levels),
+          static_cast<uint32_t>(num_levels),
           std::vector<absl::flat_hash_set<Vertex>>{
-              static_cast<std::size_t>(num_vertices_),
+              static_cast<uint32_t>(num_vertices_),
               absl::flat_hash_set<Vertex>{}}};
 }
 

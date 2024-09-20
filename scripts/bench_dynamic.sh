@@ -1,16 +1,16 @@
 #!/bin/bash
 declare -a undir_graph=(
   # Social
- "stackoverflow_sym"
- "com-orkut_sym"
- "soc-LiveJournal1_sym"
+#  "stackoverflow_sym"
+#  "com-orkut_sym"
+#  "soc-LiveJournal1_sym"
  "twitter_sym"
  "friendster_sym"
- "as-skitter_sym"
- "com-youtube_sym"
- "wiki-topcats_sym"
- "enwiki_sym"
- "pokec_sym"
+#  "as-skitter_sym"
+#  "com-youtube_sym"
+#  "wiki-topcats_sym"
+#  "enwiki_sym"
+#  "pokec_sym"
 
 # #  # # Road
 # #
@@ -18,7 +18,7 @@ declare -a undir_graph=(
 #  "Germany_sym"
 
 #   # # k-NN
-#   "Household_lines_5_sym"
+  # "Household_lines_5_sym"
 #   "CHEM_5_sym"
 )
 
@@ -26,7 +26,7 @@ declare numactl=""
 
 declare num_batches=10
 
-declare num_queries=1000
+declare num_queries=1000000
 
 declare source_dir="$(dirname $(pwd))"
 declare data_path="${source_dir}/data"

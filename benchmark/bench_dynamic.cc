@@ -259,6 +259,8 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
     for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
           F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+      if (i == 9 && j > 440 && j < 450)
+        F.getInfo(queries_del[i][j].first, queries_del[i][j].second);
     }
     t.next("Answer queries #" + std::to_string(i));
   }
@@ -271,9 +273,11 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
   for (uint32_t i = 0; i < num_batches; i++)
     for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (uint32_t i = 0; i < num_batches; i++)
+  for (uint32_t i = 0; i < num_batches; i++) {
     for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
+    faq << std::endl << std::endl;
+  }
   faq.close();
 }
 void bench_compress_CWN_blocked(uint32_t num_batches, uint32_t n,
@@ -388,9 +392,11 @@ void bench_seq_hdt(uint32_t num_batches, uint32_t n, std::string ansfile,
   for (uint32_t i = 0; i < num_batches; i++)
     for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       faq << Ans_ins[i][j];
-  for (uint32_t i = 0; i < num_batches; i++)
+  for (uint32_t i = 0; i < num_batches; i++) {
     for (uint32_t j = 0; j < queries_del[i].size(); j++)
       faq << Ans_del[i][j];
+    faq << std::endl << std::endl;
+  }
   faq.close();
 }
 
@@ -439,21 +445,22 @@ int main(int argc, char **argv) {
   parlay::execute_with_scheduler(1, [&]() {
     switch (algorithms) {
     case 0:
-      bench_uncompressed_CWN_root(
-          num_batches, n, Out + "_uncompressed_CWN_root.ans", batches_ins,
-          queries_ins, batches_del, queries_del);
-      bench_uncompressed_CWN_blocked(
-          num_batches, n, Out + "_uncompressed_CWN_blocked.ans", batches_ins,
-          queries_ins, batches_del, queries_del);
-      bench_compress_CWN_root(num_batches, n, Out + "_compressed_CWN_root.ans",
-                              batches_ins, queries_ins, batches_del,
-                              queries_del);
+      // bench_uncompressed_CWN_root(
+      //     num_batches, n, Out + "_uncompressed_CWN_root.ans", batches_ins,
+      //     queries_ins, batches_del, queries_del);
+      // bench_uncompressed_CWN_blocked(
+      //     num_batches, n, Out + "_uncompressed_CWN_blocked.ans", batches_ins,
+      //     queries_ins, batches_del, queries_del);
+      // bench_compress_CWN_root(num_batches, n, Out +
+      // "_compressed_CWN_root.ans",
+      //                         batches_ins, queries_ins, batches_del,
+      //                         queries_del);
       bench_compress_CWN_lca(num_batches, n, Out + "_compressed_CWN_lca.ans",
                              batches_ins, queries_ins, batches_del,
                              queries_del);
-      bench_compress_CWN_blocked(
-          num_batches, n, Out + "_compressed_CWN_blocked.ans", batches_ins,
-          queries_ins, batches_del, queries_del);
+      // bench_compress_CWN_blocked(
+      //     num_batches, n, Out + "_compressed_CWN_blocked.ans", batches_ins,
+      //     queries_ins, batches_del, queries_del);
       bench_seq_hdt(num_batches, n, Out + "_seqhdt.ans", batches_ins,
                     queries_ins, batches_del, queries_del);
       break;

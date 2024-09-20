@@ -49,6 +49,7 @@ public:
   }
   void setSize(uint32_t sz) { this->size = sz; }
   uint32_t getSize() { return this->size; }
+  ::vertex getNGHS() { return this->vertex->getSize(); }
   static void merge(localTree *Cu, localTree *Cv);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
