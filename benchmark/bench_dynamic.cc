@@ -342,14 +342,14 @@ void bench_seq_hdt(size_t num_batches, size_t n, std::string ansfile,
       long v = batches_ins[i][j].second;
       graph.AddEdge(UndirectedEdge(u, v));
     }
-    // // t.next("Insert batch #" + std::to_string(i));
-    // t.next("");
-    // for (size_t j = 0; j < queries_ins[i].size(); j++)
-    //   Ans_ins[i][j] =
-    //       graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
-    // // t.next("Answer queries #" + std::to_string(i));
-    // t.next("");
-    std::cout << graph.space() << " ";
+    // t.next("Insert batch #" + std::to_string(i));
+    t.next("");
+    for (size_t j = 0; j < queries_ins[i].size(); j++)
+      Ans_ins[i][j] =
+          graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
+    // t.next("Answer queries #" + std::to_string(i));
+    t.next("");
+    // std::cout << graph.space() << " ";
   }
 
   for (size_t i = 0; i < num_batches; i++) {
@@ -358,14 +358,14 @@ void bench_seq_hdt(size_t num_batches, size_t n, std::string ansfile,
       long v = batches_del[i][j].second;
       graph.DeleteEdge(UndirectedEdge(u, v));
     }
-    // // t.next("Delete batch #" + std::to_string(i));
-    // t.next("");
-    // for (size_t j = 0; j < queries_del[i].size(); j++)
-    //   Ans_del[i][j] =
-    //       graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
-    // // t.next("Answer queries #" + std::to_string(i));
-    // t.next("");
-    std::cout << graph.space() << " ";
+    // t.next("Delete batch #" + std::to_string(i));
+    t.next("");
+    for (size_t j = 0; j < queries_del[i].size(); j++)
+      Ans_del[i][j] =
+          graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
+    // t.next("Answer queries #" + std::to_string(i));
+    t.next("");
+    // std::cout << graph.space() << " ";
   }
   std::ofstream faq;
   faq.open(ansfile);
