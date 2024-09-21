@@ -6,9 +6,13 @@
  */
 #pragma once
 
+#include "parlay/parallel.h"
+#include "parlay/primitives.h"
 #include <absl/container/btree_set.h>
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
+#include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -115,6 +119,29 @@ public:
    *  @param[in] edge Edge to be deleted.
    */
   void DeleteEdge(const UndirectedEdge &edge);
+  size_t space() {
+    std::atomic<size_t> space = 0;
+
+    space += sizeof(uint32_t);
+    space += sizeof(std::vector<DynamicForest>);
+    parlay::parallel_for(0, spanning_forests_.size(), [&](size_t i) {
+      space += spanning_forests_[i].space();
+    });
+    space += sizeof(std::vector<std::vector<absl::btree_set<Vertex>>>);
+    parlay::parallel_for(0, non_tree_adjacency_lists_.size(), [&](size_t i) {
+      space += sizeof(std::vector<absl::btree_set<Vertex>>);
+      auto level = non_tree_adjacency_lists_[i];
+      parlay::parallel_for(0, level.size(), [&](size_t j) {
+        space += sizeof(absl::btree_set<Vertex>);
+        space += level[j].size() * 5;
+      });
+    });
+    space += sizeof(absl::flat_hash_map<UndirectedEdge, detail::EdgeInfo,
+                                        UndirectedEdgeHash>);
+    space += edges_.bucket_count() *
+             (sizeof(std::pair<UndirectedEdge, detail::EdgeInfo>));
+    return space;
+  }
 
 private:
   void AddNonTreeEdge(const UndirectedEdge &edge);

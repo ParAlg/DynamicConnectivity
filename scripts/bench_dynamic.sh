@@ -1,16 +1,16 @@
 #!/bin/bash
 declare -a undir_graph=(
   # Social
-#  "stackoverflow_sym"
-#  "com-orkut_sym"
-#  "soc-LiveJournal1_sym"
+ "stackoverflow_sym"
+ "com-orkut_sym"
+ "soc-LiveJournal1_sym"
  "twitter_sym"
  "friendster_sym"
-#  "as-skitter_sym"
-#  "com-youtube_sym"
-#  "wiki-topcats_sym"
-#  "enwiki_sym"
-#  "pokec_sym"
+ "as-skitter_sym"
+ "com-youtube_sym"
+ "wiki-topcats_sym"
+ "enwiki_sym"
+ "pokec_sym"
 
 # #  # # Road
 # #
@@ -43,7 +43,7 @@ make bench_dynamic
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./bench_dynamic -a 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
+  ${numactl} ./bench_dynamic -a 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
   echo
 done
 

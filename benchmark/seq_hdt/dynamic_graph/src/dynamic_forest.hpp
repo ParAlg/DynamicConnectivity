@@ -90,6 +90,23 @@ public:
   std::optional<UndirectedEdge> GetMarkedEdgeInTree(Vertex v) const;
   // Analagous to `GetMarkedVertexInTree`.
   std::optional<Vertex> GetMarkedVertexInTree(Vertex v) const;
+  size_t space() {
+    size_t space = 0;
+    space += sizeof(uint32_t);
+    space += sizeof(std::vector<sequence::Element>);
+    space += vertices_.size() * sizeof(sequence::Element);
+    space += sizeof(std::vector<sequence::Element>);
+    space += edge_elements_.size() * sizeof(sequence::Element);
+    space += sizeof(std::vector<sequence::Element *>);
+    space += free_edge_elements_.size() * sizeof(sequence::Element *);
+    space += sizeof(
+        absl::flat_hash_map<UndirectedEdge, detail::UndirectedEdgeElements,
+                            UndirectedEdgeHash>);
+    space +=
+        edges_.bucket_count() *
+        (sizeof(std::pair<UndirectedEdge, detail::UndirectedEdgeElements>));
+    return space;
+  }
 
 private:
   detail::UndirectedEdgeElements
