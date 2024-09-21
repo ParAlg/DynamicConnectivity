@@ -650,7 +650,8 @@ inline void SCCWN::test_fetch() {
     auto e = fetchEdge(Q1, L1, 1);
     if (e == std::nullopt)
       break;
-    std::cout << "fetching " << e->first << " " << e->second << " at level 1\n";
+    // std::cout << "fetching " << e->first << " " << e->second << " at level
+    // 1\n";
   }
   nodes = parlay::tabulate(
       8, [&](auto i) { return localTree::getParent(leaves[i]); });
@@ -662,7 +663,8 @@ inline void SCCWN::test_fetch() {
     auto e = fetchEdge(Q2, L2, 2);
     if (e == std::nullopt)
       break;
-    std::cout << "fetching " << e->first << " " << e->second << " at level 2\n";
+    // std::cout << "fetching " << e->first << " " << e->second << " at level
+    // 2\n";
   }
   nodes = parlay::tabulate(
       8, [&](auto i) { return localTree::getParent(leaves[i]); });
@@ -674,7 +676,8 @@ inline void SCCWN::test_fetch() {
     auto e = fetchEdge(Q3, L3, 3);
     if (e == std::nullopt)
       break;
-    std::cout << "fetching " << e->first << " " << e->second << " at level 3\n";
+    // std::cout << "fetching " << e->first << " " << e->second << " at level
+    // 3\n";
   }
 }
 inline void SCCWN::restoreBitMap(fetchQueue<vertex, edge_set::iterator> &lfQ,

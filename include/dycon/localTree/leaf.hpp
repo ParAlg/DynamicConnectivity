@@ -24,7 +24,7 @@
 class leaf {
 public:
   leaf(vertex _id = 0, void *p = nullptr)
-      : parent(p), edgemap(), size(0), id(_id) {
+      : parent(p), edgemap(0), size(0), id(_id) {
     E.clear();
   };
   void insert(vertex e, uint32_t l);
@@ -41,16 +41,12 @@ public:
   vertex getID() { return id; }
   std::bitset<64> getEdgeMap() { return edgemap; }
   std::tuple<bool, vertex, vertex> fetchEdge(uint32_t l);
-  // absl::flat_hash_set<vertex> *getLevelEdge(uint32_t l);
   edge_set *getLevelEdge(uint32_t l);
-  // std::pair<vertex, absl::flat_hash_set<vertex> *> getLevelEdgeSet(uint32_t
-  // l);
   std::pair<vertex, edge_set *> getLevelEdgeSet(uint32_t l);
-  // static type_allocator<absl::flat_hash_set<vertex>> *vector_alloc;
   static type_allocator<edge_set> *vector_alloc;
 
 private:
-  absl::btree_map<uint16_t, edge_set *> E;
+  std::vector<std::pair<uint32_t, edge_set *>> E;
   void *parent;
   std::bitset<64> edgemap;
   vertex id;
@@ -61,25 +57,29 @@ inline void leaf::linkToRankTree(void *p) { parent = p; }
 inline void leaf::insert(vertex e, uint32_t l) {
   auto &E = this->E;
   size++;
-  auto it = E.find((uint16_t)l);
-  if (it == E.end()) {
-    this->edgemap[l] = 1;
-    auto hset = vector_alloc->create();
-    hset->emplace(e);
-    E.emplace(l, hset);
+  if (this->edgemap[l] == 1) {
+    E[(edgemap << (63 - l)).count() - 1].second->insert(e);
     return;
   }
-  it->second->emplace(e);
+
+  this->edgemap[l] = 1;
+  auto nghs = vector_alloc->create();
+  nghs->emplace(e);
+  auto setbit = (edgemap << (63 - l)).count();
+  if (E.size() < setbit) {
+    E.emplace_back(std::pair(l, nghs));
+  } else {
+    auto it = E.begin() + setbit - 1;
+    E.insert(it, std::pair(l, nghs));
+  }
 }
 inline std::tuple<bool, vertex, vertex> leaf::fetchEdge(uint32_t l) {
-  auto it = E.find((uint16_t)l);
-  if (it == E.end() || it->second->empty())
-    return std::make_tuple(false, 0, 0);
-  return std::make_tuple(true, id, *(it->second->begin()));
+  auto nghs = E[(edgemap << (63 - l)).count() - 1].second;
+  return std::make_tuple(true, id, *(nghs->begin()));
 }
 inline void leaf::remove(vertex e, uint32_t l) {
   this->size--;
-  auto it = E.find((uint16_t)l);
+  auto it = E.begin() + (edgemap << (63 - l)).count() - 1;
   it->second->erase(e);
   if (it->second->empty()) {
     vector_alloc->free(it->second);
@@ -96,45 +96,8 @@ inline uint32_t leaf::getLevel(vertex e) {
 }
 inline bool leaf::checkLevel(uint32_t l) { return this->edgemap[l]; }
 inline std::pair<vertex, edge_set *> leaf::getLevelEdgeSet(uint32_t l) {
-  auto e = E.find(l);
-  assert(e != E.end());
-  return std::pair(id, e->second);
+  return std::pair(id, E[(edgemap << (63 - l)).count() - 1].second);
 }
 inline edge_set *leaf::getLevelEdge(uint32_t l) {
-  auto e = E.find(l);
-  assert(e != E.end());
-  return e->second;
-}
-inline std::bitset<64> leaf::changeLevel(std::vector<::vertex> &nghs,
-                                         uint32_t oval, uint32_t nval) {
-  auto oit = E.find(oval);
-  auto nit = E.find(nval);
-  assert(oit != E.end() && nghs.size() <= oit->second->size());
-  if (nghs.size() == oit->second->size()) {
-    this->edgemap[oval] = 0;
-    this->edgemap[nval] = 1;
-    if (nit == E.end()) {
-      E.emplace(nval, oit->second);
-    } else {
-      auto eset = nit->second;
-      for (auto it : nghs)
-        eset->emplace(it);
-      vector_alloc->free(oit->second);
-    }
-    E.erase(oval);
-    return this->edgemap;
-  }
-  this->edgemap[nval] = 1;
-  edge_set *neset;
-  edge_set *oeset = oit->second;
-  if (nit == E.end()) {
-    neset = vector_alloc->create();
-    E.emplace(nval, neset);
-  } else
-    neset = nit->second;
-  for (auto it : nghs) {
-    neset->emplace(it);
-    oeset->erase(it);
-  }
-  return this->edgemap;
+  return E[(edgemap << (63 - l)).count() - 1].second;
 }

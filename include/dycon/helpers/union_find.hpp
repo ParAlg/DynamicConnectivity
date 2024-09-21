@@ -37,14 +37,16 @@ inline void static_connectivity(parlay::sequence<edge> &E,
                                 parlay::sequence<bool> &Ans) {
 
   uint32_t maxID = utils::num_vertices(E);
-  parlay::execute_with_scheduler(1, [&] { union_find<vertex> UF(maxID); });
-  union_find<vertex> UF(maxID);
-  for (uint32_t i = 0; i < m; i++)
-    UF.link(E[i].first, E[i].second);
-  if (!m) {
-    parlay::parallel_for(0, Q.size(), [&](uint32_t i) { Ans[i] = 0; });
-    return;
-  }
-  for (uint32_t i = 0; i < Q.size(); i++)
-    Ans[i] = (UF.find(Q[i].first) == UF.find(Q[i].second)) ? true : false;
+  parlay::execute_with_scheduler(1, [&] {
+    union_find<vertex> UF(maxID);
+    // union_find<vertex> UF(maxID);
+    for (uint32_t i = 0; i < m; i++)
+      UF.link(E[i].first, E[i].second);
+    if (!m) {
+      parlay::parallel_for(0, Q.size(), [&](uint32_t i) { Ans[i] = 0; });
+      return;
+    }
+    for (uint32_t i = 0; i < Q.size(); i++)
+      Ans[i] = (UF.find(Q[i].first) == UF.find(Q[i].second)) ? true : false;
+  });
 }

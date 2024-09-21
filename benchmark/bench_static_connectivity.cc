@@ -19,7 +19,7 @@ void test(parlay::sequence<edges> &instances, parlay::sequence<queries> &q,
     parlay::internal::timer t;
     t.start();
     static_connectivity(E, V, n, m, Q, Ans);
-    t.next("parallel union find ");
+    t.next("union find ");
     for (uint32_t j = 0; j < Q.size(); j++)
       faq << Ans[j];
   }

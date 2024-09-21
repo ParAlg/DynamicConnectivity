@@ -355,7 +355,7 @@ inline void localTree::changeLevel(std::vector<::vertex> &nghs, uint32_t oval,
   if (nghs.empty())
     return;
   auto omap = this->edgemap;
-  this->edgemap = this->vertex->changeLevel(nghs, oval, nval);
+  // this->edgemap = this->vertex->changeLevel(nghs, oval, nval);
   if (this->edgemap != omap)
     localTree::updateBitMap(this);
 }
