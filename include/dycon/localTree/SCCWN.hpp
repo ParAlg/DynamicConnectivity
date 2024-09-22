@@ -23,7 +23,7 @@
 class SCCWN {
 private:
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
-  absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> Ru,
+  absl::flat_hash_set<localTree *> Ru,
       Rv; // visited node
   fetchQueue<localTree *> LTNodeQ_U,
       LTNodeQ_V; // localTree nodes ready to fetch
@@ -38,7 +38,6 @@ private:
   std::optional<std::pair<vertex, vertex>>
   fetchEdge(fetchQueue<localTree *> &LTNodeQ,
             fetchQueue<vertex, edge_set::iterator> &lfQ, uint32_t l);
-  std::pair<vertex, vertex> touchEdge(localTree *node, uint32_t l);
   void restoreBitMap(fetchQueue<vertex, edge_set::iterator> &lfQ, uint32_t l,
                      bool nval);
   static localTree *pushDown(std::vector<localTree *> &pu, uint32_t uter,
@@ -317,7 +316,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   leaves[v]->deleteEdge(u, l);
   if (!TreeEdge.contains(std::pair(u, v))) {
     nonTreeEdge.erase(std::pair(u, v));
-    // NTE++;
     return;
   }
   TreeEdge.erase(std::pair(u, v));
@@ -325,25 +323,22 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
   if (Cu == Cv) {
-    // SLE++;
     return;
   }
-  // TE++;
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
-  auto init =
-      [this](fetchQueue<localTree *> &LTNodeQ,
-             fetchQueue<vertex, edge_set::iterator> &lfQ,
-             std::vector<std::pair<uint32_t, uint32_t>> &E,
-             absl::flat_hash_set<vertex> &L,
-             absl::flat_hash_map<localTree *, std::pair<vertex, vertex>> &R,
-             localTree *C, uint32_t l) -> void {
+  auto init = [this](fetchQueue<localTree *> &LTNodeQ,
+                     fetchQueue<vertex, edge_set::iterator> &lfQ,
+                     std::vector<std::pair<uint32_t, uint32_t>> &E,
+                     absl::flat_hash_set<vertex> &L,
+                     absl::flat_hash_set<localTree *> &R, localTree *C,
+                     uint32_t l) -> void {
     LTNodeQ.clear();
     lfQ.clear();
     E.clear();
     R.clear();
     L.clear();
-    R.emplace(C, touchEdge(C, l));
+    R.emplace(C);
     LTNodeQ.push(C);
     E.reserve(128);
   };
@@ -363,11 +358,10 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             assert(CP == nullptr || localTree::getParent(Cuv) == CP);
             auto ev = Rv.find(Cuv);
             if (ev != Rv.end()) {
-              TreeEdge.emplace(
-                  std::pair(std::min(ev->second.first, ev->second.second),
-                            std::max(ev->second.first, ev->second.second)));
-              TreeEdge.emplace(std::pair(std::min(eu->first, eu->second),
-                                         std::max(eu->first, eu->second)));
+              auto epair = std::pair(std::min(eu->first, eu->second),
+                                     std::max(eu->first, eu->second));
+              nonTreeEdge.erase(epair);
+              TreeEdge.emplace(std::move(epair));
               if (Eu.empty()) {
                 // don't push nCu+nCv may violate size
                 // return;
@@ -376,25 +370,20 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_V, l, 1);
                 changeLevel(Eu, l, C->getLevel());
-                for (auto it : Ru)
-                  TreeEdge.emplace(it.second);
-                for (auto it : Rv)
-                  TreeEdge.emplace(it.second);
               } else {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_V);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
-                for (auto it : Rv)
-                  TreeEdge.emplace(it.second);
-                for (auto it : Ru)
-                  TreeEdge.emplace(it.second);
               }
               return;
             } else {
               if (Ru.find(Cuv) == Ru.end()) {
-                Ru.emplace(Cuv, std::pair(std::min(eu->first, eu->second),
-                                          std::max(eu->first, eu->second)));
+                Ru.emplace(Cuv);
+                auto epair = std::pair(std::min(eu->first, eu->second),
+                                       std::max(eu->first, eu->second));
+                nonTreeEdge.erase(epair);
+                TreeEdge.emplace(std::move(epair));
                 LTNodeQ_U.push(Cuv);
                 nCu += Cuv->getSize();
               }
@@ -419,16 +408,10 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               localTree::l_alloc->free(CP); // delete CP;
               CP = *LTNodeQ_V.begin();
             }
-            for (auto it : Rv)
-              TreeEdge.emplace(it.second);
           } else if (nCu <= nCv) {
             _CP = localTree::splitFromParent(CP, LTNodeQ_U);
             restoreBitMap(lfQ_V, l, 1);
             changeLevel(Eu, l, _CP->getLevel());
-            for (auto it : Ru)
-              TreeEdge.emplace(it.second);
-            for (auto it : Rv)
-              TreeEdge.emplace(it.second);
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
@@ -443,10 +426,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               localTree::addChild(CP, C);
             restoreBitMap(lfQ_U, l, 1);
             changeLevel(Ev, l, C->getLevel());
-            for (auto it : Rv)
-              TreeEdge.emplace(it.second);
-            for (auto it : Ru)
-              TreeEdge.emplace(it.second);
           }
           localTree::add2Children(GP, CP, _CP);
           Cu = _CP;
@@ -465,39 +444,31 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             assert(CP == nullptr || localTree::getParent(Cuv) == CP);
             auto eu = Ru.find(Cuv);
             if (eu != Ru.end()) {
-              TreeEdge.emplace(std::pair(std::min(ev->first, ev->second),
-                                         std::max(ev->first, ev->second)));
-              TreeEdge.emplace(
-                  std::pair(std::min(eu->second.first, eu->second.second),
-                            std::max(eu->second.first, eu->second.second)));
+              auto epair = std::pair(std::min(ev->first, ev->second),
+                                     std::max(ev->first, ev->second));
+              nonTreeEdge.erase(epair);
+              TreeEdge.emplace(std::move(epair));
               if (Ev.empty()) {
                 restoreBitMap(lfQ_U, l, 1);
-                for (auto it : Ru)
-                  TreeEdge.emplace(it.second);
               } else if (nCu <= nCv) {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_U);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_V, l, 1);
                 changeLevel(Eu, l, C->getLevel());
-                for (auto it : Ru)
-                  TreeEdge.emplace(it.second);
-                for (auto it : Rv)
-                  TreeEdge.emplace(it.second);
               } else {
                 auto C = localTree::splitFromParent(CP, LTNodeQ_V);
                 localTree::addChild(CP, C);
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
-                for (auto it : Rv)
-                  TreeEdge.emplace(it.second);
-                for (auto it : Ru)
-                  TreeEdge.emplace(it.second);
               }
               return;
             } else {
               if (Rv.find(Cuv) == Rv.end()) {
-                Rv.emplace(Cuv, std::pair(std::min(ev->first, ev->second),
-                                          std::max(ev->first, ev->second)));
+                Rv.emplace(Cuv);
+                auto epair = std::pair(std::min(ev->first, ev->second),
+                                       std::max(ev->first, ev->second));
+                nonTreeEdge.erase(epair);
+                TreeEdge.emplace(std::move(epair));
                 LTNodeQ_V.push(Cuv);
                 nCv += Cuv->getSize();
               }
@@ -517,18 +488,10 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
             _CP = *LTNodeQ_V.begin();
             localTree::deleteFromParent(*LTNodeQ_V.begin());
             restoreBitMap(lfQ_U, l, 1);
-            for (auto it : Ru)
-              TreeEdge.emplace(it.second);
-            for (auto it : Ru)
-              TreeEdge.emplace(it.second);
           } else if (nCv <= nCu) {
             _CP = localTree::splitFromParent(CP, LTNodeQ_V);
             restoreBitMap(lfQ_U, l, 1);
             changeLevel(Ev, l, _CP->getLevel());
-            for (auto it : Rv)
-              TreeEdge.emplace(it.second);
-            for (auto it : Ru)
-              TreeEdge.emplace(it.second);
           } else {
             _CP = localTree::l_alloc->create();
             _CP->setLevel(l);
@@ -543,10 +506,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
               localTree::addChild(CP, C);
             restoreBitMap(lfQ_V, l, 1);
             changeLevel(Eu, l, C->getLevel());
-            for (auto it : Ru)
-              TreeEdge.emplace(it.second);
-            for (auto it : Rv)
-              TreeEdge.emplace(it.second);
           }
           localTree::add2Children(GP, CP, _CP);
           Cu = CP;
@@ -662,11 +621,4 @@ inline void SCCWN::GC(bool clear, std::atomic<size_t> &mem_usage) {
       localTree::topDown(r[i], clear, mem_usage);
     }
   });
-}
-inline std::pair<vertex, vertex> SCCWN::touchEdge(localTree *node, uint32_t l) {
-  auto e = localTree::fetchEdge(node, l);
-  if (std::get<0>(e) == true)
-    return std::pair(std::min(std::get<1>(e), std::get<2>(e)),
-                     std::max(std::get<1>(e), std::get<2>(e)));
-  return std::pair(0, 0);
 }
