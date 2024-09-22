@@ -21,14 +21,20 @@ using edges = utils::edges;
 using query = utils::query;
 using queries = utils::queries;
 using Ans = parlay::sequence<parlay::sequence<bool>>;
-void report(double time, std::string prefix, std::string suffix) {
+void report(double time, std::string prefix, std::string suffix = "\n") {
+#ifndef MEM_USE
   std::ios::fmtflags cout_settings = std::cout.flags();
   std::cout.precision(4);
   std::cout << std::fixed;
   if (prefix.length() > 0)
     std::cout << prefix << ": ";
-  std::cout << time << suffix;
+  std::cout << time;
   std::cout.flags(cout_settings);
+#endif
+  if (suffix == "\n")
+    std::cout << std::endl;
+  else
+    std::cout << suffix;
 }
 void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
                              std::string ansfile,
@@ -45,8 +51,6 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
     Ans_del[i].resize(queries_del[i].size());
   });
 
-  std::cout << "start benchmarking comressed CWN with edges inserted to root"
-            << std::endl;
   std::ofstream fins, fdel;
 
   std::vector<double> ins_t;
@@ -56,6 +60,8 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
   std::vector<double> query_t;
   double query_total = 0.0;
 
+  std::cout << "start benchmarking comressed CWN with edges inserted to root"
+            << std::endl;
   parlay::internal::timer t;
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
@@ -69,15 +75,15 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
       F.insertToRoot(u, v);
     }
     ins_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% insertion performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% insertion performed ";
+    report(ins_t.back(), "");
     t.start();
     for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     query_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches / 2 * (i + 1) * 100 << "% query performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches / 2 * (i + 1) * 100 << "% query performed ";
+    report(query_t.back(), "");
 #ifdef MEM_USE
     std::cout << "collecting memory usage" << std::endl;
     std::cout << std::fixed << std::setprecision(2)
@@ -95,8 +101,8 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
       F.remove(u, v);
     }
     del_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% deletion performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% deletion performed ";
+    report(del_t.back(), "");
     t.start();
     for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
@@ -104,7 +110,8 @@ void bench_compress_CWN_root(uint32_t num_batches, uint32_t n,
     }
     query_t.push_back(t.stop());
     std::cout << 1.0 / num_batches / 2 * (i + num_batches + 1) * 100
-              << "% query performed" << std::endl;
+              << "% query performed ";
+    report(query_t.back(), "");
 #ifdef MEM_USE
     std::cout << "collecting memory usage" << std::endl;
     std::cout << std::fixed << std::setprecision(2)
@@ -173,8 +180,6 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
     Ans_del[i].resize(queries_del[i].size());
   });
 
-  std::cout << "start benchmarking comressed CWN with edges inserted to lca"
-            << std::endl;
   std::ofstream fins, fdel;
 
   std::vector<double> ins_t;
@@ -184,6 +189,8 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
   std::vector<double> query_t;
   double query_total = 0.0;
 
+  std::cout << "start benchmarking comressed CWN with edges inserted to lca"
+            << std::endl;
   parlay::internal::timer t;
   SCCWN F(n);
   F.lmax = std::ceil(std::log2(n));
@@ -197,15 +204,15 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
       F.insertToLCA(u, v);
     }
     ins_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% insertion performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% insertion performed ";
+    report(ins_t.back(), "");
     t.start();
     for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       Ans_ins[i][j] =
           F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
     query_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches / 2 * (i + 1) * 100 << "% query performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches / 2 * (i + 1) * 100 << "% query performed ";
+    report(query_t.back(), "");
 #ifdef MEM_USE
     std::cout << "collecting memory usage" << std::endl;
     std::cout << std::fixed << std::setprecision(2)
@@ -223,8 +230,8 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
       F.remove(u, v);
     }
     del_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% deletion performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% deletion performed ";
+    report(del_t.back(), "");
     t.start();
     for (uint32_t j = 0; j < queries_del[i].size(); j++) {
       Ans_del[i][j] =
@@ -232,7 +239,8 @@ void bench_compress_CWN_lca(uint32_t num_batches, uint32_t n,
     }
     query_t.push_back(t.stop());
     std::cout << 1.0 / num_batches / 2 * (i + num_batches + 1) * 100
-              << "% query performed" << std::endl;
+              << "% query performed ";
+    report(query_t.back(), "");
 #ifdef MEM_USE
     std::cout << "collecting memory usage" << std::endl;
     std::cout << std::fixed << std::setprecision(2)
@@ -323,15 +331,15 @@ void bench_seq_hdt(uint32_t num_batches, uint32_t n, std::string ansfile,
       graph.AddEdge(UndirectedEdge(u, v));
     }
     ins_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% insertion performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% insertion performed ";
+    report(ins_t.back(), "");
     t.start();
     for (uint32_t j = 0; j < queries_ins[i].size(); j++)
       Ans_ins[i][j] =
           graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
     query_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches / 2 * (i + 1) * 100 << "% query performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches / 2 * (i + 1) * 100 << "% query performed ";
+    report(query_t.back(), "");
 #ifdef MEM_USE
     std::cout << "collecting memory usage" << std::endl;
     std::cout << std::fixed << std::setprecision(2)
@@ -348,15 +356,16 @@ void bench_seq_hdt(uint32_t num_batches, uint32_t n, std::string ansfile,
       graph.DeleteEdge(UndirectedEdge(u, v));
     }
     del_t.push_back(t.stop());
-    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% deletion performed"
-              << std::endl;
+    std::cout << 1.0 / num_batches * (i + 1) * 100 << "% deletion performed ";
+    report(del_t.back(), "");
     t.start();
     for (uint32_t j = 0; j < queries_del[i].size(); j++)
       Ans_del[i][j] =
           graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
     query_t.push_back(t.stop());
     std::cout << 1.0 / num_batches / 2 * (i + num_batches + 1) * 100
-              << "% query performed" << std::endl;
+              << "% query performed ";
+    report(query_t.back(), "");
 #ifdef MEM_USE
     std::cout << "collecting memory usage" << std::endl;
     std::cout << std::fixed << std::setprecision(2)
