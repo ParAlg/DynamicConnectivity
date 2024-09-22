@@ -39,7 +39,7 @@ void test1() {
 
   for (auto it : db1) {
     if (F.is_connected(it.first, it.second)) {
-      F.getInfo(it.first, it.second);
+      // F.getInfo(it.first, it.second);
       std::abort();
     }
   }

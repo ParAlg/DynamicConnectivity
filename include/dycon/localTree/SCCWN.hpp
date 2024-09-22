@@ -99,71 +99,6 @@ public:
     mem_usage += nonTreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
     return (size_t)mem_usage;
   }
-  void getInfo(vertex u, vertex v) {
-    return;
-    std::cout << "Tree Edge " << TreeEdge.contains(std::pair(u, v))
-              << std::endl;
-    // if (u != 39 && v != 68)
-    //   return;
-    std::cout << u << " " << leaves[u] << " " << leaves[u]->getMap() << " \n"
-              << leaves[u]->getNGHS() << " " << v << " " << leaves[v] << " "
-              << leaves[v]->getMap() << " \n"
-              << leaves[v]->getNGHS() << std::endl;
-    std::cout << 73 << " " << leaves[73] << " " << leaves[73]->getMap() << " \n"
-              << leaves[73]->getNGHS() << std::endl;
-
-    auto Cu = localTree::getRoot(leaves[u]);
-    auto Cv = localTree::getRoot(leaves[v]);
-    // if (Cu != Cv)
-    //   return;
-    std::cout << u << " " << Cu << " " << Cu->getLevel() << " " << Cu->getMap()
-              << " " << Cu->getSize() << " " << v << " " << Cv << " "
-              << Cv->getLevel() << " " << Cv->getMap() << " " << Cv->getSize()
-              << std::endl;
-    Cu = localTree::getParent(leaves[u]);
-    Cv = localTree::getParent(leaves[v]);
-    std::cout << u << " " << Cu << " " << Cu->getLevel() << " " << Cu->getMap()
-              << " " << Cu->getSize() << " " << v << " " << Cv << " "
-              << Cv->getLevel() << " " << Cv->getMap() << " " << Cv->getSize()
-              << std::endl;
-  }
-  bool whynotsplit() {
-    auto Cu = localTree::getRoot(leaves[39]);
-    auto Cv = localTree::getRoot(leaves[76]);
-    if (Cu == Cv && Cu->getMap() == 0 && Cv->getMap() == 0)
-      return true;
-    return false;
-  }
-  bool testsplit(vertex u) {
-    if (leaves[u]->getMap() == 0 &&
-        localTree::getParent(leaves[u]) != nullptr &&
-        localTree::getParent(leaves[u]) != leaves[u])
-      return false;
-    return true;
-  }
-  void testTreeEdge(uint32_t x, uint32_t n) {
-    for (uint32_t i = 1; i < n; i++)
-      if (TreeEdge.contains(std::pair(std::min(x, i), std::max(x, i))))
-        std::cout << std::min(x, i) << " " << std::max(x, i) << std::endl;
-  }
-  bool testLowestTreeEdge(uint32_t s, uint32_t t) {
-    for (uint32_t i = s; i < t; i++) {
-      auto p = localTree::getParent(leaves[i]);
-      auto eset = localTree::getEdgeSet(leaves[i], p->getLevel());
-      bool flag = false;
-      for (auto it : *eset) {
-        auto epair = std::pair(std::min(i, it), std::max(i, it));
-        if (TreeEdge.contains(epair))
-          flag = true;
-      }
-      if (!flag) {
-        std::cout << i << " is not properly attached" << std::endl;
-
-        return false;
-      }
-    }
-    return true;
-  }
 };
 inline uint32_t SCCWN::lmax = 63;
 inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
@@ -374,10 +309,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   // std::cout << u << " " << v << std::endl;
   if (u > v)
     std::swap(u, v);
-  if (u == 17 && v == 39) {
-    std::cout << TreeEdge.contains(std::pair(17, 39)) << std::endl;
-    getInfo(u, v);
-  }
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
   uint32_t l = leaves[u]->getSize() < leaves[v]->getSize()
                    ? leaves[u]->getEdgeLevel(v)
@@ -661,11 +592,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
       if (lfQ.pos != lfQ.tail) {
         vertex v = *(lfQ.pos);
         lfQ.pos++;
-        vertex test1 = std::min(lfQ.front(), v);
-        vertex test2 = std::max(lfQ.front(), v);
-        // TreeEdge.emplace(std::pair(test1, test2));
-        if (test1 == 39 && test2 == 73)
-          getInfo(test1, test2);
         return std::pair(lfQ.front(), v);
       } else {
         leaves[lfQ.front()]->setBitMap(l, 0);
@@ -681,11 +607,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
     lfQ.tail = localTree::getEdgeSet(leaves[lfQ.front()], l)->end();
     vertex v = *(lfQ.pos);
     lfQ.pos++;
-    vertex test1 = std::min(lfQ.front(), v);
-    vertex test2 = std::max(lfQ.front(), v);
-    if (test1 == 39 && test2 == 73)
-      getInfo(test1, test2);
-    // TreeEdge.emplace(std::pair(test1, test2));
     return std::pair(lfQ.front(), v);
   }
   while (!LTNodeQ.empty()) {
@@ -701,11 +622,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
       vertex v = *(lfQ.pos);
       lfQ.pos++;
       lfQ.push(u);
-      vertex test1 = std::min(u, v);
-      vertex test2 = std::max(u, v);
-      if (test1 == 39 && test2 == 73)
-        getInfo(test1, test2);
-      // TreeEdge.emplace(std::pair(test1, test2));
       return std::pair(u, v);
     }
   }
