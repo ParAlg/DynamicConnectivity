@@ -8,4 +8,10 @@ add_executable(bench_batch_size bench_batch_size.cc)
 target_link_libraries(bench_batch_size PRIVATE dycon lib_dynamic_connectivity)
 target_include_directories(bench_batch_size PRIVATE seq_hdt/include)
 
+add_executable(bench_ram_dynamic bench_dynamic.cc)
+target_compile_definitions(bench_ram_dynamic PRIVATE MEM_USE)
+target_link_libraries(bench_ram_dynamic PRIVATE dycon lib_dynamic_connectivity)
+target_include_directories(bench_ram_dynamic PRIVATE seq_hdt/include)
+
+
 add_subdirectory(bench_distance_query)

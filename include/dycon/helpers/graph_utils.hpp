@@ -365,6 +365,10 @@ template <typename vertex> struct graph_utils {
             j % 2 ? E_[parlay::hash64(j) % E_.size()].second
                   : candidate_vertices[parlay::hash64(j) %
                                        candidate_vertices.size()];
+        if (Q[j].first == Q[j].second) {
+          Q[j].first = 0;
+          Q[j].second = 1;
+        }
       });
       return Q;
     });

@@ -18,7 +18,7 @@ declare -a undir_graph=(
 #  "Germany_sym"
 
 #   # # k-NN
-#   "Household_lines_5_sym"
+  # "Household_lines_5_sym"
 #   "CHEM_5_sym"
 )
 
@@ -26,7 +26,7 @@ declare numactl=""
 
 declare num_batches=10
 
-declare num_queries=1000
+declare num_queries=1000000
 
 declare source_dir="$(dirname $(pwd))"
 declare data_path="${source_dir}/data"
@@ -36,14 +36,23 @@ declare data_path="${source_dir}/data"
 mkdir ${data_path}/bench_dynamic
 cd ${source_dir}/build/benchmark/
 
+declare target="bench_dynamic"
+
+exp=$1
+if [ $exp == "memory" ]; then
+  target="bench_ram_dynamic"
+fi
+if [ $exp == "time" ]; then
+  target="bench_dynamic"
+fi
 
 #echo $(pwd)
-rm bench_dynamic
-make bench_dynamic
+rm ${target}
+make ${target}
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./bench_dynamic -a 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
+  ${numactl} ./${target} -a 3 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
   echo
 done
 

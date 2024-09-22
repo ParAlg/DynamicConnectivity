@@ -1,10 +1,13 @@
 #pragma once
-#include "absl/container/flat_hash_set.h"
 #include "alloc.h"
+#include "dycon/localTree/graph.hpp"
 #include "fetchQueue.hpp"
 #include "leaf.hpp"
+#include "parlay/parallel.h"
 #include "rankTree.hpp"
 #include "stats.hpp"
+#include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <optional>
@@ -34,7 +37,6 @@ public:
         edgemap(0) {
     rTrees.clear();
   }
-  // localTree(nodeArr &Q);
   localTree()
       : level(0), size(0), parent(nullptr), vertex(nullptr), edgemap(0) {
     rTrees.clear();
@@ -50,8 +52,8 @@ public:
   }
   void setSize(uint32_t sz) { this->size = sz; }
   uint32_t getSize() { return this->size; }
+  ::vertex getNGHS() { return this->vertex->getSize(); }
   static void merge(localTree *Cu, localTree *Cv);
-  // static localTree *mergeNode(nodeArr &Q, uint32_t l);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
   static void addChildren(localTree *p, fetchQueue<localTree *> &nodes);
@@ -66,7 +68,6 @@ public:
   void insertToLeaf(uint32_t v, uint32_t l);
   void deleteEdge(uint32_t v, uint32_t l);
   void addEdge(uint32_t v, uint32_t l);
-  void removeEdge(uint32_t v, uint32_t l);
   void changeLevel(std::vector<::vertex> &nghs, uint32_t oval, uint32_t nval);
   uint32_t getEdgeLevel(uint32_t e);
   static void updateBitMap(localTree *node);
@@ -74,11 +75,13 @@ public:
                               bool stat, parlay::sequence<stats> &info);
   static std::tuple<bool, uint32_t, uint32_t> fetchEdge(localTree *root,
                                                         uint32_t l);
-  static std::optional<std::pair<::vertex, absl::flat_hash_set<::vertex> *>>
+  static std::optional<std::pair<::vertex, edge_set *>>
   fetchLeaf(localTree *root, uint32_t l);
-  // static localTree *getIfSingleton(localTree *r);
   static bool ifSingleton(localTree *r);
-  static absl::flat_hash_set<::vertex> *getEdgeSet(localTree *r, uint32_t l);
+  static edge_set *getEdgeSet(localTree *r, uint32_t l);
+  static void topDown(localTree *root, bool clear,
+                      std::atomic<size_t> &mem_usage);
+  static size_t getLeafSpace(localTree *root);
 };
 inline type_allocator<localTree> *localTree::l_alloc = nullptr;
 inline localTree::~localTree() {
@@ -94,33 +97,14 @@ inline localTree::localTree(localTree *Cu, localTree *Cv) {
   this->edgemap = Cu->edgemap | Cv->edgemap;
   assert((1 << Cu->level) >= Cu->size);
   assert((1 << Cv->level) >= Cv->size);
-  // auto ru = new rankTree(std::log2(Cu->size), this, Cu, Cu->edgemap);
   auto ru =
       rankTree::r_alloc->create(std::log2(Cu->size), this, Cu, Cu->edgemap);
-  // auto rv = new rankTree(std::log2(Cv->size), this, Cv, Cv->edgemap);
   auto rv =
       rankTree::r_alloc->create(std::log2(Cv->size), this, Cv, Cv->edgemap);
   Cu->parent = ru;
   Cv->parent = rv;
   this->rTrees = std::vector<rankTree *>({rv, ru});
 }
-// inline localTree *localTree::getIfSingleton(localTree *r) {
-//   if (r->rTrees.size() > 1)
-//     return r;
-//   if (!r->rTrees[0]->isleaf())
-//     return r;
-//   auto node = r->rTrees[0]->descendant;
-//   if (node->level == 0)
-//     return r;
-//   delete node->parent;
-//   // node->parent = nullptr;
-//   // delete r;
-//   r->rTrees = node->rTrees;
-//   for (auto it : r->rTrees)
-//     it->Node = r;
-//   delete node;
-//   return r;
-// }
 inline bool localTree::ifSingleton(localTree *r) {
   if (!r)
     return false;
@@ -132,14 +116,12 @@ inline bool localTree::ifSingleton(localTree *r) {
     return false;
 }
 inline void localTree::merge(localTree *Cu, localTree *Cv) {
-  // parent level vertex
   Cu->size = Cu->size + Cv->size;
   Cu->rTrees = rankTree::Merge(Cu->rTrees, Cv->rTrees, Cu);
   auto oval = Cu->edgemap;
   Cu->edgemap = Cu->edgemap | Cv->edgemap;
   assert(Cu->level == Cv->level);
   assert(1 << Cu->level >= Cu->size);
-  // delete Cv;
   l_alloc->free(Cv);
   if (Cu->edgemap != oval)
     updateBitMap(Cu);
@@ -147,8 +129,6 @@ inline void localTree::merge(localTree *Cu, localTree *Cv) {
 inline void localTree::addChild(localTree *p, localTree *son) {
   if (!p)
     return;
-
-  // auto rTree = new rankTree(std::log2(son->size), p, son, son->edgemap);
   auto rTree =
       rankTree::r_alloc->create(std::log2(son->size), p, son, son->edgemap);
   son->parent = rTree;
@@ -158,9 +138,7 @@ inline void localTree::addChild(localTree *p, localTree *son) {
   p->edgemap = p->edgemap | son->edgemap;
   if (p->edgemap != oval)
     updateBitMap(p);
-  // p->level = std::ceil(std::log2(p->size));
   assert(p->level > son->level);
-  // std::cout << "level " << p->level << " size " << p->size << std::endl;
   assert((1 << p->level) >= p->size);
 }
 inline void localTree::add2Children(localTree *p, localTree *s1,
@@ -181,13 +159,6 @@ inline void localTree::add2Children(localTree *p, localTree *s1,
   if (p->edgemap != oval)
     updateBitMap(p);
 
-  // p->level = std::ceil(std::log2(p->size)); this should never happen
-
-  // if (p->level <= std::max(s1->level, s2->level) || (1 << p->level) <
-  // p->size)
-  //   std::cout << "assert " << p->level << " " << p->size << " " << s1->level
-  //             << " " << s1->size << " " << s2->level << " " << s2->size
-  //             << std::endl;
   assert(p->level > std::max(s1->level, s2->level));
   assert((1 << p->level) >= p->size);
 }
@@ -227,12 +198,9 @@ inline localTree *localTree::getLevelNode(localTree *r, uint32_t l) {
 inline localTree::nodeArr localTree::getRootPath(localTree *r) {
   localTree *temp[128];
   uint32_t num_nodes = 0;
-  // nodeArr p;
-  // p.push_back(r);
   temp[num_nodes++] = r;
   while (r->parent) {
     r = getParent(r);
-    // p.push_back(r);
     temp[num_nodes++] = r;
   }
   nodeArr p(temp, temp + num_nodes);
@@ -257,7 +225,6 @@ inline void localTree::insertToLeaf(uint32_t v, uint32_t l) {
   this->vertex->insert(v, l);
   auto oval = this->edgemap;
   this->edgemap = this->vertex->getEdgeMap();
-  // go up to update
   if (this->edgemap != oval)
     updateBitMap(this);
 }
@@ -269,7 +236,6 @@ inline void localTree::deleteEdge(uint32_t v, uint32_t l) {
     updateBitMap(this);
 }
 inline void localTree::deleteFromParent(localTree *son) {
-  // remove p from its parent
   if (!son->parent)
     return;
   auto node = getParent(son);
@@ -316,9 +282,7 @@ inline localTree *localTree::splitFromParent(localTree *p,
     cl = std::max(cl, it->level);
   }
   C->level = std::max(cl, (uint32_t)std::ceil(std::log2(_v)));
-
   deleteFromParent(p, nodes);
-
   // assign nodes as C's children or sibling
   // this one does not update bitmap to top because C has no parents
   for (auto it : nodes) {
@@ -330,7 +294,6 @@ inline localTree *localTree::splitFromParent(localTree *p,
           rankTree::r_alloc->create(std::log2(it->size), C, it, it->edgemap);
       it->parent = rTree;
       C->rTrees = rankTree::insertRankTree(C->rTrees, rTree, C);
-      // localTree::addChild(C, it);
     }
   }
   C->size = _v;
@@ -377,7 +340,7 @@ localTree::fetchEdge(localTree *root, uint32_t l) {
   }
   return std::make_tuple(false, 0, 0);
 }
-inline std::optional<std::pair<::vertex, absl::flat_hash_set<::vertex> *>>
+inline std::optional<std::pair<::vertex, edge_set *>>
 localTree::fetchLeaf(localTree *root, uint32_t l) {
   if (root->level == 0) {
     assert(root->vertex != nullptr);
@@ -389,8 +352,7 @@ localTree::fetchLeaf(localTree *root, uint32_t l) {
   }
   return std::nullopt;
 }
-inline absl::flat_hash_set<::vertex> *localTree::getEdgeSet(localTree *r,
-                                                            uint32_t l) {
+inline edge_set *localTree::getEdgeSet(localTree *r, uint32_t l) {
   assert(r->level == 0);
   return r->vertex->getLevelEdge(l);
 }
@@ -399,7 +361,24 @@ inline void localTree::changeLevel(std::vector<::vertex> &nghs, uint32_t oval,
   if (nghs.empty())
     return;
   auto omap = this->edgemap;
-  this->edgemap = this->vertex->changeLevel(nghs, oval, nval);
+  // this->edgemap = this->vertex->changeLevel(nghs, oval, nval);
   if (this->edgemap != omap)
     localTree::updateBitMap(this);
+}
+inline void localTree::topDown(localTree *root, bool clear,
+                               std::atomic<size_t> &mem_usage) {
+  if (!root)
+    return;
+  mem_usage += sizeof(rankTree *) * root->rTrees.size();
+  auto leaves = rankTree::decompose(root->rTrees, clear);
+  parlay::parallel_for(0, leaves.size(), [&](auto i) {
+    topDown(leaves[i]->descendant, clear, mem_usage);
+  });
+  if (clear)
+    l_alloc->free(root);
+}
+inline size_t localTree::getLeafSpace(localTree *root) {
+  if (!root || !root->vertex)
+    return 0;
+  return leaf::getLeafSpace(root->vertex);
 }

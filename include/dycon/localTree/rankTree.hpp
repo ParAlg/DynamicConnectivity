@@ -8,11 +8,6 @@
 #include <parlay/primitives.h>
 #include <parlay/sequence.h>
 class localTree;
-// todo
-//  build
-//  insertRankTree
-//  merge
-//  remove
 class rankTree {
 public:
   rankTree(uint32_t r, class localTree *_Node, class localTree *_des,
@@ -23,7 +18,6 @@ public:
   ~rankTree(){};
   using arr = std::vector<rankTree *>;
   static type_allocator<rankTree> *r_alloc;
-  // static parlay::type_allocator<rankTree *> *r_alloc;
 
 private:
   friend class localTree;
@@ -96,7 +90,6 @@ inline rankTree::arr rankTree::decompose(rankTree *T, bool clear = false) {
   Q.push(root);
   while (!Q.empty()) {
     root = Q.front();
-    stats::memUsage += sizeof(rankTree);
     Q.pop();
     if (root->isleaf()) {
       rTrees.emplace_back(root);
@@ -119,7 +112,6 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
   arr A;
   for (uint32_t i = 0; i < rTrees.size(); i++) {
     auto B = decompose(rTrees[i], clear);
-    // A.append(B);
     A.insert(A.end(), B.begin(), B.end());
   }
   sortByRank(A);
@@ -127,55 +119,38 @@ inline rankTree::arr rankTree::decompose(arr &rTrees, bool clear = false) {
 }
 inline rankTree::arr rankTree::buildFromSequence(arr &rTrees,
                                                  localTree *node = nullptr) {
-  // assert(rTrees.size() < 2 * leaf_threshold);
-  // rankTree *temp[2 * leaf_threshold];
-  // uint32_t num_root = 0;
   arr temp;
   temp.reserve(rTrees.size());
-  // arr Seq;
   uint32_t p = 0;
   while (p < rTrees.size()) {
     if (p == rTrees.size() - 1) {
       rTrees[p]->parent = nullptr;
       rTrees[p]->Node = node;
-      // Seq.push_back(rTrees[p]);
-      // temp[num_root++] = rTrees[p];
-      temp.push_back(rTrees[p]);
-      // std::cout << "push " << p << std::endl;
+      temp.emplace_back(rTrees[p]);
       break;
     }
     uint32_t counter = 1;
     while ((p + counter) < rTrees.size() &&
            rTrees[p + counter]->rank == rTrees[p]->rank)
       counter++;
-    // std::cout << "number of equal rank trees " << counter << std::endl;
     if (counter % 2 == 1) {
       rTrees[p]->parent = nullptr;
       rTrees[p]->Node = node;
-      // Seq.push_back(rTrees[p]);
-      // temp[num_root++] = rTrees[p];
-      temp.push_back(rTrees[p]);
+      temp.emplace_back(rTrees[p]);
       p++;
       counter--;
     }
     for (uint32_t i = 0; i < counter; i += 2) {
       rTrees[p + i + 1] = r_alloc->create(rTrees[p + i], rTrees[p + i + 1]);
-      // rTrees[p + i + 1] = new rankTree(rTrees[p + i], rTrees[p + i + 1]);
     }
     for (uint32_t i = 0; i < counter / 2; i++) {
       rTrees[(p + counter) - i - 1] = rTrees[(p + counter) - i * 2 - 1];
-      // std::cout << "move from " << (p + counter) - i * 2 - 1 << " to " << (p
-      // + counter) - i - 1 << std::endl;
     }
     p += counter / 2;
-    // std::cout << " Merge next time happens at" << p << std::endl;
   }
-  // arr Seq(temp.begin(), temp.begin() + temp.size());
   return arr(temp.begin(), temp.begin() + temp.size());
-  // return std::move(Seq);
 }
 inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
-  // arr rTrees;
   rankTree *temp[2 * leaf_threshold];
   uint32_t num_root = 0;
   auto p = T->parent;
@@ -183,25 +158,19 @@ inline rankTree::arr rankTree::remove(rankTree *T, localTree *node) {
     if (p->lchild == T) {
       p->rchild->Node = node;
       p->rchild->parent = nullptr;
-      // rTrees.push_back(p->rchild);
       temp[num_root++] = p->rchild;
     }
     if (p->rchild == T) {
       p->lchild->Node = node;
       p->lchild->parent = nullptr;
-      // rTrees.push_back(p->lchild);
       temp[num_root++] = p->lchild;
     }
-    // delete T;
     r_alloc->free(T);
     T = p;
     p = p->parent;
   }
-  // delete T;
   r_alloc->free(T);
   return arr(temp, temp + num_root);
-  // arr rTrees(temp, temp + num_root);
-  // return std::move(rTrees);
 }
 inline rankTree::arr rankTree::remove(arr &rTrees, rankTree *T,
                                       localTree *node) {
@@ -225,7 +194,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   for (auto it : dropped) {
     auto p = it;
     while (p != nullptr && marked.contains(p) == false) {
-      marked.insert(p);
+      marked.emplace(p);
       p = p->parent;
     }
   }
@@ -233,7 +202,7 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
   nTrees.reserve(rTrees.size());
   for (auto it : rTrees)
     if (marked.contains(it) == false)
-      nTrees.push_back(it);
+      nTrees.emplace_back(it);
   for (auto it : dropped) {
     rankTree *r = it;
     while (r != nullptr /*&& marked.contains(r) == true*/) {
@@ -243,13 +212,13 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
         r->lchild->parent = nullptr;
         r->lchild->Node = node;
         if (marked.contains(r->lchild) == false)
-          nTrees.push_back(r->lchild);
+          nTrees.emplace_back(r->lchild);
       }
       if (r->rchild) {
         r->rchild->parent = nullptr;
         r->rchild->Node = node;
         if (marked.contains(r->rchild) == false)
-          nTrees.push_back(r->rchild);
+          nTrees.emplace_back(r->rchild);
       }
       auto p = r->parent;
       if (p) {
@@ -265,46 +234,11 @@ inline rankTree::arr rankTree::remove(arr &rTrees, arr &dropped,
       nTrees = build(nTrees, node);
   }
   return std::move(nTrees);
-  // std::stack<rankTree *> s;
-  // for (auto it : rTrees) {
-  //   if (marked.contains(it))
-  //     s.push(it);
-  //   else
-  //     nTrees.push_back(it);
-  // }
-  // while (!s.empty()) {
-  //   rankTree *r = s.top();
-  //   if (r->lchild != nullptr) {
-  //     if (marked.contains(r->lchild))
-  //       s.push(r->lchild);
-  //     else {
-  //       nTrees.push_back(r->lchild);
-  //       if (nTrees.size() == leaf_threshold) {
-  //         sortByRank(nTrees);
-  //         nTrees = build(nTrees, node);
-  //       }
-  //     }
-  //   }
-  //   if (r->rchild != nullptr) {
-  //     if (marked.contains(r->rchild))
-  //       s.push(r->rchild);
-  //     else {
-  //       nTrees.push_back(r->rchild);
-  //       if (nTrees.size() == leaf_threshold) {
-  //         sortByRank(nTrees);
-  //         nTrees = build(nTrees, node);
-  //       }
-  //     }
-  //   }
-  //   s.pop();
-  //   r_alloc->free(r);
-  // }
-  // return nTrees;
 }
 inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
                                               localTree *node) {
   if (rTrees.size() < leaf_threshold) {
-    rTrees.push_back(T);
+    rTrees.emplace_back(T);
     return std::move(rTrees);
   }
   for (auto it = rTrees.begin(); it != rTrees.end(); it++) {
@@ -313,7 +247,7 @@ inline rankTree::arr rankTree::insertRankTree(arr &rTrees, rankTree *T,
       return build(rTrees, node);
     }
   }
-  rTrees.push_back(T);
+  rTrees.emplace_back(T);
   return build(rTrees, node);
 }
 inline void rankTree::sortByRank(arr &rTrees) {
@@ -325,39 +259,14 @@ inline void rankTree::sortByRank(arr &rTrees) {
 inline rankTree::arr rankTree::build(arr &rTrees, localTree *node) {
   if (rTrees.size() < leaf_threshold)
     return std::move(rTrees);
-  // else {
   sortByRank(rTrees);
   return buildFromSequence(rTrees, node);
-  // }
-  // rankTree *temp[2 * leaf_threshold];
-  // uint32_t num_root = 0;
-  // for (uint32_t i = 0; i < rTrees.size() - 1; i++) {
-  //   if (rTrees[i]->rank == rTrees[i + 1]->rank)
-  //     // rTrees[i + 1] = new rankTree(rTrees[i], rTrees[i + 1]);
-  //     rTrees[i + 1] = r_alloc->create(rTrees[i], rTrees[i + 1]);
-  //   else {
-  //     if (rTrees[i]->rank > rTrees[i + 1]->rank)
-  //       std::swap(rTrees[i], rTrees[i + 1]);
-  //     rTrees[i]->Node = node;
-  //     rTrees[i]->parent = nullptr;
-  //     // Seq.push_back(rTrees[i]);
-  //     temp[num_root++] = rTrees[i];
-  //   }
-  // }
-  // rTrees[rTrees.size() - 1]->Node = node;
-  // rTrees[rTrees.size() - 1]->parent = nullptr;
-  // // Seq.push_back(rTrees[rTrees.size() - 1]);
-  // temp[num_root++] = rTrees[rTrees.size() - 1];
-  // arr Seq(temp, temp + num_root);
-  // return Seq;
 }
 // Merge all the nodes from rankTree 2 to rankTree 1.
 // Need to modify the pointers to local tree node from r2 to the node from r1
 // because we don't update the node pointer of each leaf in r2. Only the root of
 // each rankTree stores the correct pointer to its local tree node
 inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
-  // arr Seq;
-
   if (r1.size() < r2.size())
     return Merge(r2, r1, node);
   r1.reserve(r1.size() + r2.size());
@@ -367,62 +276,9 @@ inline rankTree::arr rankTree::Merge(arr &r1, arr &r2, localTree *node) {
   }
   for (auto it : r2) {
     it->Node = node;
-    r1.push_back(it);
+    r1.emplace_back(it);
   }
   return build(r1, node);
-  // rankTree *temp[2 * leaf_threshold];
-  // uint32_t num_root = 0;
-  // for (auto &it : r1) {
-  //   it->Node = node;
-  //   // it->parent = nullptr;
-  //   temp[num_root++] = it;
-  // }
-  // for (auto &it : r2) {
-  //   it->Node = node;
-  //   // it->parent = nullptr;
-  //   temp[num_root++] = it;
-  // }
-  // arr Seq(temp, temp + num_root);
-  // if (/*r1.size() + r2.size()*/ num_root <= leaf_threshold)
-  //   return Seq;
-  // uint32_t p = 0, q = 0;
-  // while (p < r1.size() || q < r2.size()) {
-  //   if (p == r1.size()) {
-  //     while (q < r2.size()) {
-  //       r2[q]->Node = node;
-  //       r2[q]->parent = nullptr;
-  //       // Seq.push_back(r2[q]);
-  //       temp[num_root++] = r2[q];
-  //       q++;
-  //     }
-  //     break;
-  //   }
-  //   if (q == r2.size()) {
-  //     while (p < r1.size()) {
-  //       r1[p]->Node = node;
-  //       r1[p]->parent = nullptr;
-  //       // Seq.push_back(r1[p]);
-  //       temp[num_root++] = r1[p];
-  //       p++;
-  //     }
-  //     break;
-  //   }
-  //   if (r1[p]->rank > r2[q]->rank) {
-  //     r2[q]->Node = node;
-  //     r2[q]->parent = nullptr;
-  //     // Seq.push_back(r2[q]);
-  //     temp[num_root++] = r2[q];
-  //     q++;
-  //   } else {
-  //     r1[p]->Node = node;
-  //     r1[p]->parent = nullptr;
-  //     // Seq.push_back(r1[p]);
-  //     temp[num_root++] = r1[p];
-  //     p++;
-  //   }
-  // }
-  // arr Seq(temp, temp + num_root);
-  // return build(Seq, node);
 }
 inline rankTree *rankTree::getRoot(rankTree *T) {
   while (T->parent)
@@ -443,8 +299,6 @@ inline localTree *rankTree::updateBitMapByTree(rankTree *T,
     // no need to go up
     if (oldval == (lval | rval))
       return nullptr;
-    // std::cout << "old " << oldval << " new " << nval << " lval " << lval << "
-    // rval" << rval << std::endl;
     T->parent->edgemap = lval | rval;
     T = T->parent;
   }
@@ -512,11 +366,6 @@ inline rankTree::arr rankTree::testDecompose(rankTree *T) {
 }
 inline rankTree::arr rankTree::testSortByRank(arr &A) {
   sortByRank(A);
-
-  // for (uint32_t i = 0; i < A.size(); i++)
-  //   std::cout << A[i]->rank << ",";
-  // std::cout << std::endl;
-
   return A;
 }
 inline bool rankTree::testEqualRanks(arr &A, arr &B) {

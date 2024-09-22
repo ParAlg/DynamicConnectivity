@@ -1,0 +1,436 @@
+Restore Head+change postion to push
+2049280
+6503942
+Parlay time: constructor: 0.3206
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.3343
+Parlay time: Insert batch #0: 0.9171
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 1.1595
+Parlay time: Answer queries #1: 0.0003
+Parlay time: Insert batch #2: 1.3516
+Parlay time: Answer queries #2: 0.0009
+Parlay time: Insert batch #3: 1.4823
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 1.4462
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 1.7330
+Parlay time: Answer queries #5: 0.0019
+Parlay time: Insert batch #6: 1.4657
+Parlay time: Answer queries #6: 0.0019
+Parlay time: Insert batch #7: 1.4157
+Parlay time: Answer queries #7: 0.0021
+Parlay time: Insert batch #8: 1.5048
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 1.6867
+Parlay time: Answer queries #9: 0.0020
+Parlay time: Delete batch #0: 3.5902
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 3.7463
+Parlay time: Answer queries #1: 0.0021
+Parlay time: Delete batch #2: 3.8570
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Delete batch #3: 4.4247
+Parlay time: Answer queries #3: 0.0019
+Parlay time: Delete batch #4: 4.9822
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Delete batch #5: 5.8311
+Parlay time: Answer queries #5: 0.0012
+Parlay time: Delete batch #6: 5.4902
+Parlay time: Answer queries #6: 0.0005
+Parlay time: Delete batch #7: 3.4999
+Parlay time: Answer queries #7: 0.0004
+Parlay time: Delete batch #8: 2.2976
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.8669
+Parlay time: Answer queries #9: 0.0001
+3072627
+117185083
+Parlay time: constructor: 0.4954
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.5145
+Parlay time: Insert batch #0: 32.1368
+Parlay time: Answer queries #0: 0.0016
+Parlay time: Insert batch #1: 34.5422
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 35.0385
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 34.3368
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Insert batch #4: 35.1452
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 36.7086
+Parlay time: Answer queries #5: 0.0016
+Parlay time: Insert batch #6: 35.8466
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 36.2299
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 36.4998
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 36.7737
+Parlay time: Answer queries #9: 0.0016
+Parlay time: Delete batch #0: 45.0782
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 48.0659
+Parlay time: Answer queries #1: 0.0019
+Parlay time: Delete batch #2: 51.0551
+Parlay time: Answer queries #2: 0.0019
+Parlay time: Delete batch #3: 54.1557
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 57.4016
+Parlay time: Answer queries #4: 0.0019
+Parlay time: Delete batch #5: 60.4315
+Parlay time: Answer queries #5: 0.0021
+Parlay time: Delete batch #6: 65.1927
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Delete batch #7: 71.5536
+Parlay time: Answer queries #7: 0.0053
+Parlay time: Delete batch #8: 82.6218
+Parlay time: Answer queries #8: 0.0019
+Parlay time: Delete batch #9: 106.0805
+Parlay time: Answer queries #9: 0.0001
+
+One more hash table to decrease push to queue
+2049280
+6503942
+Parlay time: constructor: 0.3306
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.3441
+Parlay time: Insert batch #0: 0.9722
+Parlay time: Answer queries #0: 0.0003
+Parlay time: Insert batch #1: 1.2127
+Parlay time: Answer queries #1: 0.0004
+Parlay time: Insert batch #2: 1.4071
+Parlay time: Answer queries #2: 0.0007
+Parlay time: Insert batch #3: 1.5142
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 1.4929
+Parlay time: Answer queries #4: 0.0018
+Parlay time: Insert batch #5: 1.7816
+Parlay time: Answer queries #5: 0.0020
+Parlay time: Insert batch #6: 1.5416
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Insert batch #7: 1.4959
+Parlay time: Answer queries #7: 0.0019
+Parlay time: Insert batch #8: 1.5858
+Parlay time: Answer queries #8: 0.0021
+Parlay time: Insert batch #9: 1.6247
+Parlay time: Answer queries #9: 0.0021
+Parlay time: Delete batch #0: 3.3367
+Parlay time: Answer queries #0: 0.0021
+Parlay time: Delete batch #1: 4.0385
+Parlay time: Answer queries #1: 0.0022
+Parlay time: Delete batch #2: 4.0982
+Parlay time: Answer queries #2: 0.0021
+Parlay time: Delete batch #3: 4.4551
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 5.2707
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Delete batch #5: 5.7889
+Parlay time: Answer queries #5: 0.0012
+Parlay time: Delete batch #6: 5.8012
+Parlay time: Answer queries #6: 0.0006
+Parlay time: Delete batch #7: 3.4139
+Parlay time: Answer queries #7: 0.0004
+Parlay time: Delete batch #8: 2.1303
+Parlay time: Answer queries #8: 0.0002
+Parlay time: Delete batch #9: 1.3742
+Parlay time: Answer queries #9: 0.0001
+3072627
+117185083
+Parlay time: constructor: 0.5022
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.5217
+Parlay time: Insert batch #0: 34.4592
+Parlay time: Answer queries #0: 0.0017
+Parlay time: Insert batch #1: 35.2042
+Parlay time: Answer queries #1: 0.0017
+Parlay time: Insert batch #2: 35.9342
+Parlay time: Answer queries #2: 0.0016
+Parlay time: Insert batch #3: 35.9087
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Insert batch #4: 35.8040
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 37.5775
+Parlay time: Answer queries #5: 0.0017
+Parlay time: Insert batch #6: 36.7172
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Insert batch #7: 37.0580
+Parlay time: Answer queries #7: 0.0018
+Parlay time: Insert batch #8: 37.3256
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 37.5738
+Parlay time: Answer queries #9: 0.0016
+Parlay time: Delete batch #0: 46.2284
+Parlay time: Answer queries #0: 0.0020
+Parlay time: Delete batch #1: 49.6503
+Parlay time: Answer queries #1: 0.0021
+Parlay time: Delete batch #2: 52.7396
+Parlay time: Answer queries #2: 0.0020
+Parlay time: Delete batch #3: 56.0209
+Parlay time: Answer queries #3: 0.0020
+Parlay time: Delete batch #4: 59.2520
+Parlay time: Answer queries #4: 0.0020
+Parlay time: Delete batch #5: 62.3884
+Parlay time: Answer queries #5: 0.0022
+Parlay time: Delete batch #6: 66.8238
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Delete batch #7: 73.6168
+Parlay time: Answer queries #7: 0.0020
+Parlay time: Delete batch #8: 84.5188
+Parlay time: Answer queries #8: 0.0019
+Parlay time: Delete batch #9: 108.9620
+Parlay time: Answer queries #9: 0.0001
+
+
+3072627
+117185083
+Parlay time: constructor: 0.4832
+Parlay time: start benchmarking comressed CWN with edges inserted to root: 0.5029
+Parlay time: Insert batch #0: 25.3691
+Parlay time: Answer queries #0: 0.0009
+Parlay time: Insert batch #1: 26.9133
+Parlay time: Answer queries #1: 0.0010
+Parlay time: Insert batch #2: 27.7614
+Parlay time: Answer queries #2: 0.0010
+Parlay time: Insert batch #3: 27.7815
+Parlay time: Answer queries #3: 0.0010
+Parlay time: Insert batch #4: 28.5312
+Parlay time: Answer queries #4: 0.0010
+Parlay time: Insert batch #5: 30.7041
+Parlay time: Answer queries #5: 0.0010
+Parlay time: Insert batch #6: 30.1009
+Parlay time: Answer queries #6: 0.0010
+Parlay time: Insert batch #7: 30.4622
+Parlay time: Answer queries #7: 0.0010
+Parlay time: Insert batch #8: 30.5247
+Parlay time: Answer queries #8: 0.0010
+Parlay time: Insert batch #9: 31.2251
+Parlay time: Answer queries #9: 0.0010
+Parlay time: Delete batch #0: 28.9539
+nonTreeEdge 11411786 SelfLoopEdge 5026 TreeEdge 301696
+Parlay time: Answer queries #0: 0.0015
+Parlay time: Delete batch #1: 26.9575
+nonTreeEdge 11410839 SelfLoopEdge 9736 TreeEdge 297933
+Parlay time: Answer queries #1: 0.0016
+Parlay time: Delete batch #2: 25.6636
+nonTreeEdge 11411133 SelfLoopEdge 13073 TreeEdge 294302
+Parlay time: Answer queries #2: 0.0017
+Parlay time: Delete batch #3: 25.2683
+nonTreeEdge 11410797 SelfLoopEdge 16492 TreeEdge 291219
+Parlay time: Answer queries #3: 0.0017
+Parlay time: Delete batch #4: 25.4600
+nonTreeEdge 11411012 SelfLoopEdge 19776 TreeEdge 287720
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Delete batch #5: 24.0795
+nonTreeEdge 11411611 SelfLoopEdge 22764 TreeEdge 284133
+Parlay time: Answer queries #5: 0.0017
+Parlay time: Delete batch #6: 22.9921
+nonTreeEdge 11411394 SelfLoopEdge 25849 TreeEdge 281265
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Delete batch #7: 22.6074
+nonTreeEdge 11411152 SelfLoopEdge 28704 TreeEdge 278652
+Parlay time: Answer queries #7: 0.0018
+Parlay time: Delete batch #8: 20.2196
+nonTreeEdge 11410095 SelfLoopEdge 32062 TreeEdge 276351
+Parlay time: Answer queries #8: 0.0018
+Parlay time: Delete batch #9: 21.7501
+nonTreeEdge 11412824 SelfLoopEdge 33963 TreeEdge 271724
+Parlay time: Answer queries #9: 0.0016
+
+
+
+
+3072627
+117185083
+Parlay time: constructor: 0.4833
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.5027
+Parlay time: Insert batch #0: 32.3414
+Parlay time: Answer queries #0: 0.0017
+Parlay time: Insert batch #1: 33.9883
+Parlay time: Answer queries #1: 0.0016
+Parlay time: Insert batch #2: 34.1531
+Parlay time: Answer queries #2: 0.0017
+Parlay time: Insert batch #3: 34.0511
+Parlay time: Answer queries #3: 0.0016
+Parlay time: Insert batch #4: 34.6473
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 36.7621
+Parlay time: Answer queries #5: 0.0017
+Parlay time: Insert batch #6: 36.3231
+Parlay time: Answer queries #6: 0.0016
+Parlay time: Insert batch #7: 36.9343
+Parlay time: Answer queries #7: 0.0017
+Parlay time: Insert batch #8: 37.5248
+Parlay time: Answer queries #8: 0.0017
+Parlay time: Insert batch #9: 38.1470
+Parlay time: Answer queries #9: 0.0017
+Parlay time: Delete batch #0: 28.7354
+nonTreeEdge 11411786 SelfLoopEdge 15 TreeEdge 306707
+Parlay time: Answer queries #0: 0.0023
+Parlay time: Delete batch #1: 27.7604
+nonTreeEdge 11410839 SelfLoopEdge 24 TreeEdge 307645
+Parlay time: Answer queries #1: 0.0022
+Parlay time: Delete batch #2: 27.6689
+nonTreeEdge 11411133 SelfLoopEdge 76 TreeEdge 307299
+Parlay time: Answer queries #2: 0.0021
+Parlay time: Delete batch #3: 27.3052
+nonTreeEdge 11410797 SelfLoopEdge 106 TreeEdge 307605
+Parlay time: Answer queries #3: 0.0022
+Parlay time: Delete batch #4: 26.2757
+nonTreeEdge 11411012 SelfLoopEdge 171 TreeEdge 307325
+Parlay time: Answer queries #4: 0.0022
+Parlay time: Delete batch #5: 25.3168
+nonTreeEdge 11411611 SelfLoopEdge 232 TreeEdge 306665
+Parlay time: Answer queries #5: 0.0020
+Parlay time: Delete batch #6: 25.2701
+nonTreeEdge 11411394 SelfLoopEdge 338 TreeEdge 306776
+Parlay time: Answer queries #6: 0.0020
+Parlay time: Delete batch #7: 23.8876
+nonTreeEdge 11411152 SelfLoopEdge 409 TreeEdge 306947
+Parlay time: Answer queries #7: 0.0020
+Parlay time: Delete batch #8: 23.1934
+nonTreeEdge 11410095 SelfLoopEdge 536 TreeEdge 307877
+Parlay time: Answer queries #8: 0.0019
+Parlay time: Delete batch #9: 26.1385
+nonTreeEdge 11412824 SelfLoopEdge 689 TreeEdge 304998
+Parlay time: Answer queries #9: 0.0016
+
+2049280
+6503942
+Parlay time: constructor: 0.3202
+Parlay time: start benchmarking comressed CWN with edges inserted to root: 0.3342
+Parlay time: Insert batch #0: 1.0323
+Parlay time: Answer queries #0: 0.0001
+Parlay time: Insert batch #1: 1.1140
+Parlay time: Answer queries #1: 0.0002
+Parlay time: Insert batch #2: 1.5346
+Parlay time: Answer queries #2: 0.0011
+Parlay time: Insert batch #3: 1.4056
+Parlay time: Answer queries #3: 0.0008
+Parlay time: Insert batch #4: 1.3522
+Parlay time: Answer queries #4: 0.0008
+Parlay time: Insert batch #5: 1.6251
+Parlay time: Answer queries #5: 0.0009
+Parlay time: Insert batch #6: 1.3176
+Parlay time: Answer queries #6: 0.0009
+Parlay time: Insert batch #7: 1.3103
+Parlay time: Answer queries #7: 0.0009
+Parlay time: Insert batch #8: 1.3026
+Parlay time: Answer queries #8: 0.0009
+Parlay time: Insert batch #9: 1.5394
+Parlay time: Answer queries #9: 0.0038
+Parlay time: Delete batch #0: 5.1230
+nonTreeEdge 445956 SelfLoopEdge 3558 TreeEdge 200880
+Parlay time: Answer queries #0: 0.0012
+Parlay time: Delete batch #1: 4.6967
+nonTreeEdge 446203 SelfLoopEdge 11129 TreeEdge 193062
+Parlay time: Answer queries #1: 0.0013
+Parlay time: Delete batch #2: 5.0318
+nonTreeEdge 446170 SelfLoopEdge 19407 TreeEdge 184817
+Parlay time: Answer queries #2: 0.0014
+Parlay time: Delete batch #3: 4.8166
+nonTreeEdge 446115 SelfLoopEdge 25635 TreeEdge 178644
+Parlay time: Answer queries #3: 0.0016
+Parlay time: Delete batch #4: 3.9613
+nonTreeEdge 445218 SelfLoopEdge 30042 TreeEdge 175134
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Delete batch #5: 3.2704
+nonTreeEdge 445717 SelfLoopEdge 31110 TreeEdge 173567
+Parlay time: Answer queries #5: 0.0016
+Parlay time: Delete batch #6: 3.0991
+nonTreeEdge 445805 SelfLoopEdge 30131 TreeEdge 174458
+Parlay time: Answer queries #6: 0.0013
+Parlay time: Delete batch #7: 2.9878
+nonTreeEdge 446378 SelfLoopEdge 26519 TreeEdge 177497
+Parlay time: Answer queries #7: 0.0011
+Parlay time: Delete batch #8: 2.9621
+nonTreeEdge 446093 SelfLoopEdge 22155 TreeEdge 182146
+Parlay time: Answer queries #8: 0.0010
+Parlay time: Delete batch #9: 2.4956
+nonTreeEdge 445817 SelfLoopEdge 17260 TreeEdge 187319
+Parlay time: Answer queries #9: 0.0005
+
+
+2049280
+6503942
+Parlay time: constructor: 0.3187
+Parlay time: start benchmarking comressed CWN with edges inserted to lca: 0.3324
+Parlay time: Insert batch #0: 1.0491
+Parlay time: Answer queries #0: 0.0002
+Parlay time: Insert batch #1: 1.2710
+Parlay time: Answer queries #1: 0.0003
+Parlay time: Insert batch #2: 1.5693
+Parlay time: Answer queries #2: 0.0006
+Parlay time: Insert batch #3: 1.5295
+Parlay time: Answer queries #3: 0.0014
+Parlay time: Insert batch #4: 1.7731
+Parlay time: Answer queries #4: 0.0017
+Parlay time: Insert batch #5: 1.7004
+Parlay time: Answer queries #5: 0.0019
+Parlay time: Insert batch #6: 1.5615
+Parlay time: Answer queries #6: 0.0019
+Parlay time: Insert batch #7: 1.5514
+Parlay time: Answer queries #7: 0.0019
+Parlay time: Insert batch #8: 1.6022
+Parlay time: Answer queries #8: 0.0020
+Parlay time: Insert batch #9: 1.5311
+Parlay time: Answer queries #9: 0.0019
+Parlay time: Delete batch #0: 2.8460
+nonTreeEdge 445956 SelfLoopEdge 89 TreeEdge 204349
+Parlay time: Answer queries #0: 0.0023
+Parlay time: Delete batch #1: 3.1369
+nonTreeEdge 446203 SelfLoopEdge 191 TreeEdge 204000
+Parlay time: Answer queries #1: 0.0023
+Parlay time: Delete batch #2: 2.9331
+nonTreeEdge 446170 SelfLoopEdge 392 TreeEdge 203832
+Parlay time: Answer queries #2: 0.0021
+Parlay time: Delete batch #3: 3.1298
+nonTreeEdge 446115 SelfLoopEdge 531 TreeEdge 203748
+Parlay time: Answer queries #3: 0.0059
+Parlay time: Delete batch #4: 3.0991
+nonTreeEdge 445218 SelfLoopEdge 612 TreeEdge 204564
+Parlay time: Answer queries #4: 0.0020
+Parlay time: Delete batch #5: 3.1555
+nonTreeEdge 445717 SelfLoopEdge 742 TreeEdge 203935
+Parlay time: Answer queries #5: 0.0018
+Parlay time: Delete batch #6: 3.7192
+nonTreeEdge 445805 SelfLoopEdge 752 TreeEdge 203837
+Parlay time: Answer queries #6: 0.0017
+Parlay time: Delete batch #7: 3.3750
+nonTreeEdge 446378 SelfLoopEdge 717 TreeEdge 203299
+Parlay time: Answer queries #7: 0.0012
+Parlay time: Delete batch #8: 2.9558
+nonTreeEdge 446093 SelfLoopEdge 534 TreeEdge 203767
+Parlay time: Answer queries #8: 0.0009
+Parlay time: Delete batch #9: 2.7682
+nonTreeEdge 445817 SelfLoopEdge 423 TreeEdge 204156
+Parlay time: Answer queries #9: 0.0006
+
+Parlay time: Answer queries #9: 0.0019
+Parlay time: Delete batch #0: 1.9672
+nonTreeEdge 435896 SelfLoopEdge 354 TreeEdge 214144
+Parlay time: Answer queries #0: 0.0025
+Parlay time: Delete batch #1: 2.1347
+nonTreeEdge 414378 SelfLoopEdge 1069 TreeEdge 234947
+Parlay time: Answer queries #1: 0.0023
+Parlay time: Delete batch #2: 2.6936
+nonTreeEdge 387901 SelfLoopEdge 1742 TreeEdge 260751
+Parlay time: Answer queries #2: 0.0023
+Parlay time: Delete batch #3: 2.9318
+nonTreeEdge 356603 SelfLoopEdge 2327 TreeEdge 291464
+Parlay time: Answer queries #3: 0.0021
+Parlay time: Delete batch #4: 3.6906
+nonTreeEdge 317540 SelfLoopEdge 2928 TreeEdge 329926
+Parlay time: Answer queries #4: 0.0020
+Parlay time: Delete batch #5: 4.3938
+nonTreeEdge 274093 SelfLoopEdge 3068 TreeEdge 373233
+Parlay time: Answer queries #5: 0.0015
+Parlay time: Delete batch #6: 4.7940
+nonTreeEdge 224127 SelfLoopEdge 2923 TreeEdge 423344
+Parlay time: Answer queries #6: 0.0010
+Parlay time: Delete batch #7: 3.7769
+nonTreeEdge 179221 SelfLoopEdge 2028 TreeEdge 469145
+Parlay time: Answer queries #7: 0.0005
+Parlay time: Delete batch #8: 2.3997
+nonTreeEdge 147651 SelfLoopEdge 1123 TreeEdge 501620
+Parlay time: Answer queries #8: 0.0003
+Parlay time: Delete batch #9: 2.5728
+nonTreeEdge 134016 SelfLoopEdge 586 TreeEdge 515794
+Parlay time: Answer queries #9: 0.0002
