@@ -72,13 +72,6 @@ public:
       leaves[i] = localTree::l_alloc->create(i);
   }
   ~SCCWN() {
-    // std::cout << "nonTreeEdge\n";
-    // for (auto it : nonTreeEdge)
-    //   std::cout << it.first << " " << it.second << std::endl;
-    // std::cout << "TreeEdge\n";
-    // for (auto it : TreeEdge)
-    //   std::cout << it.first << " " << it.second << std::endl;
-    // run_stat("./", false, true, false);
     std::atomic<std::size_t> mem_usage = 0;
     parlay::execute_with_scheduler(1, [&]() { GC(true, mem_usage); });
     rankTree::r_alloc->~type_allocator();
@@ -91,7 +84,6 @@ public:
   void insertToBlock(uint32_t u, uint32_t v);
   bool is_connected(uint32_t u, uint32_t v);
   void remove(uint32_t u, uint32_t v);
-  void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
   size_t getMemUsage() {
     std::atomic<std::size_t> mem_usage = 0;
     GC(false, mem_usage);
@@ -536,22 +528,6 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
 }
 inline bool SCCWN::is_connected(uint32_t u, uint32_t v) {
   return localTree::getRoot(leaves[u]) == localTree::getRoot(leaves[v]);
-}
-inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
-                            bool clear = false, bool stat = true) {
-  std::vector<localTree *> roots(leaves.size(), nullptr);
-  parlay::parallel_for(0, roots.size(), [&](uint32_t i) {
-    if (leaves[i])
-      roots[i] = localTree::getRoot(leaves[i]);
-  });
-  parlay::sequence<localTree *> r(roots.begin(), roots.end());
-  r = parlay::remove_duplicates(r);
-  parlay::parallel_for(0, r.size(), [&](uint32_t i) {
-    if (r[i]) {
-      parlay::sequence<stats> info;
-      localTree::traverseTopDown(r[i], clear, verbose, stat, info);
-    }
-  });
 }
 inline void SCCWN::placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
                               uint32_t l) {
