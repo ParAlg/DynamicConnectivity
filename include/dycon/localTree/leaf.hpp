@@ -48,6 +48,13 @@ public:
   std::pair<vertex, edge_set *> getLevelEdgeSet(uint32_t l);
   static type_allocator<edge_set> *vector_alloc;
   static size_t getLeafSpace(leaf *node);
+  void flatten() {
+    std::cout << "\n nghs\n";
+    for (auto it : E) {
+      for (auto j : *(it.second))
+        std::cout << it.first << " " << j << std::endl;
+    }
+  }
 
 private:
   std::vector<std::pair<uint32_t, edge_set *>> E;

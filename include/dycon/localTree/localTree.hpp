@@ -52,7 +52,10 @@ public:
   }
   void setSize(uint32_t sz) { this->size = sz; }
   uint32_t getSize() { return this->size; }
-  ::vertex getNGHS() { return this->vertex->getSize(); }
+  ::vertex getNGHS() {
+    this->vertex->flatten();
+    return this->vertex->getSize();
+  }
   static void merge(localTree *Cu, localTree *Cv);
   static void addChild(localTree *p, localTree *son);
   static void add2Children(localTree *p, localTree *s1, localTree *s2);
@@ -329,6 +332,8 @@ inline void localTree::traverseTopDown(localTree *root, bool clear,
 }
 inline std::tuple<bool, uint32_t, uint32_t>
 localTree::fetchEdge(localTree *root, uint32_t l) {
+  if (root->edgemap[l] == 0)
+    return std::make_tuple(false, 0, 0);
   if (root->level == 0) {
     assert(root->vertex != nullptr);
     return root->vertex->fetchEdge(l);
