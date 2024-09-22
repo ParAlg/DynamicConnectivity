@@ -92,7 +92,6 @@ public:
   bool is_connected(uint32_t u, uint32_t v);
   void remove(uint32_t u, uint32_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
-  void test_fetch();
   size_t getMemUsage() {
     std::atomic<std::size_t> mem_usage = 0;
     GC(false, mem_usage);
@@ -627,58 +626,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
     }
   }
   return std::nullopt;
-}
-inline void SCCWN::test_fetch() {
-  this->insert(0, 1);
-  this->insert(2, 3);
-  this->insert(4, 5);
-  this->insert(6, 7);
-  this->insert(0, 2);
-  this->insert(0, 3);
-  this->insert(1, 3);
-  this->insert(4, 6);
-  this->insert(5, 7);
-  this->insert(1, 5);
-  this->insert(2, 6);
-  parlay::sequence<localTree *> nodes = parlay::tabulate(
-      8, [&](auto i) { return localTree::getParent(leaves[i]); });
-  fetchQueue<localTree *> Q1;
-  fetchQueue<vertex, edge_set::iterator> L1;
-  for (auto it : nodes)
-    Q1.push(it);
-  while (true) {
-    auto e = fetchEdge(Q1, L1, 1);
-    if (e == std::nullopt)
-      break;
-    // std::cout << "fetching " << e->first << " " << e->second << " at level
-    // 1\n";
-  }
-  nodes = parlay::tabulate(
-      8, [&](auto i) { return localTree::getParent(leaves[i]); });
-  fetchQueue<localTree *> Q2;
-  fetchQueue<vertex, edge_set::iterator> L2;
-  for (auto it : nodes)
-    Q2.push(it);
-  while (true) {
-    auto e = fetchEdge(Q2, L2, 2);
-    if (e == std::nullopt)
-      break;
-    // std::cout << "fetching " << e->first << " " << e->second << " at level
-    // 2\n";
-  }
-  nodes = parlay::tabulate(
-      8, [&](auto i) { return localTree::getParent(leaves[i]); });
-  fetchQueue<localTree *> Q3;
-  fetchQueue<vertex, edge_set::iterator> L3;
-  for (auto it : nodes)
-    Q3.push(it);
-  while (true) {
-    auto e = fetchEdge(Q3, L3, 3);
-    if (e == std::nullopt)
-      break;
-    // std::cout << "fetching " << e->first << " " << e->second << " at level
-    // 3\n";
-  }
 }
 inline void SCCWN::restoreBitMap(fetchQueue<vertex, edge_set::iterator> &lfQ,
                                  uint32_t l, bool nval) {
