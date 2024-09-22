@@ -90,7 +90,6 @@ inline rankTree::arr rankTree::decompose(rankTree *T, bool clear = false) {
   Q.push(root);
   while (!Q.empty()) {
     root = Q.front();
-    stats::memUsage += sizeof(rankTree);
     Q.pop();
     if (root->isleaf()) {
       rTrees.emplace_back(root);

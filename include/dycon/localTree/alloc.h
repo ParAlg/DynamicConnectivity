@@ -62,6 +62,7 @@ public:
               << allocated_blocks << " blocks, used " << used_blocks
               << " blocks, which is " << used_blocks * block_size << " bytes\n";
   }
+  size_t used_mem() { return sizeof(T) * used_blocks; }
 
 private:
   size_t block_size;

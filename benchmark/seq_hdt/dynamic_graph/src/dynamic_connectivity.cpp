@@ -36,7 +36,6 @@
 // forests are small. It's not worth it to do anything sophisticated at that
 // point -- brute force search instead.
 #include "absl/container/btree_set.h"
-#include "parlay/internal/get_time.h"
 #include <dynamic_graph/dynamic_connectivity.hpp>
 
 #include <utilities/assert.hpp>
@@ -71,8 +70,6 @@ DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
     : num_vertices_{num_vertices} {
   ASSERT_MSG_ALWAYS(num_vertices_ > 0,
                     "The number of vertices must be positive");
-  parlay::internal::timer t;
-  t.start();
   const int8_t num_levels = FloorLog2(num_vertices_) + 1;
   spanning_forests_ = std::vector<DynamicForest>{
       static_cast<uint32_t>(num_levels), DynamicForest(num_vertices_)};
@@ -80,7 +77,6 @@ DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
       static_cast<uint32_t>(num_levels),
       std::vector<absl::btree_set<Vertex>>{static_cast<uint32_t>(num_vertices_),
                                            absl::btree_set<Vertex>{}}};
-  t.next("constructor");
 }
 
 DynamicConnectivity::~DynamicConnectivity() {}

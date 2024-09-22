@@ -1,10 +1,13 @@
 #pragma once
 #include "dycon/localTree/alloc.h"
 #include "graph.hpp"
+#include "parlay/parallel.h"
 #include <absl/container/btree_map.h>
 #include <absl/container/btree_set.h>
+#include <atomic>
 #include <bitset>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <tuple>
@@ -44,6 +47,7 @@ public:
   edge_set *getLevelEdge(uint32_t l);
   std::pair<vertex, edge_set *> getLevelEdgeSet(uint32_t l);
   static type_allocator<edge_set> *vector_alloc;
+  static size_t getLeafSpace(leaf *node);
 
 private:
   std::vector<std::pair<uint32_t, edge_set *>> E;
@@ -100,4 +104,14 @@ inline std::pair<vertex, edge_set *> leaf::getLevelEdgeSet(uint32_t l) {
 }
 inline edge_set *leaf::getLevelEdge(uint32_t l) {
   return E[(edgemap << (63 - l)).count() - 1].second;
+}
+inline size_t leaf::getLeafSpace(leaf *node) {
+  if (!node)
+    return 0;
+  std::atomic<size_t> sz = 0;
+  sz += sizeof(leaf);
+  sz += sizeof(std::pair<uint32_t, edge_set *>) * node->E.size();
+  parlay::parallel_for(0, node->E.size(),
+                       [&](size_t i) { sz += node->E[i].second->size() * 5; });
+  return sz;
 }

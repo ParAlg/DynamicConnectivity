@@ -3,8 +3,11 @@
 #include "dycon/localTree/graph.hpp"
 #include "fetchQueue.hpp"
 #include "leaf.hpp"
+#include "parlay/parallel.h"
 #include "rankTree.hpp"
 #include "stats.hpp"
+#include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <optional>
@@ -76,6 +79,9 @@ public:
   fetchLeaf(localTree *root, uint32_t l);
   static bool ifSingleton(localTree *r);
   static edge_set *getEdgeSet(localTree *r, uint32_t l);
+  static void topDown(localTree *root, bool clear,
+                      std::atomic<size_t> &mem_usage);
+  static size_t getLeafSpace(localTree *root);
 };
 inline type_allocator<localTree> *localTree::l_alloc = nullptr;
 inline localTree::~localTree() {
@@ -358,4 +364,21 @@ inline void localTree::changeLevel(std::vector<::vertex> &nghs, uint32_t oval,
   // this->edgemap = this->vertex->changeLevel(nghs, oval, nval);
   if (this->edgemap != omap)
     localTree::updateBitMap(this);
+}
+inline void localTree::topDown(localTree *root, bool clear,
+                               std::atomic<size_t> &mem_usage) {
+  if (!root)
+    return;
+  mem_usage += sizeof(rankTree *) * root->rTrees.size();
+  auto leaves = rankTree::decompose(root->rTrees, clear);
+  parlay::parallel_for(0, leaves.size(), [&](auto i) {
+    topDown(leaves[i]->descendant, clear, mem_usage);
+  });
+  if (clear)
+    l_alloc->free(root);
+}
+inline size_t localTree::getLeafSpace(localTree *root) {
+  if (!root || !root->vertex)
+    return 0;
+  return leaf::getLeafSpace(root->vertex);
 }

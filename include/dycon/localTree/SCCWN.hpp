@@ -5,12 +5,15 @@
 #include "leaf.hpp"
 #include "localTree.hpp"
 #include "parlay/internal/group_by.h"
+#include "parlay/parallel.h"
 #include "parlay/primitives.h"
 #include "parlay/sequence.h"
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
 #include <algorithm>
+#include <atomic>
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <iterator>
@@ -48,6 +51,7 @@ private:
               std::ostream_iterator<localTree *>(std::cout, ","));
     std::cout << "\n\n";
   }
+  void GC(bool clear, std::atomic<size_t> &mem_usage);
 
 public:
   uint32_t n;
@@ -60,14 +64,12 @@ public:
   uint32_t SLE = 0;
   uint32_t TE = 0;
   SCCWN(uint32_t _n) : n(_n), leaves(std::vector<localTree *>(n, nullptr)) {
-    parlay::internal::timer t;
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
     leaf::vector_alloc = new type_allocator<edge_set>(n);
     leaves = std::vector<localTree *>(n);
     for (uint32_t i = 0; i < n; i++)
       leaves[i] = localTree::l_alloc->create(i);
-    t.next("constructor");
   }
   ~SCCWN() {
     // std::cout << "nonTreeEdge\n";
@@ -76,9 +78,12 @@ public:
     // std::cout << "TreeEdge\n";
     // for (auto it : TreeEdge)
     //   std::cout << it.first << " " << it.second << std::endl;
-    run_stat("./", false, true, false);
+    // run_stat("./", false, true, false);
+    std::atomic<std::size_t> mem_usage = 0;
+    parlay::execute_with_scheduler(1, [&]() { GC(true, mem_usage); });
     rankTree::r_alloc->~type_allocator();
     localTree::l_alloc->~type_allocator();
+    leaf::vector_alloc->~type_allocator();
   };
   void insert(uint32_t u, uint32_t v) { insertToLCA(u, v); }
   void insertToLCA(uint32_t u, uint32_t v);
@@ -88,6 +93,20 @@ public:
   void remove(uint32_t u, uint32_t v);
   void run_stat(std::string filepath, bool verbose, bool clear, bool stat);
   void test_fetch();
+  size_t getMemUsage() {
+    std::atomic<std::size_t> mem_usage = 0;
+    GC(false, mem_usage);
+    mem_usage += rankTree::r_alloc->used_mem();
+    mem_usage += localTree::l_alloc->used_mem();
+    mem_usage += leaf::vector_alloc->used_mem();
+    parlay::parallel_for(0, leaves.size(), [&](size_t i) {
+      mem_usage += localTree::getLeafSpace(leaves[i]);
+    });
+    mem_usage += sizeof(SCCWN);
+    mem_usage += TreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
+    mem_usage += nonTreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
+    return (size_t)mem_usage;
+  }
   void getInfo(vertex u, vertex v) {
     std::cout << u << " " << leaves[u]->getNGHS() << " " << v << " "
               << leaves[v]->getNGHS() << std::endl;
@@ -322,7 +341,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   leaves[v]->deleteEdge(u, l);
   if (!TreeEdge.contains(std::pair(u, v))) {
     nonTreeEdge.erase(std::pair(u, v));
-    NTE++;
+    // NTE++;
     return;
   }
   TreeEdge.erase(std::pair(u, v));
@@ -330,10 +349,10 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
   if (Cu == Cv) {
-    SLE++;
+    // SLE++;
     return;
   }
-  TE++;
+  // TE++;
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
   auto init = [](fetchQueue<localTree *> &LTNodeQ,
@@ -522,20 +541,10 @@ inline bool SCCWN::is_connected(uint32_t u, uint32_t v) {
 inline void SCCWN::run_stat(std::string filepath, bool verbose = false,
                             bool clear = false, bool stat = true) {
   std::vector<localTree *> roots(leaves.size(), nullptr);
-  std::vector<localTree *> parents(leaves.size(), nullptr);
   parlay::parallel_for(0, roots.size(), [&](uint32_t i) {
     if (leaves[i])
       roots[i] = localTree::getRoot(leaves[i]);
-    if (leaves[i])
-      parents[i] = localTree::getParent(leaves[i]);
   });
-  stats::memUsage = 0;
-  if (verbose)
-    printNodes(leaves);
-  if (verbose)
-    printNodes(parents);
-  if (verbose)
-    printNodes(roots);
   parlay::sequence<localTree *> r(roots.begin(), roots.end());
   r = parlay::remove_duplicates(r);
   parlay::parallel_for(0, r.size(), [&](uint32_t i) {
@@ -577,9 +586,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
         lfQ.pos++;
         vertex test1 = std::min(lfQ.front(), v);
         vertex test2 = std::max(lfQ.front(), v);
-        if (test1 == 598490 && test2 == 1961091) {
-          std::cout << "fetch from level " << l << std::endl;
-        }
         TreeEdge.emplace(std::pair(test1, test2));
         return std::pair(lfQ.front(), v);
       } else {
@@ -599,9 +605,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
     vertex test1 = std::min(lfQ.front(), v);
     vertex test2 = std::max(lfQ.front(), v);
     TreeEdge.emplace(std::pair(test1, test2));
-    if (test1 == 598490 && test2 == 1961091) {
-      std::cout << "fetch from level " << l << std::endl;
-    }
     return std::pair(lfQ.front(), v);
   }
   while (!LTNodeQ.empty()) {
@@ -620,9 +623,6 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
       vertex test1 = std::min(u, v);
       vertex test2 = std::max(u, v);
       TreeEdge.emplace(std::pair(test1, test2));
-      if (test1 == 598490 && test2 == 1961091) {
-        std::cout << "fetch from level " << l << std::endl;
-      }
       return std::pair(u, v);
     }
   }
@@ -695,12 +695,24 @@ SCCWN::changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
   for (auto it : edges) {
     vertex test1 = std::min(it.first, it.second);
     vertex test2 = std::max(it.first, it.second);
-    if (test1 == 598490 && test2 == 1961091) {
-      std::cout << "change from level " << oval << " to " << nval << std::endl;
-    }
     leaves[it.first]->deleteEdge(it.second, oval);
     leaves[it.first]->insertToLeaf(it.second, nval);
     leaves[it.second]->deleteEdge(it.first, oval);
     leaves[it.second]->insertToLeaf(it.first, nval);
   }
+}
+inline void SCCWN::GC(bool clear, std::atomic<size_t> &mem_usage) {
+  parlay::sequence<localTree *> roots(leaves.size());
+  parlay::parallel_for(0, leaves.size(), [&](auto i) {
+    if (leaves[i])
+      roots[i] = localTree::getRoot(leaves[i]);
+    else
+      roots[i] = nullptr;
+  });
+  auto r = parlay::remove_duplicates(roots);
+  parlay::parallel_for(0, r.size(), [&](size_t i) {
+    if (r[i]) {
+      localTree::topDown(r[i], clear, mem_usage);
+    }
+  });
 }
