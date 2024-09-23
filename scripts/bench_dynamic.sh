@@ -1,11 +1,11 @@
 #!/bin/bash
 declare -a undir_graph=(
   # Social
-#  "stackoverflow_sym"
-#  "com-orkut_sym"
+ "stackoverflow_sym"
+ "com-orkut_sym"
  "soc-LiveJournal1_sym"
-#  "twitter_sym"
-#  "friendster_sym"
+ "twitter_sym"
+ "friendster_sym"
  "as-skitter_sym"
  "com-youtube_sym"
  "wiki-topcats_sym"
@@ -52,7 +52,7 @@ make ${target}
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
-  ${numactl} ./${target} -a 1 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
+  ${numactl} ./${target} -a 0 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
   echo
 done
 
