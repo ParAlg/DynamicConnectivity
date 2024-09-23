@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <utility>
@@ -73,7 +74,7 @@ public:
   }
   ~SCCWN() {
     std::atomic<std::size_t> mem_usage = 0;
-    parlay::execute_with_scheduler(1, [&]() { GC(true, mem_usage); });
+    GC(true, mem_usage);
     rankTree::r_alloc->~type_allocator();
     localTree::l_alloc->~type_allocator();
     leaf::vector_alloc->~type_allocator();
@@ -84,6 +85,7 @@ public:
   void insertToBlock(uint32_t u, uint32_t v);
   bool is_connected(uint32_t u, uint32_t v);
   void remove(uint32_t u, uint32_t v);
+  template <typename Q, typename A> void batch_query(Q &queries, A &ans);
   size_t getMemUsage() {
     std::atomic<std::size_t> mem_usage = 0;
     GC(false, mem_usage);
@@ -616,9 +618,39 @@ inline void SCCWN::GC(bool clear, std::atomic<size_t> &mem_usage) {
       roots[i] = nullptr;
   });
   auto r = parlay::remove_duplicates(roots);
+
   parlay::parallel_for(0, r.size(), [&](size_t i) {
     if (r[i]) {
       localTree::topDown(r[i], clear, mem_usage);
     }
   });
+}
+template <typename Q = std::vector<std::pair<vertex, vertex>>,
+          typename A = std::vector<bool>>
+inline void SCCWN::batch_query(Q &queries, A &ans) {
+  std::vector<vertex> parents;
+  parents.reserve(n);
+  for (vertex i = 0; i < n; i++)
+    parents[i] = i;
+
+  std::function<vertex(vertex)> find;
+  find = [&](vertex x) -> vertex {
+    return parents[x] == x ? x : (parents[x] = find(parents[x]));
+  };
+
+  auto link = [&](vertex u, vertex v) {
+    vertex x = find(u);
+    vertex y = find(v);
+    if (x == y)
+      return;
+    if (x < y)
+      parents[x] = y;
+    else
+      parents[y] = x;
+  };
+
+  for (auto it : TreeEdge)
+    link(it.first, it.second);
+  for (uint32_t i = 0; i < queries.size(); i++)
+    ans[i] = find(queries[i].first) == find(queries[i].second) ? true : false;
 }

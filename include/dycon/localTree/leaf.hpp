@@ -1,7 +1,6 @@
 #pragma once
 #include "dycon/localTree/alloc.h"
 #include "graph.hpp"
-#include "parlay/parallel.h"
 #include <absl/container/btree_map.h>
 #include <absl/container/btree_set.h>
 #include <atomic>
@@ -111,7 +110,6 @@ inline size_t leaf::getLeafSpace(leaf *node) {
   std::atomic<size_t> sz = 0;
   sz += sizeof(leaf);
   sz += sizeof(std::pair<uint32_t, edge_set *>) * node->E.size();
-  parlay::parallel_for(0, node->E.size(),
-                       [&](size_t i) { sz += node->E[i].second->size() * 5; });
+  sz += node->size * 5;
   return sz;
 }
