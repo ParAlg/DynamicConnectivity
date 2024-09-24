@@ -98,6 +98,7 @@ public:
     mem_usage += sizeof(SCCWN);
     mem_usage += TreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
     mem_usage += nonTreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
+    mem_usage += leaves.size() * sizeof(localTree *);
     return (size_t)mem_usage;
   }
 };
