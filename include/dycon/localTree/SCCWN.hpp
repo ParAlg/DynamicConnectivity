@@ -99,6 +99,7 @@ public:
     mem_usage += TreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
     mem_usage += nonTreeEdge.bucket_count() * sizeof(std::pair<vertex, vertex>);
     mem_usage += leaves.size() * sizeof(localTree *);
+    mem_usage += leaves.size() * sizeof(leaf);
     return (size_t)mem_usage;
   }
 };
