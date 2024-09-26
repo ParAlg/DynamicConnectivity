@@ -1,5 +1,5 @@
 #!/bin/bash
-declare rmat_id=(16 18 20 22 24 26 28)
+declare rmat_id=(16 18 20 22 24 26)
 
 declare num_batches=10
 
