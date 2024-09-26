@@ -116,7 +116,7 @@ template <typename vertex> struct graph_utils {
   }
 
   template <typename gen>
-  static edge rmat_edge(int logn, double a, double b, double c, double r,
+  static edge rmat_edge(uint32_t logn, double a, double b, double c, double r,
                         gen g) {
     if (logn == 0)
       return edge(0, 0);
@@ -140,13 +140,28 @@ template <typename vertex> struct graph_utils {
     }
   }
 
-  static edges rmat_edges_(int logn, long m, double a = .5, double b = .15,
+  static edges rmat_edges_(uint32_t logn, long m, double a = .5, double b = .15,
                            double c = .15) {
     parlay::random_generator gen;
     std::uniform_real_distribution<double> dis(0.0, 1.0);
     return remove_duplicates(parlay::tabulate(m, [&](long i) {
       auto r = gen[i];
       return rmat_edge(logn, a, b, c, 0.0, [&]() { return dis(r); });
+    }));
+  }
+
+  static edges rmat_edges_undirect(uint32_t logn, long m, double a = .5,
+                                   double b = .15, double c = .15) {
+    parlay::random_generator gen;
+    std::uniform_real_distribution<double> dis(0.0, 1.0);
+    return parlay::remove_duplicates(parlay::tabulate(m, [&](long i) {
+      auto r = gen[i];
+      auto e = rmat_edge(logn, a, b, c, 0.0, [&]() { return dis(r); });
+      if (e.first > e.second)
+        std::swap(e.first, e.second);
+      if (e.first == e.second)
+        return edge(0, 1);
+      return e;
     }));
   }
 
@@ -157,14 +172,14 @@ template <typename vertex> struct graph_utils {
 
   static graph rmat_graph(long n, long m, double a = .5, double b = .15,
                           double c = .15) {
-    int logn = round(log2(n));
+    uint32_t logn = round(log2(n));
     auto edges = rmat_edges_(logn, m, a, b, c);
     return parlay::group_by_index(edges, 1 << logn);
   }
 
   static graph rmat_symmetric_graph(long n, long m, double a = .5,
                                     double b = .15, double c = .15) {
-    int logn = round(log2(n));
+    uint32_t logn = round(log2(n));
     auto edges = rmat_edges_(logn, m / 2, a, b, c);
     return symmetrize(edges, 1 << logn);
   }

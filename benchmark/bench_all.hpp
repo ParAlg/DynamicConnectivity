@@ -1,6 +1,5 @@
 #include "dynamic_graph/graph.hpp"
 #include "parlay/parallel.h"
-#include "parlay/primitives.h"
 #include "parlay/sequence.h"
 #include <cmath>
 #include <cstdint>
@@ -8,13 +7,11 @@
 #include <dycon/helpers/parse_command_line.hpp>
 #include <dycon/localTree/CWN.hpp>
 #include <dycon/localTree/SCCWN.hpp>
+#include <dynamic_graph/dynamic_connectivity.hpp>
 #include <fstream>
 #include <ios>
 #include <parlay/internal/get_time.h>
-
-#include <dynamic_graph/dynamic_connectivity.hpp>
 #include <string>
-#include <utility>
 using vertex = uint32_t;
 using utils = graph_utils<vertex>;
 using edge = utils::edge;
@@ -23,7 +20,7 @@ using edges = utils::edges;
 using query = utils::query;
 using queries = utils::queries;
 using Ans = parlay::sequence<parlay::sequence<bool>>;
-void report(double time, std::string prefix, std::string suffix = "\n") {
+inline void report(double time, std::string prefix, std::string suffix = "\n") {
 #ifndef MEM_USE
   std::ios::fmtflags cout_settings = std::cout.flags();
   std::cout.precision(4);
@@ -38,12 +35,12 @@ void report(double time, std::string prefix, std::string suffix = "\n") {
   else
     std::cout << suffix;
 }
-void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
-                             std::string ansfile,
-                             parlay::sequence<edges> &batches_ins,
-                             parlay::sequence<queries> &queries_ins,
-                             parlay::sequence<edges> &batches_del,
-                             parlay::sequence<queries> &queries_del) {
+inline void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
+                                    std::string ansfile,
+                                    parlay::sequence<edges> &batches_ins,
+                                    parlay::sequence<queries> &queries_ins,
+                                    parlay::sequence<edges> &batches_del,
+                                    parlay::sequence<queries> &queries_del) {
   Ans Ans_ins(num_testpoints);
   parlay::parallel_for(0, num_testpoints, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
@@ -58,8 +55,6 @@ void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
     batch_ins_ans[i].reserve(queries_ins[i].size());
     batch_del_ans[i].reserve(queries_del[i].size());
   }
-
-  std::ofstream fins, fdel;
 
   std::vector<double> ins_t;
   double ins_total = 0.0;
@@ -210,12 +205,12 @@ void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
 #endif
 }
 
-void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
-                            std::string ansfile,
-                            parlay::sequence<edges> &batches_ins,
-                            parlay::sequence<queries> &queries_ins,
-                            parlay::sequence<edges> &batches_del,
-                            parlay::sequence<queries> &queries_del) {
+inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
+                                   std::string ansfile,
+                                   parlay::sequence<edges> &batches_ins,
+                                   parlay::sequence<queries> &queries_ins,
+                                   parlay::sequence<edges> &batches_del,
+                                   parlay::sequence<queries> &queries_del) {
   Ans Ans_ins(num_testpoints);
   parlay::parallel_for(0, num_testpoints, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
@@ -231,8 +226,6 @@ void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
     batch_ins_ans[i].reserve(queries_ins[i].size());
     batch_del_ans[i].reserve(queries_del[i].size());
   }
-
-  std::ofstream fins, fdel;
 
   std::vector<double> ins_t;
   double ins_total = 0.0;
@@ -383,11 +376,12 @@ void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
 #endif
 }
 
-void bench_seq_hdt(uint32_t num_testpoints, uint32_t n, std::string ansfile,
-                   parlay::sequence<edges> &batches_ins,
-                   parlay::sequence<queries> &queries_ins,
-                   parlay::sequence<edges> &batches_del,
-                   parlay::sequence<queries> &queries_del) {
+inline void bench_seq_hdt(uint32_t num_testpoints, uint32_t n,
+                          std::string ansfile,
+                          parlay::sequence<edges> &batches_ins,
+                          parlay::sequence<queries> &queries_ins,
+                          parlay::sequence<edges> &batches_del,
+                          parlay::sequence<queries> &queries_del) {
   // std::cout << "benchmarking comressed CWN with edges inserted to root\n";
   Ans Ans_ins(num_testpoints);
   parlay::parallel_for(0, num_testpoints, [&](uint32_t i) {
@@ -399,7 +393,6 @@ void bench_seq_hdt(uint32_t num_testpoints, uint32_t n, std::string ansfile,
   });
 
   std::cout << "start benchmarking sequential hdt" << std::endl;
-  std::ofstream fins, fdel;
 
   std::vector<double> ins_t;
   double ins_total = 0.0;
@@ -506,80 +499,4 @@ void bench_seq_hdt(uint32_t num_testpoints, uint32_t n, std::string ansfile,
       faq << Ans_del[i][j];
   faq.close();
 #endif
-}
-
-int main(int argc, char **argv) {
-
-  std::string usage = "Usage: Connectivity [-a #algorithms] [-b #batches] [-q "
-                      "#queries/batch] <input_file> <output_file>";
-  commandLine P(argc, argv, usage);
-  auto IOF = P.IOFileNames();
-  std::string In = IOF.first;
-  std::string Out = IOF.second;
-  uint32_t algorithms = P.getOptionIntValue("-a", 0);
-  uint32_t num_testpoints = P.getOptionIntValue("-b", 10);
-  uint32_t num_queries = P.getOptionIntValue("-q", 1000);
-
-  auto G = utils::break_sym_graph_from_bin(In);
-  vertex n = G.size();
-
-  auto E = parlay::remove_duplicates_ordered(utils::to_edges(G),
-                                             [&](edge a, edge b) {
-                                               if (a.first == b.first)
-                                                 return a.second < b.second;
-                                               return a.first < b.first;
-                                             });
-  vertex m = E.size();
-  std::cout << n << std::endl << m << std::endl;
-  E = parlay::random_shuffle(E);
-
-  auto batch_size = parlay::tabulate(
-      num_testpoints + 1, [&](uint32_t i) { return m / num_testpoints * i; });
-  batch_size[num_testpoints] = m;
-
-  auto batches_ins = parlay::tabulate(num_testpoints, [&](uint32_t i) {
-    return parlay::to_sequence(E.cut(batch_size[i], batch_size[i + 1]));
-  });
-  auto queries_ins =
-      utils::generate_CC_queries(num_testpoints, batches_ins, n, num_queries);
-
-  auto E_ = parlay::random_shuffle(E);
-  auto batches_del = parlay::tabulate(num_testpoints, [&](uint32_t i) {
-    return parlay::to_sequence(E_.cut(batch_size[i], batch_size[i + 1]));
-  });
-  auto queries_del =
-      utils::generate_CC_queries(num_testpoints, batches_del, n, num_queries);
-#ifndef MEM_USE
-  parlay::execute_with_scheduler(1, [&]() {
-#endif
-    switch (algorithms) {
-    case 0:
-      bench_seq_hdt(num_testpoints, n, Out + "_seqhdt.ans", batches_ins,
-                    queries_ins, batches_del, queries_del);
-      bench_compress_CWN_root(num_testpoints, n,
-                              Out + "_compressed_CWN_root.ans", batches_ins,
-                              queries_ins, batches_del, queries_del);
-      bench_compress_CWN_lca(num_testpoints, n, Out + "_compressed_CWN_lca.ans",
-                             batches_ins, queries_ins, batches_del,
-                             queries_del);
-      break;
-    case 1:
-      bench_seq_hdt(num_testpoints, n, Out + "_seqhdt.ans", batches_ins,
-                    queries_ins, batches_del, queries_del);
-      break;
-    case 2:
-      bench_compress_CWN_root(num_testpoints, n,
-                              Out + "_compressed_CWN_root.ans", batches_ins,
-                              queries_ins, batches_del, queries_del);
-      break;
-    case 3:
-      bench_compress_CWN_lca(num_testpoints, n, Out + "_compressed_CWN_lca.ans",
-                             batches_ins, queries_ins, batches_del,
-                             queries_del);
-      break;
-    }
-#ifndef MEM_USE
-  });
-#endif
-  return 0;
 }
