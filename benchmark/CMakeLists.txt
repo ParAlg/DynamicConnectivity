@@ -16,4 +16,11 @@ target_link_libraries(bench_rmat PRIVATE dycon lib_dynamic_connectivity)
 target_include_directories(bench_rmat PRIVATE seq_hdt/include)
 
 
+add_executable(bench_ram_rmat bench_rmat.cc)
+target_compile_definitions(bench_ram_rmat PRIVATE MEM_USE)
+target_link_libraries(bench_ram_rmat PRIVATE dycon lib_dynamic_connectivity)
+target_include_directories(bench_ram_rmat PRIVATE seq_hdt/include)
+
+
+
 add_subdirectory(bench_distance_query)
