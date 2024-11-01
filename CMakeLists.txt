@@ -93,6 +93,13 @@ FetchContent_Declare(abseil-cpp
 FetchContent_MakeAvailable(abseil-cpp)
 target_link_libraries(dycon INTERFACE absl::flat_hash_map)
 
+FetchContent_Declare(ufo
+    GIT_REPOSITORY  git@github.com:happyrogue2307/practicaldynamictrees.git
+    GIT_TAG         hdt
+)
+FetchContent_MakeAvailable(ufo)
+target_link_libraries(dycon INTERFACE hdt-ufo-tree)
+
 # Link against jemalloc
 #find_library(JEMALLOC_LIB jemalloc)
 #if(NOT JEMALLOC_LIB)
