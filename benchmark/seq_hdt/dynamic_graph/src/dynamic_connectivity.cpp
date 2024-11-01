@@ -72,10 +72,13 @@ DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
       num_vertices_ > 0,
       "The number of vertices must be positive");
   const int8_t num_levels = FloorLog2(num_vertices_) + 1;
-  spanning_forests_ =
-    std::vector<DynamicForest>{
-      static_cast<std::size_t>(num_levels),
-      DynamicForest(num_vertices_)};
+  // spanning_forests_ =
+  //   std::vector<DynamicForest>{
+  //     static_cast<std::size_t>(num_levels),
+  //     DynamicForest(num_vertices_)};
+  // spanning_forests_.resize(num_levels, num_vertices_);
+  for (int8_t level = 0; level < num_levels; ++level)
+    spanning_forests_.emplace_back(num_vertices_);
   non_tree_adjacency_lists_ =
     std::vector<std::vector<absl::flat_hash_set<Vertex>>>{
       static_cast<std::size_t>(num_levels),
@@ -92,7 +95,7 @@ DynamicConnectivity::DynamicConnectivity(DynamicConnectivity&& other) noexcept
     , non_tree_adjacency_lists_{std::move(other.non_tree_adjacency_lists_)}
     , edges_{std::move(other.edges_)} {}
 
-bool DynamicConnectivity::IsConnected(Vertex u, Vertex v) const {
+bool DynamicConnectivity::IsConnected(Vertex u, Vertex v) {
   return spanning_forests_[0].IsConnected(u, v);
 }
 
@@ -100,7 +103,7 @@ bool DynamicConnectivity::HasEdge(const UndirectedEdge& edge) const {
   return edges_.find(edge) != edges_.end();
 }
 
-uint32_t DynamicConnectivity::GetSizeOfConnectedComponent(Vertex v) const {
+uint32_t DynamicConnectivity::GetSizeOfConnectedComponent(Vertex v) {
   return spanning_forests_[0].GetSizeOfTree(v);
 }
 
@@ -157,9 +160,9 @@ void DynamicConnectivity::AddTreeEdge(const UndirectedEdge& edge) {
     .type = EdgeType::kTree,
   };
   edges_.emplace(edge, std::move(edge_info));
-  spanning_forests_[0].AddEdge(edge);
+  spanning_forests_[0].AddEdge({edge.first, edge.second});
   // We mark level-i edges in `spanning_forests_[i]`.
-  spanning_forests_[0].MarkEdge(edge, true);
+  spanning_forests_[0].MarkEdge({edge.first, edge.second}, true);
 }
 
 void DynamicConnectivity::AddEdge(const UndirectedEdge& edge) {
@@ -193,14 +196,14 @@ DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge& edge, Level level) {
   const Level next_level = level + 1;
   auto& next_spanning_forest{spanning_forests_[next_level]};
   while (true) {
-    const std::optional<const UndirectedEdge> tree_edge{
+    const auto tree_edge{
       spanning_forest.GetMarkedEdgeInTree(u)};
     if (!tree_edge.has_value()) {
       break;
     }
-
+    UndirectedEdge tree_edge_(tree_edge->first, tree_edge->second);
     // Promote the tree edge -- increase its level by one.
-    edges_[*tree_edge].level++;
+    edges_[tree_edge_].level++;
     spanning_forest.MarkEdge(*tree_edge, false);
     next_spanning_forest.AddEdge(*tree_edge);
     next_spanning_forest.MarkEdge(*tree_edge, true);
@@ -209,7 +212,7 @@ DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge& edge, Level level) {
   // Look at level-`level` non-tree edges incident to u's tree for a replacement
   // edge.
   while (true) {
-    const std::optional<const Vertex> vertex_with_incident_edges{
+    const auto vertex_with_incident_edges{
       spanning_forest.GetMarkedVertexInTree(u)
     };
     if (!vertex_with_incident_edges.has_value()) {
@@ -241,9 +244,9 @@ DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge& edge, Level level) {
         edges_[replacement_candidate].type = EdgeType::kTree;
         DeleteEdgeFromAdjacencyList(replacement_candidate, level);
         for (Level l = level; l >= 0; l--) {
-          spanning_forests_[l].AddEdge(replacement_candidate);
+          spanning_forests_[l].AddEdge({replacement_candidate.first, replacement_candidate.second});
         }
-        spanning_forest.MarkEdge(replacement_candidate, true);
+        spanning_forest.MarkEdge({replacement_candidate.first, replacement_candidate.second}, true);
         return;  // Replacement edge found.
       }
     }
@@ -272,7 +275,7 @@ void DynamicConnectivity::DeleteEdge(const UndirectedEdge& edge) {
       break;
     case EdgeType::kTree:
       for (Level l{edge_info.level}; l >= 0; l--) {
-        spanning_forests_[l].DeleteEdge(edge);
+        spanning_forests_[l].DeleteEdge({edge.first, edge.second});
       }
       ReplaceTreeEdge(edge, edge_info.level);
       break;

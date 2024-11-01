@@ -12,6 +12,7 @@
 #include <absl/container/flat_hash_map.h>
 
 #include <dynamic_forest.hpp>
+#include <hdt_ufo_tree.h>
 #include <dynamic_graph/graph.hpp>
 #include <utilities/hash.hpp>
 
@@ -73,7 +74,7 @@ class DynamicConnectivity {
    *  @param[in] v Vertex.
    *  @returns True if \p u and \p v are connected, false if they are not.
    */
-  bool IsConnected(Vertex u, Vertex v) const;
+  bool IsConnected(Vertex u, Vertex v);
 
   /** Returns true if edge \p edge is in the graph.
    *
@@ -91,7 +92,7 @@ class DynamicConnectivity {
    * @param[in] v Vertex.
    * @returns The number of vertices in \p v's connected component.
    */
-  uint32_t GetSizeOfConnectedComponent(Vertex v) const;
+  uint32_t GetSizeOfConnectedComponent(Vertex v);
 
   /** Adds an edge to the graph.
    *
@@ -146,7 +147,8 @@ class DynamicConnectivity {
   // `spanning_forests_[i]` stores F_i, the spanning forest for the i-th
   // subgraph. In particular, `spanning_forests[0]` is a spanning forest for the
   // whole graph.
-  std::vector<DynamicForest> spanning_forests_;
+  // std::vector<DynamicForest> spanning_forests_;
+  std::vector<HDTUFOTree> spanning_forests_;
   // `adjacency_lists_by_level_[i][v]` contains the vertices connected to vertex
   // v by level-i non-tree edges.
   std::vector<std::vector<absl::flat_hash_set<Vertex>>>

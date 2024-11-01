@@ -1,7 +1,7 @@
 #!/bin/bash
 declare -a undir_graph=(
   # Social
- "com-youtube_sym"
+#  "com-youtube_sym"
 #  "as-skitter_sym"
 #  "pokec_sym"
 #  "wiki-topcats_sym"
@@ -9,7 +9,7 @@ declare -a undir_graph=(
 #  "soc-LiveJournal1_sym"
 #  "enwiki_sym"
 #  "com-orkut_sym"
-#  "twitter_sym"
+ "twitter_sym"
 #  "friendster_sym"
 #
 #  # # Web
