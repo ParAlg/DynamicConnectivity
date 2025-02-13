@@ -165,38 +165,38 @@ void bench_compress_CWN_root(size_t num_batches, size_t n, std::string ansfile,
       F.insertToRoot(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
-      Ans_ins[i][j] =
-          F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
-    }
-    t.next("Answer queries #" + std::to_string(i));
+    // for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    //   Ans_ins[i][j] =
+    //       F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
+    // }
+    // t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
-      long u = batches_del[i][j].first;
-      long v = batches_del[i][j].second;
-      F.remove(u, v);
-    }
-    t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
-      Ans_del[i][j] =
-          F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-    }
-    t.next("Answer queries #" + std::to_string(i));
-  }
-  std::ofstream faq;
-  faq.open(ansfile);
-  if (!faq.is_open()) {
-    std::cout << "cannot open output file\n";
-    std::abort();
-  }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
-      faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
-      faq << Ans_del[i][j];
-  faq.close();
+  // for (size_t i = 0; i < num_batches; i++) {
+  //   for (size_t j = 0; j < batches_del[i].size(); j++) {
+  //     long u = batches_del[i][j].first;
+  //     long v = batches_del[i][j].second;
+  //     F.remove(u, v);
+  //   }
+  //   t.next("Delete batch #" + std::to_string(i));
+  //   for (size_t j = 0; j < queries_del[i].size(); j++) {
+  //     Ans_del[i][j] =
+  //         F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+  //   }
+  //   t.next("Answer queries #" + std::to_string(i));
+  // }
+  // std::ofstream faq;
+  // faq.open(ansfile);
+  // if (!faq.is_open()) {
+  //   std::cout << "cannot open output file\n";
+  //   std::abort();
+  // }
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_ins[i].size(); j++)
+  //     faq << Ans_ins[i][j];
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  //     faq << Ans_del[i][j];
+  // faq.close();
 }
 void bench_compress_CWN_lca(size_t num_batches, size_t n, std::string ansfile,
                             parlay::sequence<edges> &batches_ins,
@@ -224,38 +224,38 @@ void bench_compress_CWN_lca(size_t num_batches, size_t n, std::string ansfile,
       F.insertToLCA(u, v);
     }
     t.next("Insert batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_ins[i].size(); j++) {
-      Ans_ins[i][j] =
-          F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
-    }
-    t.next("Answer queries #" + std::to_string(i));
+    // for (size_t j = 0; j < queries_ins[i].size(); j++) {
+    //   Ans_ins[i][j] =
+    //       F.is_connected(queries_ins[i][j].first, queries_ins[i][j].second);
+    // }
+    // t.next("Answer queries #" + std::to_string(i));
   }
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
-      long u = batches_del[i][j].first;
-      long v = batches_del[i][j].second;
-      F.remove(u, v);
-    }
-    t.next("Delete batch #" + std::to_string(i));
-    for (size_t j = 0; j < queries_del[i].size(); j++) {
-      Ans_del[i][j] =
-          F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
-    }
-    t.next("Answer queries #" + std::to_string(i));
-  }
-  std::ofstream faq;
-  faq.open(ansfile);
-  if (!faq.is_open()) {
-    std::cout << "cannot open output file\n";
-    std::abort();
-  }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
-      faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
-      faq << Ans_del[i][j];
-  faq.close();
+  // for (size_t i = 0; i < num_batches; i++) {
+  //   for (size_t j = 0; j < batches_del[i].size(); j++) {
+  //     long u = batches_del[i][j].first;
+  //     long v = batches_del[i][j].second;
+  //     F.remove(u, v);
+  //   }
+  //   t.next("Delete batch #" + std::to_string(i));
+  //   for (size_t j = 0; j < queries_del[i].size(); j++) {
+  //     Ans_del[i][j] =
+  //         F.is_connected(queries_del[i][j].first, queries_del[i][j].second);
+  //   }
+  //   t.next("Answer queries #" + std::to_string(i));
+  // }
+  // std::ofstream faq;
+  // faq.open(ansfile);
+  // if (!faq.is_open()) {
+  //   std::cout << "cannot open output file\n";
+  //   std::abort();
+  // }
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_ins[i].size(); j++)
+  //     faq << Ans_ins[i][j];
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  //     faq << Ans_del[i][j];
+  // faq.close();
 }
 void bench_compress_CWN_blocked(size_t num_batches, size_t n,
                                 std::string ansfile,
@@ -331,7 +331,7 @@ void bench_seq_hdt(size_t num_batches, size_t n, std::string ansfile,
   parlay::parallel_for(0, num_batches, [&](size_t i) {
     Ans_del[i].resize(queries_del[i].size());
   });
-  parlay::internal::timer t("");
+  parlay::internal::timer t;
   std::ofstream fins, fdel;
   DynamicConnectivity graph(n);
   t.next("start benchmarking sequential hdt");
@@ -342,44 +342,44 @@ void bench_seq_hdt(size_t num_batches, size_t n, std::string ansfile,
       long v = batches_ins[i][j].second;
       graph.AddEdge(UndirectedEdge(u, v));
     }
-    // t.next("Insert batch #" + std::to_string(i));
-    t.next("");
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
-      Ans_ins[i][j] =
-          graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
-    // t.next("Answer queries #" + std::to_string(i));
-    t.next("");
+    t.next("Insert batch #" + std::to_string(i));
+    // t.next("");
+    // for (size_t j = 0; j < queries_ins[i].size(); j++)
+    //   Ans_ins[i][j] =
+    //       graph.IsConnected(queries_ins[i][j].first, queries_ins[i][j].second);
+    // // t.next("Answer queries #" + std::to_string(i));
+    // t.next("");
     // std::cout << graph.space() << " ";
   }
 
-  for (size_t i = 0; i < num_batches; i++) {
-    for (size_t j = 0; j < batches_del[i].size(); j++) {
-      long u = batches_del[i][j].first;
-      long v = batches_del[i][j].second;
-      graph.DeleteEdge(UndirectedEdge(u, v));
-    }
-    // t.next("Delete batch #" + std::to_string(i));
-    t.next("");
-    for (size_t j = 0; j < queries_del[i].size(); j++)
-      Ans_del[i][j] =
-          graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
-    // t.next("Answer queries #" + std::to_string(i));
-    t.next("");
-    // std::cout << graph.space() << " ";
-  }
-  std::ofstream faq;
-  faq.open(ansfile);
-  if (!faq.is_open()) {
-    std::cout << "cannot open output file\n";
-    std::abort();
-  }
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_ins[i].size(); j++)
-      faq << Ans_ins[i][j];
-  for (size_t i = 0; i < num_batches; i++)
-    for (size_t j = 0; j < queries_del[i].size(); j++)
-      faq << Ans_del[i][j];
-  faq.close();
+  // for (size_t i = 0; i < num_batches; i++) {
+  //   for (size_t j = 0; j < batches_del[i].size(); j++) {
+  //     long u = batches_del[i][j].first;
+  //     long v = batches_del[i][j].second;
+  //     graph.DeleteEdge(UndirectedEdge(u, v));
+  //   }
+  //   // t.next("Delete batch #" + std::to_string(i));
+  //   t.next("");
+  //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  //     Ans_del[i][j] =
+  //         graph.IsConnected(queries_del[i][j].first, queries_del[i][j].second);
+  //   // t.next("Answer queries #" + std::to_string(i));
+  //   t.next("");
+  //   // std::cout << graph.space() << " ";
+  // }
+  // std::ofstream faq;
+  // faq.open(ansfile);
+  // if (!faq.is_open()) {
+  //   std::cout << "cannot open output file\n";
+  //   std::abort();
+  // }
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_ins[i].size(); j++)
+  //     faq << Ans_ins[i][j];
+  // for (size_t i = 0; i < num_batches; i++)
+  //   for (size_t j = 0; j < queries_del[i].size(); j++)
+  //     faq << Ans_del[i][j];
+  // faq.close();
 }
 
 int main(int argc, char **argv) {

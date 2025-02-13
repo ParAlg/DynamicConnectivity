@@ -60,6 +60,8 @@ make bench_dynamic
 
 for graph in "${undir_graph[@]}"; do
   echo Running on ${graph}.bin
+  ${numactl} ./bench_dynamic -a 3 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
+  ${numactl} ./bench_dynamic -a 4 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
   ${numactl} ./bench_dynamic -a 6 -b ${num_batches} -q ${num_queries} ${data_path}/${graph}.bin ${data_path}/bench_dynamic/${graph}.query
   echo
 done
