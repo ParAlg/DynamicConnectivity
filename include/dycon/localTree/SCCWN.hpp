@@ -102,6 +102,7 @@ public:
     mem_usage += leaves.size() * sizeof(leaf);
     return (size_t)mem_usage;
   }
+  parlay::sequence<std::pair<uint64_t, uint64_t>> CC_stat();
 };
 inline uint32_t SCCWN::lmax = 63;
 inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
@@ -655,4 +656,20 @@ inline void SCCWN::batch_query(Q &queries, A &ans) {
     link(it.first, it.second);
   for (uint32_t i = 0; i < queries.size(); i++)
     ans[i] = find(queries[i].first) == find(queries[i].second) ? true : false;
+}
+inline parlay::sequence<std::pair<uint64_t, uint64_t>> SCCWN::CC_stat() {
+  // auto rep = ;
+  auto res = parlay::histogram_by_key(
+      parlay::filter(parlay::tabulate(n,
+                                      [&](auto i) {
+                                        return reinterpret_cast<uint64_t>(
+                                            localTree::getRoot(leaves[i]));
+                                      }),
+                     [&](uint64_t root) { return root != 0; }));
+  parlay::sort_inplace(res, [&](std::pair<uint64_t, uint64_t> x,
+                                std::pair<uint64_t, uint64_t> y) {
+    return x.second > y.second;
+  });
+  return parlay::filter(
+      res, [&](std::pair<uint64_t, uint64_t> x) { return x.second > 1; });
 }

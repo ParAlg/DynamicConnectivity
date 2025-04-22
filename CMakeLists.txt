@@ -123,6 +123,8 @@ add_subdirectory(benchmark)
 
 # -------------------------------------------------------------------
 #                       Examples
+add_executable(example example.cc)
+target_link_libraries(example PRIVATE dycon)
 
 #add_subdirectory(examples)
 
@@ -130,3 +132,4 @@ add_subdirectory(benchmark)
 #                       utils
 
 #add_subdirectory(utils)
+
