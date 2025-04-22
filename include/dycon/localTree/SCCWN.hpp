@@ -79,12 +79,12 @@ public:
     localTree::l_alloc->~type_allocator();
     leaf::vector_alloc->~type_allocator();
   };
-  void insert(uint32_t u, uint32_t v) { insertToLCA(u, v); }
-  void insertToLCA(uint32_t u, uint32_t v);
-  void insertToRoot(uint32_t u, uint32_t v);
-  void insertToBlock(uint32_t u, uint32_t v);
+  bool insert(uint32_t u, uint32_t v) { return insertToLCA(u, v); }
+  bool insertToLCA(uint32_t u, uint32_t v);
+  bool insertToRoot(uint32_t u, uint32_t v);
+  bool insertToBlock(uint32_t u, uint32_t v);
   bool is_connected(uint32_t u, uint32_t v);
-  void remove(uint32_t u, uint32_t v);
+  bool remove(uint32_t u, uint32_t v);
   template <typename Q, typename A> void batch_query(Q &queries, A &ans);
   size_t getMemUsage() {
     std::atomic<std::size_t> mem_usage = 0;
@@ -104,7 +104,8 @@ public:
   }
 };
 inline uint32_t SCCWN::lmax = 63;
-inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
+// return whether the insertion linked two seperate components
+inline bool SCCWN::insertToRoot(uint32_t u, uint32_t v) {
   if (u > v)
     std::swap(u, v);
   auto g = [&](uint32_t &u) -> localTree * {
@@ -125,12 +126,18 @@ inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
   if (Cu != Cv) {
     localTree::merge(Cu, Cv);
     TreeEdge.emplace(std::pair(u, v));
-  } else
+    leaves[u]->insertToLeaf(v, lmax);
+    leaves[v]->insertToLeaf(u, lmax);
+    return true;
+  } else {
     nonTreeEdge.emplace(std::pair(u, v));
-  leaves[u]->insertToLeaf(v, lmax);
-  leaves[v]->insertToLeaf(u, lmax);
+    leaves[u]->insertToLeaf(v, lmax);
+    leaves[v]->insertToLeaf(u, lmax);
+    return false;
+  }
 }
-inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
+// return whether the insertion linked two seperate components
+inline bool SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -154,7 +161,7 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
         if (u > v)
           std::swap(u, v);
         nonTreeEdge.emplace(std::pair(u, v));
-        return;
+        return false;
       }
       Pu = localTree::getParent(Cu);
       Pv = localTree::getParent(Cv);
@@ -219,8 +226,10 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
   if (u > v)
     std::swap(u, v);
   TreeEdge.emplace(std::pair(u, v));
+  return true;
 }
-inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
+// return whether the insertion linked two seperate components
+inline bool SCCWN::insertToBlock(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -253,6 +262,9 @@ inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
         }
       }
     }
+    leaves[u]->insertToLeaf(v, np->getLevel());
+    leaves[v]->insertToLeaf(u, np->getLevel());
+    return true;
   } else {
     localTree *lca = nullptr;
     while (pu[uLen - 1] == pv[vLen - 1]) {
@@ -277,9 +289,10 @@ inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
       }
     } else
       np = pushDown(pu, uLen - 1, pv, vLen - 1);
+      leaves[u]->insertToLeaf(v, np->getLevel());
+      leaves[v]->insertToLeaf(u, np->getLevel());
+      return false;
   }
-  leaves[u]->insertToLeaf(v, np->getLevel());
-  leaves[v]->insertToLeaf(u, np->getLevel());
 }
 inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, uint32_t uter,
                                   std::vector<localTree *> &pv, uint32_t vter) {
@@ -308,8 +321,8 @@ inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, uint32_t uter,
   assert(localTree::getParent(pu[uter]) == localTree::getParent(pv[vter]));
   return localTree::getParent(pu[uter]);
 }
-inline void SCCWN::remove(uint32_t u, uint32_t v) {
-  // std::cout << u << " " << v << std::endl;
+// Return whether the deletion cut a component into two
+inline bool SCCWN::remove(uint32_t u, uint32_t v) {
   if (u > v)
     std::swap(u, v);
   assert(leaves[u]->getEdgeLevel(v) == leaves[v]->getEdgeLevel(u));
@@ -320,14 +333,14 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
   leaves[v]->deleteEdge(u, l);
   if (!TreeEdge.contains(std::pair(u, v))) {
     nonTreeEdge.erase(std::pair(u, v));
-    return;
+    return false;
   }
   TreeEdge.erase(std::pair(u, v));
   auto Cu = localTree::getLevelNode(leaves[u], l);
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
   if (Cu == Cv) {
-    return;
+    return false;
   }
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
@@ -380,7 +393,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
               }
-              return;
+              return false;
             } else {
               if (Ru.find(Cuv) == Ru.end()) {
                 Ru.emplace(Cuv);
@@ -465,7 +478,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
               }
-              return;
+              return false;
             } else {
               if (Rv.find(Cuv) == Rv.end()) {
                 Rv.emplace(Cuv);
@@ -521,6 +534,7 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
       }
     }
   }
+  return true;
 }
 inline bool SCCWN::is_connected(uint32_t u, uint32_t v) {
   return localTree::getRoot(leaves[u]) == localTree::getRoot(leaves[v]);
