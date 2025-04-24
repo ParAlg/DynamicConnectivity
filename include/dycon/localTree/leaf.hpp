@@ -1,5 +1,5 @@
 #pragma once
-#include "dycon/localTree/alloc.h"
+#include "dycon/localTree/alloc.hpp"
 #include "graph.hpp"
 #include <absl/container/btree_map.h>
 #include <absl/container/btree_set.h>

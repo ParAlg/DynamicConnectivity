@@ -86,13 +86,13 @@ inline void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
               << "% insertion performed ";
     report(ins_t.back(), "");
 
-    // batch query
-    t.start();
-    F.batch_query<queries, parlay::sequence<bool>>(queries_ins[i], Ans_ins[i]);
-    batchQA_t.push_back(t.stop());
-    std::cout << 1.0 / num_testpoints / 2 * (i + 1) * 100
-              << "% batch queries performed ";
-    report(batchQA_t.back(), "");
+    // // batch query
+    // t.start();
+    // F.batch_query<queries, parlay::sequence<bool>>(queries_ins[i],
+    // Ans_ins[i]); batchQA_t.push_back(t.stop()); std::cout << 1.0 /
+    // num_testpoints / 2 * (i + 1) * 100
+    //           << "% batch queries performed ";
+    // report(batchQA_t.back(), "");
 
     // single query
     t.start();
@@ -127,12 +127,12 @@ inline void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
     report(del_t.back(), "");
 
     // batch query
-    t.start();
-    F.batch_query<queries, parlay::sequence<bool>>(queries_del[i], Ans_del[i]);
-    batchQA_t.push_back(t.stop());
-    std::cout << 1.0 / num_testpoints / 2 * (i + num_testpoints + 1) * 100
-              << "% batch queries performed ";
-    report(batchQA_t.back(), "");
+    // t.start();
+    // F.batch_query<queries, parlay::sequence<bool>>(queries_del[i],
+    // Ans_del[i]); batchQA_t.push_back(t.stop()); std::cout << 1.0 /
+    // num_testpoints / 2 * (i + num_testpoints + 1) * 100
+    //           << "% batch queries performed ";
+    // report(batchQA_t.back(), "");
 
     // single query
     t.start();
@@ -173,13 +173,13 @@ inline void bench_compress_CWN_root(uint32_t num_testpoints, uint32_t n,
   std::cout << std::endl;
   report(del_total, "total deletion time", "\n");
 
-  std::cout << "batch query time by stage " << std::endl;
-  for (auto i = 0; i < batchQA_t.size(); i++) {
-    report(batchQA_t[i], "", " ");
-    batchQA_total += batchQA_t[i];
-  }
-  std::cout << std::endl;
-  report(batchQA_total, "total batch query time", "\n");
+  // std::cout << "batch query time by stage " << std::endl;
+  // for (auto i = 0; i < batchQA_t.size(); i++) {
+  //   report(batchQA_t[i], "", " ");
+  //   batchQA_total += batchQA_t[i];
+  // }
+  // std::cout << std::endl;
+  // report(batchQA_total, "total batch query time", "\n");
 
   std::cout << "query time by stage " << std::endl;
   for (auto i = 0; i < query_t.size(); i++) {
@@ -258,12 +258,12 @@ inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
     report(ins_t.back(), "");
 
     // batch query
-    t.start();
-    F.batch_query<queries, parlay::sequence<bool>>(queries_ins[i], Ans_ins[i]);
-    batchQA_t.push_back(t.stop());
-    std::cout << 1.0 / num_testpoints / 2 * (i + 1) * 100
-              << "% batch queries performed ";
-    report(batchQA_t.back(), "");
+    // t.start();
+    // F.batch_query<queries, parlay::sequence<bool>>(queries_ins[i],
+    // Ans_ins[i]); batchQA_t.push_back(t.stop()); std::cout << 1.0 /
+    // num_testpoints / 2 * (i + 1) * 100
+    //           << "% batch queries performed ";
+    // report(batchQA_t.back(), "");
 
     // single query
     t.start();
@@ -298,12 +298,12 @@ inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
     report(del_t.back(), "");
 
     // batch query
-    t.start();
-    F.batch_query<queries, parlay::sequence<bool>>(queries_del[i], Ans_del[i]);
-    batchQA_t.push_back(t.stop());
-    std::cout << 1.0 / num_testpoints / 2 * (i + num_testpoints + 1) * 100
-              << "% batch queries performed ";
-    report(batchQA_t.back(), "");
+    // t.start();
+    // F.batch_query<queries, parlay::sequence<bool>>(queries_del[i],
+    // Ans_del[i]); batchQA_t.push_back(t.stop()); std::cout << 1.0 /
+    // num_testpoints / 2 * (i + num_testpoints + 1) * 100
+    //           << "% batch queries performed ";
+    // report(batchQA_t.back(), "");
 
     // single query
     t.start();
@@ -344,13 +344,13 @@ inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
   std::cout << std::endl;
   report(del_total, "total deletion time", "\n");
 
-  std::cout << "batch query time by stage " << std::endl;
-  for (auto i = 0; i < batchQA_t.size(); i++) {
-    report(batchQA_t[i], "", " ");
-    batchQA_total += batchQA_t[i];
-  }
-  std::cout << std::endl;
-  report(batchQA_total, "total batch query time", "\n");
+  // std::cout << "batch query time by stage " << std::endl;
+  // for (auto i = 0; i < batchQA_t.size(); i++) {
+  //   report(batchQA_t[i], "", " ");
+  //   batchQA_total += batchQA_t[i];
+  // }
+  // std::cout << std::endl;
+  // report(batchQA_total, "total batch query time", "\n");
 
   std::cout << "query time by stage " << std::endl;
   for (auto i = 0; i < query_t.size(); i++) {

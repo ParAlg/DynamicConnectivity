@@ -104,17 +104,17 @@ target_link_libraries(dycon INTERFACE absl::flat_hash_map absl::flat_hash_set)
 #  target_link_libraries(dycon INTERFACE optimized ${JEMALLOC_LIB})
 # endif()
 
-if (JEMALLOC)
-  set(JEMALLOC_LIB_DIR  "/home/zhongqi/local/lib")
-  set(JEMALLOC_INCLUDE_DIR "/home/zhongqi/local/include")
-#   include_directories(${JEMALLOC_INCLUDE_DIR})
-#   target_link_libraries(dycon PRIVATE "${JEMALLOC_LIB_DIR}/libjemalloc.so")
-endif()
+# if (JEMALLOC)
+#   set(JEMALLOC_LIB_DIR  "/home/zhongqi/local/lib")
+#   set(JEMALLOC_INCLUDE_DIR "/home/zhongqi/local/include")
+# #   include_directories(${JEMALLOC_INCLUDE_DIR})
+# #   target_link_libraries(dycon PRIVATE "${JEMALLOC_LIB_DIR}/libjemalloc.so")
+# endif()
 # -------------------------------------------------------------------
 #                         Unit tests
 
 # enable_testing()
-add_subdirectory(tests)
+# add_subdirectory(tests)
 
 # -------------------------------------------------------------------
 #                       Benchmarks

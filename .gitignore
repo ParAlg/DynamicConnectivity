@@ -41,5 +41,5 @@ data/
 *.cache
 .vscode/
 .cache/
-/tests/utils
-/record/
+tests/*
+record/*

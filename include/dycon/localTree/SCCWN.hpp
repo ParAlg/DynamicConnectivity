@@ -1,4 +1,4 @@
-#include "alloc.h"
+#include "alloc.hpp"
 #include "dycon/helpers/union_find.hpp"
 #include "fetchQueue.hpp"
 #include "graph.hpp"
@@ -16,12 +16,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#include <functional>
 #include <iterator>
 #include <optional>
 #include <utility>
 #include <vector>
-class SCCWN {
+template <typename Container = std::vector<localTree *>> class SCCWN {
 private:
   std::vector<std::pair<uint32_t, uint32_t>> Eu, Ev; // fetched edge
   absl::flat_hash_set<localTree *> Ru,
@@ -57,13 +56,30 @@ private:
 public:
   uint32_t n;
   static uint32_t lmax;
-  std::vector<localTree *> leaves;
+  // std::vector<localTree *> leaves;
+  Container leaves;
   uint32_t self_edge[2] = {0, 0};
   absl::flat_hash_set<std::pair<uint32_t, uint32_t>> nonTreeEdge;
   absl::flat_hash_set<std::pair<uint32_t, uint32_t>> TreeEdge;
   uint32_t NTE = 0;
   uint32_t SLE = 0;
   uint32_t TE = 0;
+  template <
+      typename U = Container,
+      typename std::enable_if<
+          std::is_same<U, absl::flat_hash_map<uint32_t, localTree *>>::value,
+          int>::type = 0>
+  SCCWN() {
+    n = 0;
+    rankTree::r_alloc = new type_allocator<rankTree>(1000000);
+    localTree::l_alloc = new type_allocator<localTree>(1000000);
+    leaf::vector_alloc = new type_allocator<edge_set>(1000000);
+    leaves = absl::flat_hash_map<uint32_t, localTree *>(1000000);
+  }
+  template <
+      typename U = Container,
+      typename std::enable_if<std::is_same<U, std::vector<localTree *>>::value,
+                              int>::type = 0>
   SCCWN(uint32_t _n) : n(_n), leaves(std::vector<localTree *>(n, nullptr)) {
     rankTree::r_alloc = new type_allocator<rankTree>(n);
     localTree::l_alloc = new type_allocator<localTree>(n);
@@ -104,8 +120,10 @@ public:
   }
   parlay::sequence<std::pair<uint64_t, uint64_t>> CC_stat();
 };
-inline uint32_t SCCWN::lmax = 63;
-inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
+template <typename Container> inline uint32_t SCCWN<Container>::lmax = 63;
+
+template <typename Container>
+inline void SCCWN<Container>::insertToRoot(uint32_t u, uint32_t v) {
   if (u > v)
     std::swap(u, v);
   auto g = [&](uint32_t &u) -> localTree * {
@@ -131,7 +149,8 @@ inline void SCCWN::insertToRoot(uint32_t u, uint32_t v) {
   leaves[u]->insertToLeaf(v, lmax);
   leaves[v]->insertToLeaf(u, lmax);
 }
-inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
+template <typename Container>
+inline void SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -221,7 +240,8 @@ inline void SCCWN::insertToLCA(uint32_t u, uint32_t v) {
     std::swap(u, v);
   TreeEdge.emplace(std::pair(u, v));
 }
-inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
+template <typename Container>
+inline void SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -282,8 +302,10 @@ inline void SCCWN::insertToBlock(uint32_t u, uint32_t v) {
   leaves[u]->insertToLeaf(v, np->getLevel());
   leaves[v]->insertToLeaf(u, np->getLevel());
 }
-inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, uint32_t uter,
-                                  std::vector<localTree *> &pv, uint32_t vter) {
+template <typename Container>
+inline localTree *
+SCCWN<Container>::pushDown(std::vector<localTree *> &pu, uint32_t uter,
+                           std::vector<localTree *> &pv, uint32_t vter) {
   while (pu[uter]->getSize() + pv[vter]->getSize() <=
          1 << std::max(pu[uter]->getLevel(), pv[vter]->getLevel())) {
     if (pu[uter]->getLevel() < pv[vter]->getLevel()) {
@@ -309,7 +331,8 @@ inline localTree *SCCWN::pushDown(std::vector<localTree *> &pu, uint32_t uter,
   assert(localTree::getParent(pu[uter]) == localTree::getParent(pv[vter]));
   return localTree::getParent(pu[uter]);
 }
-inline void SCCWN::remove(uint32_t u, uint32_t v) {
+template <typename Container>
+inline void SCCWN<Container>::remove(uint32_t u, uint32_t v) {
   // std::cout << u << " " << v << std::endl;
   if (u > v)
     std::swap(u, v);
@@ -523,18 +546,22 @@ inline void SCCWN::remove(uint32_t u, uint32_t v) {
     }
   }
 }
-inline bool SCCWN::is_connected(uint32_t u, uint32_t v) {
+template <typename Container>
+inline bool SCCWN<Container>::is_connected(uint32_t u, uint32_t v) {
   return localTree::getRoot(leaves[u]) == localTree::getRoot(leaves[v]);
 }
-inline void SCCWN::placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
-                              uint32_t l) {
+template <typename Container>
+inline void
+SCCWN<Container>::placeEdges(std::vector<std::pair<uint32_t, uint32_t>> &edges,
+                             uint32_t l) {
   for (auto it : edges) {
     leaves[it.first]->insertToLeaf(it.second, l);
     leaves[it.second]->insertToLeaf(it.first, l);
   }
 }
+template <typename Container>
 inline std::tuple<bool, uint32_t, uint32_t>
-SCCWN::fetchEdge(fetchQueue<localTree *> &Q, uint32_t l) {
+SCCWN<Container>::fetchEdge(fetchQueue<localTree *> &Q, uint32_t l) {
   if (Q.empty())
     return std::make_tuple(false, 0, 0);
   auto node = Q.front();
@@ -548,9 +575,11 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &Q, uint32_t l) {
   }
   return e;
 }
+template <typename Container>
 inline std::optional<std::pair<vertex, vertex>>
-SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
-                 fetchQueue<vertex, edge_set::iterator> &lfQ, uint32_t l) {
+SCCWN<Container>::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
+                            fetchQueue<vertex, edge_set::iterator> &lfQ,
+                            uint32_t l) {
   if (!lfQ.empty()) {
     if (leaves[lfQ.front()]->getMap()[l] == 1) {
       if (lfQ.pos != lfQ.tail) {
@@ -591,8 +620,10 @@ SCCWN::fetchEdge(fetchQueue<localTree *> &LTNodeQ,
   }
   return std::nullopt;
 }
-inline void SCCWN::restoreBitMap(fetchQueue<vertex, edge_set::iterator> &lfQ,
-                                 uint32_t l, bool nval) {
+template <typename Container>
+inline void
+SCCWN<Container>::restoreBitMap(fetchQueue<vertex, edge_set::iterator> &lfQ,
+                                uint32_t l, bool nval) {
   for (auto it : lfQ) {
     if (leaves[it]->getMap()[l] != nval) {
       leaves[it]->setBitMap(l, nval);
@@ -600,9 +631,10 @@ inline void SCCWN::restoreBitMap(fetchQueue<vertex, edge_set::iterator> &lfQ,
     }
   }
 }
+template <typename Container>
 inline void
-SCCWN::changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
-                   uint32_t oval, uint32_t nval) {
+SCCWN<Container>::changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
+                              uint32_t oval, uint32_t nval) {
   for (auto it : edges) {
     vertex test1 = std::min(it.first, it.second);
     vertex test2 = std::max(it.first, it.second);
@@ -612,7 +644,8 @@ SCCWN::changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
     leaves[it.second]->insertToLeaf(it.first, nval);
   }
 }
-inline void SCCWN::GC(bool clear, std::atomic<size_t> &mem_usage) {
+template <typename Container>
+inline void SCCWN<Container>::GC(bool clear, std::atomic<size_t> &mem_usage) {
   parlay::sequence<localTree *> roots(leaves.size());
   parlay::parallel_for(0, leaves.size(), [&](auto i) {
     if (leaves[i])
@@ -628,36 +661,39 @@ inline void SCCWN::GC(bool clear, std::atomic<size_t> &mem_usage) {
     }
   });
 }
-template <typename Q = std::vector<std::pair<vertex, vertex>>,
-          typename A = std::vector<bool>>
-inline void SCCWN::batch_query(Q &queries, A &ans) {
-  std::vector<vertex> parents;
-  parents.reserve(n);
-  for (vertex i = 0; i < n; i++)
-    parents[i] = i;
+// template <typename Q = std::vector<std::pair<vertex, vertex>>,
+//           typename A = std::vector<bool>>
+// inline void SCCWN::batch_query(Q &queries, A &ans) {
+//   std::vector<vertex> parents;
+//   parents.reserve(n);
+//   for (vertex i = 0; i < n; i++)
+//     parents[i] = i;
 
-  std::function<vertex(vertex)> find;
-  find = [&](vertex x) -> vertex {
-    return parents[x] == x ? x : (parents[x] = find(parents[x]));
-  };
+//   std::function<vertex(vertex)> find;
+//   find = [&](vertex x) -> vertex {
+//     return parents[x] == x ? x : (parents[x] = find(parents[x]));
+//   };
 
-  auto link = [&](vertex u, vertex v) {
-    vertex x = find(u);
-    vertex y = find(v);
-    if (x == y)
-      return;
-    if (x < y)
-      parents[x] = y;
-    else
-      parents[y] = x;
-  };
+//   auto link = [&](vertex u, vertex v) {
+//     vertex x = find(u);
+//     vertex y = find(v);
+//     if (x == y)
+//       return;
+//     if (x < y)
+//       parents[x] = y;
+//     else
+//       parents[y] = x;
+//   };
 
-  for (auto it : TreeEdge)
-    link(it.first, it.second);
-  for (uint32_t i = 0; i < queries.size(); i++)
-    ans[i] = find(queries[i].first) == find(queries[i].second) ? true : false;
-}
-inline parlay::sequence<std::pair<uint64_t, uint64_t>> SCCWN::CC_stat() {
+//   for (auto it : TreeEdge)
+//     link(it.first, it.second);
+//   for (uint32_t i = 0; i < queries.size(); i++)
+//     ans[i] = find(queries[i].first) == find(queries[i].second) ? true :
+//     false;
+// }
+template <typename Container>
+inline parlay::sequence<std::pair<uint64_t, uint64_t>>
+SCCWN<Container>::CC_stat() {
   // auto rep = ;
   auto res = parlay::histogram_by_key(
       parlay::filter(parlay::tabulate(n,

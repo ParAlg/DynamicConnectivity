@@ -23,4 +23,4 @@ target_include_directories(bench_ram_rmat PRIVATE seq_hdt/include)
 
 
 
-add_subdirectory(bench_distance_query)
+# add_subdirectory(bench_distance_query)

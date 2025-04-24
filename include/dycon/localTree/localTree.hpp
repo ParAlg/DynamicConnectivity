@@ -1,5 +1,5 @@
 #pragma once
-#include "alloc.h"
+#include "alloc.hpp"
 #include "dycon/localTree/graph.hpp"
 #include "fetchQueue.hpp"
 #include "leaf.hpp"

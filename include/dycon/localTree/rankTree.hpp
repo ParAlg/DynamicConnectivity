@@ -1,6 +1,6 @@
 #include "../helpers/assert.hpp"
 #include "absl/container/flat_hash_set.h"
-#include "alloc.h"
+#include "alloc.hpp"
 #include "stats.hpp"
 #include <bitset>
 #include <cassert>
