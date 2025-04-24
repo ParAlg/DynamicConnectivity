@@ -126,6 +126,17 @@ template <typename Container>
 inline void SCCWN<Container>::insertToRoot(uint32_t u, uint32_t v) {
   if (u > v)
     std::swap(u, v);
+  if constexpr (std::is_same_v<Container,
+                               absl::flat_hash_map<uint32_t, localTree *>>) {
+    if (leaves.find(u) == leaves.end()) {
+      leaves.insert(std::pair(u, nullptr));
+      n++;
+    }
+    if (leaves.find(v) == leaves.end()) {
+      leaves.insert(std::pair(v, nullptr));
+      n++;
+    }
+  }
   auto g = [&](uint32_t &u) -> localTree * {
     localTree *r = localTree::getRoot(leaves[u]);
     if (r->getLevel() == lmax)
@@ -151,6 +162,17 @@ inline void SCCWN<Container>::insertToRoot(uint32_t u, uint32_t v) {
 }
 template <typename Container>
 inline void SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
+  if constexpr (std::is_same_v<Container,
+                               absl::flat_hash_map<uint32_t, localTree *>>) {
+    if (leaves.find(u) == leaves.end()) {
+      leaves.insert(std::pair(u, nullptr));
+      n++;
+    }
+    if (leaves.find(v) == leaves.end()) {
+      leaves.insert(std::pair(v, nullptr));
+      n++;
+    }
+  }
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -242,6 +264,17 @@ inline void SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
 }
 template <typename Container>
 inline void SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
+  if constexpr (std::is_same_v<Container,
+                               absl::flat_hash_map<uint32_t, localTree *>>) {
+    if (leaves.find(u) == leaves.end()) {
+      leaves.insert(std::pair(u, nullptr));
+      n++;
+    }
+    if (leaves.find(v) == leaves.end()) {
+      leaves.insert(std::pair(v, nullptr));
+      n++;
+    }
+  }
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -647,12 +680,24 @@ SCCWN<Container>::changeLevel(std::vector<std::pair<uint32_t, uint32_t>> &edges,
 template <typename Container>
 inline void SCCWN<Container>::GC(bool clear, std::atomic<size_t> &mem_usage) {
   parlay::sequence<localTree *> roots(leaves.size());
-  parlay::parallel_for(0, leaves.size(), [&](auto i) {
-    if (leaves[i])
-      roots[i] = localTree::getRoot(leaves[i]);
-    else
-      roots[i] = nullptr;
-  });
+  if constexpr (std::is_same_v<Container,
+                               absl::flat_hash_map<uint32_t, localTree *>>) {
+    size_t i = 0;
+    for (const auto &pair : leaves) {
+      if (pair.second == nullptr)
+        roots[i] = nullptr;
+      else
+        roots[i] = localTree::getRoot(pair.second);
+      i++;
+    }
+  } else {
+    parlay::parallel_for(0, leaves.size(), [&](auto i) {
+      if (leaves[i])
+        roots[i] = localTree::getRoot(leaves[i]);
+      else
+        roots[i] = nullptr;
+    });
+  }
   auto r = parlay::remove_duplicates(roots);
 
   parlay::parallel_for(0, r.size(), [&](size_t i) {
@@ -694,14 +739,23 @@ inline void SCCWN<Container>::GC(bool clear, std::atomic<size_t> &mem_usage) {
 template <typename Container>
 inline parlay::sequence<std::pair<uint64_t, uint64_t>>
 SCCWN<Container>::CC_stat() {
-  // auto rep = ;
+  parlay::sequence<uint64_t> rep;
+  if constexpr (std::is_same_v<Container,
+                               absl::flat_hash_map<uint32_t, localTree *>>) {
+    for (const auto &pair : leaves) {
+      if (pair.second == nullptr)
+        rep.emplace_back(0);
+      else
+        rep.emplace_back(
+            reinterpret_cast<uint64_t>(localTree::getRoot(pair.second)));
+    }
+  } else {
+    rep = parlay::tabulate(n, [&](auto i) {
+      return reinterpret_cast<uint64_t>(localTree::getRoot(leaves[i]));
+    });
+  }
   auto res = parlay::histogram_by_key(
-      parlay::filter(parlay::tabulate(n,
-                                      [&](auto i) {
-                                        return reinterpret_cast<uint64_t>(
-                                            localTree::getRoot(leaves[i]));
-                                      }),
-                     [&](uint64_t root) { return root != 0; }));
+      parlay::filter(rep, [&](uint64_t root) { return root != 0; }));
   parlay::sort_inplace(res, [&](std::pair<uint64_t, uint64_t> x,
                                 std::pair<uint64_t, uint64_t> y) {
     return x.second > y.second;
@@ -709,3 +763,5 @@ SCCWN<Container>::CC_stat() {
   return parlay::filter(
       res, [&](std::pair<uint64_t, uint64_t> x) { return x.second > 1; });
 }
+
+using DyCWN = SCCWN<absl::flat_hash_map<uint32_t, localTree *>>;

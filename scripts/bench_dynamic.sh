@@ -40,7 +40,7 @@ if [ $exp == "time" ]; then
 fi
 
 alg=$2
-if [[ ! "$alg" =~ ^[0-4]$ ]]; then
+if [[ ! "$alg" =~ ^[0-6]$ ]]; then
   alg=0
 fi
 
