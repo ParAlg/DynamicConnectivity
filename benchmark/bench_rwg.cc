@@ -78,6 +78,16 @@ int main(int argc, char **argv) {
                                Out + "_compressed_DyCWN_lca.ans", batches_ins,
                                queries_ins, batches_del, queries_del);
       break;
+    case 6:
+      bench_seq_hdt(num_testpoints, n, Out + "_seqhdt.ans", batches_ins,
+                    queries_ins, batches_del, queries_del);
+      bench_compress_DyCWN_root(num_testpoints, n,
+                                Out + "_compressed_DyCWN_root.ans", batches_ins,
+                                queries_ins, batches_del, queries_del);
+      bench_compress_DyCWN_lca(num_testpoints, n,
+                               Out + "_compressed_DyCWN_lca.ans", batches_ins,
+                               queries_ins, batches_del, queries_del);
+      break;
     }
 #ifndef MEM_USE
   });

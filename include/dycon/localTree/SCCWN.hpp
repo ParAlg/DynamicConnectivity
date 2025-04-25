@@ -95,12 +95,12 @@ public:
     localTree::l_alloc->~type_allocator();
     leaf::vector_alloc->~type_allocator();
   };
-  void insert(uint32_t u, uint32_t v) { insertToLCA(u, v); }
-  void insertToLCA(uint32_t u, uint32_t v);
-  void insertToRoot(uint32_t u, uint32_t v);
-  void insertToBlock(uint32_t u, uint32_t v);
+  bool insert(uint32_t u, uint32_t v) { return insertToLCA(u, v); }
+  bool insertToLCA(uint32_t u, uint32_t v);
+  bool insertToRoot(uint32_t u, uint32_t v);
+  bool insertToBlock(uint32_t u, uint32_t v);
   bool is_connected(uint32_t u, uint32_t v);
-  void remove(uint32_t u, uint32_t v);
+  bool remove(uint32_t u, uint32_t v);
   template <typename Q, typename A> void batch_query(Q &queries, A &ans);
   size_t getMemUsage() {
     std::atomic<std::size_t> mem_usage = 0;
@@ -123,9 +123,8 @@ public:
 template <typename Container> inline uint32_t SCCWN<Container>::lmax = 63;
 
 template <typename Container>
-inline void SCCWN<Container>::insertToRoot(uint32_t u, uint32_t v) {
-  if (u > v)
-    std::swap(u, v);
+inline bool SCCWN<Container>::insertToRoot(uint32_t u, uint32_t v) {
+  bool combined = false;
   if constexpr (std::is_same_v<Container,
                                absl::flat_hash_map<uint32_t, localTree *>>) {
     if (leaves.find(u) == leaves.end()) {
@@ -155,13 +154,15 @@ inline void SCCWN<Container>::insertToRoot(uint32_t u, uint32_t v) {
   if (Cu != Cv) {
     localTree::merge(Cu, Cv);
     TreeEdge.emplace(std::pair(u, v));
+    combined = true;
   } else
     nonTreeEdge.emplace(std::pair(u, v));
   leaves[u]->insertToLeaf(v, lmax);
   leaves[v]->insertToLeaf(u, lmax);
+  return combined;
 }
 template <typename Container>
-inline void SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
+inline bool SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
   if constexpr (std::is_same_v<Container,
                                absl::flat_hash_map<uint32_t, localTree *>>) {
     if (leaves.find(u) == leaves.end()) {
@@ -196,7 +197,7 @@ inline void SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
         if (u > v)
           std::swap(u, v);
         nonTreeEdge.emplace(std::pair(u, v));
-        return;
+        return false;
       }
       Pu = localTree::getParent(Cu);
       Pv = localTree::getParent(Cv);
@@ -261,9 +262,10 @@ inline void SCCWN<Container>::insertToLCA(uint32_t u, uint32_t v) {
   if (u > v)
     std::swap(u, v);
   TreeEdge.emplace(std::pair(u, v));
+  return true;
 }
 template <typename Container>
-inline void SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
+inline bool SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
   if constexpr (std::is_same_v<Container,
                                absl::flat_hash_map<uint32_t, localTree *>>) {
     if (leaves.find(u) == leaves.end()) {
@@ -275,6 +277,7 @@ inline void SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
       n++;
     }
   }
+  bool combined = false;
   if (leaves[u] == nullptr)
     leaves[u] = localTree::l_alloc->create(u);
   if (leaves[v] == nullptr)
@@ -287,6 +290,7 @@ inline void SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
   localTree *rootv = pv[vLen - 1];
   localTree *np = nullptr;
   if (rootu != rootv) {
+    combined = true;
     if (rootu->getSize() + rootv->getSize() >
         (1 << std::max(rootu->getLevel(), rootv->getLevel())))
       np = rootu->getLevel() >= rootv->getLevel()
@@ -334,6 +338,7 @@ inline void SCCWN<Container>::insertToBlock(uint32_t u, uint32_t v) {
   }
   leaves[u]->insertToLeaf(v, np->getLevel());
   leaves[v]->insertToLeaf(u, np->getLevel());
+  return true;
 }
 template <typename Container>
 inline localTree *
@@ -365,7 +370,8 @@ SCCWN<Container>::pushDown(std::vector<localTree *> &pu, uint32_t uter,
   return localTree::getParent(pu[uter]);
 }
 template <typename Container>
-inline void SCCWN<Container>::remove(uint32_t u, uint32_t v) {
+inline bool SCCWN<Container>::remove(uint32_t u, uint32_t v) {
+  bool split = false;
   // std::cout << u << " " << v << std::endl;
   if (u > v)
     std::swap(u, v);
@@ -377,14 +383,14 @@ inline void SCCWN<Container>::remove(uint32_t u, uint32_t v) {
   leaves[v]->deleteEdge(u, l);
   if (!TreeEdge.contains(std::pair(u, v))) {
     nonTreeEdge.erase(std::pair(u, v));
-    return;
+    return false;
   }
   TreeEdge.erase(std::pair(u, v));
   auto Cu = localTree::getLevelNode(leaves[u], l);
   auto Cv = localTree::getLevelNode(leaves[v], l);
   assert(Cu != nullptr && Cv != nullptr);
   if (Cu == Cv) {
-    return;
+    return false;
   }
   auto CP = localTree::getParent(Cu);
   assert(localTree::getParent(Cu) == localTree::getParent(Cv));
@@ -437,7 +443,7 @@ inline void SCCWN<Container>::remove(uint32_t u, uint32_t v) {
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
               }
-              return;
+              return true;
             } else {
               if (Ru.find(Cuv) == Ru.end()) {
                 Ru.emplace(Cuv);
@@ -522,7 +528,7 @@ inline void SCCWN<Container>::remove(uint32_t u, uint32_t v) {
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
               }
-              return;
+              return false;
             } else {
               if (Rv.find(Cuv) == Rv.end()) {
                 Rv.emplace(Cuv);
@@ -578,9 +584,15 @@ inline void SCCWN<Container>::remove(uint32_t u, uint32_t v) {
       }
     }
   }
+  return true;
 }
 template <typename Container>
 inline bool SCCWN<Container>::is_connected(uint32_t u, uint32_t v) {
+  if constexpr (std::is_same_v<Container,
+                               absl::flat_hash_map<uint32_t, localTree *>>) {
+    if (leaves.find(u) == leaves.end() || leaves.find(v) == leaves.end())
+      return false;
+  }
   return localTree::getRoot(leaves[u]) == localTree::getRoot(leaves[v]);
 }
 template <typename Container>

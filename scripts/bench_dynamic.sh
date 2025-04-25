@@ -1,12 +1,12 @@
 #!/bin/bash
 declare -a undir_graph=(
-  "Germany_sym"
+  # "Germany_sym"
   "RoadUSA_sym"
   "grid_1000_10000_03_sym"
-  "Household_lines_5_sym"
-  "CHEM_5_sym"
-  "twitter_sym"
-  "friendster_sym"
+  # "Household_lines_5_sym"
+  # "CHEM_5_sym"
+  # "twitter_sym"
+  # "friendster_sym"
   "stackoverflow_sym"
   "com-orkut_sym"
   "soc-LiveJournal1_sym"
@@ -40,7 +40,7 @@ if [ $exp == "time" ]; then
 fi
 
 alg=$2
-if [[ ! "$alg" =~ ^[0-6]$ ]]; then
+if [[ ! "$alg" =~ ^[0-7]$ ]]; then
   alg=0
 fi
 
