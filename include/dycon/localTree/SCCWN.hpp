@@ -443,7 +443,8 @@ inline bool SCCWN<Container>::remove(uint32_t u, uint32_t v) {
                 restoreBitMap(lfQ_U, l, 1);
                 changeLevel(Ev, l, C->getLevel());
               }
-              return true;
+              // edge deletion doesn't split any CC
+              return false;
             } else {
               if (Ru.find(Cuv) == Ru.end()) {
                 Ru.emplace(Cuv);

@@ -72,10 +72,12 @@ int main() {
 
   // example 1
   // when you know the vertices id will be 0...n-1
+  std::cout << "Running on fixed set of vertices" << std::endl;
   fixed_set_vertices(insertions, deletions, n);
 
   // example 2
   // when you don't know the total number or range of vertices
+  std::cout << "Running on arbitrary vertices" << std::endl;
   arbitrary_vertices(insertions, deletions);
   return 0;
 }
