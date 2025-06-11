@@ -10,8 +10,8 @@ private:
   vertex head;
 
 public:
-  fetchQueue<T, _M_Data>() : content(std::vector<T>()), head(0) {}
-  ~fetchQueue<T, _M_Data>() { content.clear(); }
+  fetchQueue() : content(std::vector<T>()), head(0) {}
+  ~fetchQueue() { content.clear(); }
   //   void push(T x) { content.emplace_back(x); }
   void push(const T &x) { content.emplace_back(std::move(x)); }
   T &front() { return content[head]; }
