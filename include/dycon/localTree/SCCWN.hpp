@@ -52,6 +52,9 @@ private:
     std::cout << "\n\n";
   }
   void GC(bool clear, std::atomic<size_t> &mem_usage);
+  inline uint32_t get_component_size(uint32_t v) {
+    return localTree::getRoot(leaves[v])->getSize();
+  }
 
 public:
   uint32_t n;
@@ -719,36 +722,8 @@ inline void SCCWN<Container>::GC(bool clear, std::atomic<size_t> &mem_usage) {
     }
   });
 }
-// template <typename Q = std::vector<std::pair<vertex, vertex>>,
-//           typename A = std::vector<bool>>
-// inline void SCCWN::batch_query(Q &queries, A &ans) {
-//   std::vector<vertex> parents;
-//   parents.reserve(n);
-//   for (vertex i = 0; i < n; i++)
-//     parents[i] = i;
-
-//   std::function<vertex(vertex)> find;
-//   find = [&](vertex x) -> vertex {
-//     return parents[x] == x ? x : (parents[x] = find(parents[x]));
-//   };
-
-//   auto link = [&](vertex u, vertex v) {
-//     vertex x = find(u);
-//     vertex y = find(v);
-//     if (x == y)
-//       return;
-//     if (x < y)
-//       parents[x] = y;
-//     else
-//       parents[y] = x;
-//   };
-
-//   for (auto it : TreeEdge)
-//     link(it.first, it.second);
-//   for (uint32_t i = 0; i < queries.size(); i++)
-//     ans[i] = find(queries[i].first) == find(queries[i].second) ? true :
-//     false;
-// }
+// return a sequence of pari <CC_Size, number of CCs who
+// have this size> for CC size > 1
 template <typename Container>
 inline parlay::sequence<std::pair<uint64_t, uint64_t>>
 SCCWN<Container>::CC_stat() {
