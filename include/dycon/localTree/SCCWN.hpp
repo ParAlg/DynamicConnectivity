@@ -52,9 +52,6 @@ private:
     std::cout << "\n\n";
   }
   void GC(bool clear, std::atomic<size_t> &mem_usage);
-  inline uint32_t get_component_size(uint32_t v) {
-    return localTree::getRoot(leaves[v])->getSize();
-  }
 
 public:
   uint32_t n;
@@ -122,6 +119,9 @@ public:
     return (size_t)mem_usage;
   }
   parlay::sequence<std::pair<uint64_t, uint64_t>> CC_stat();
+  inline uint32_t get_component_size(uint32_t v) {
+    return localTree::getRoot(leaves[v])->getSize();
+  }
 };
 template <typename Container> inline uint32_t SCCWN<Container>::lmax = 63;
 
