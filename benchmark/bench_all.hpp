@@ -211,6 +211,7 @@ inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
                                    parlay::sequence<queries> &queries_ins,
                                    parlay::sequence<edges> &batches_del,
                                    parlay::sequence<queries> &queries_del) {
+
   Ans Ans_ins(num_testpoints);
   parlay::parallel_for(0, num_testpoints, [&](uint32_t i) {
     Ans_ins[i].resize(queries_ins[i].size());
@@ -282,7 +283,10 @@ inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
     t.next("memory usage");
 #endif
   }
-
+  std::ofstream out1(ansfile + ".ins");
+  F.edge_set_stat(out1);
+  out1.close();
+  num_testpoints = 2;
   for (uint32_t i = 0; i < num_testpoints; i++) {
     // deletion testpoint i
     t.start();
@@ -374,6 +378,9 @@ inline void bench_compress_CWN_lca(uint32_t num_testpoints, uint32_t n,
       faq << Ans_del[i][j];
   faq.close();
 #endif
+  std::ofstream out2(ansfile + ".del");
+  F.edge_set_stat(out2);
+  out1.close();
 }
 
 inline void bench_seq_hdt(uint32_t num_testpoints, uint32_t n,

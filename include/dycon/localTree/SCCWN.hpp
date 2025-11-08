@@ -32,7 +32,7 @@ private:
   absl::flat_hash_set<vertex> Lu, Lv;
   // above are the data structures used to do the tick tock replacement edge
   // search
-
+  parlay::sequence<uint32_t> num_per_v_level[64];
   static std::tuple<bool, uint32_t, uint32_t>
   fetchEdge(fetchQueue<localTree *> &Q, uint32_t l);
   std::optional<std::pair<vertex, vertex>>
@@ -121,6 +121,35 @@ public:
   parlay::sequence<std::pair<uint64_t, uint64_t>> CC_stat();
   inline uint32_t get_component_size(uint32_t v) {
     return localTree::getRoot(leaves[v])->getSize();
+  }
+  void edge_set_stat(std::ofstream &out) {
+    for (auto i = 0; i < 32; i++)
+      num_per_v_level[i].clear();
+    for (auto itx : leaves) {
+      if (itx == nullptr && itx->get_vertex() == nullptr)
+        continue;
+      auto E = itx->get_vertex()->get_nghs_stat();
+      for (auto ity : (*E)) {
+        auto l = ity.first;
+        auto E_ = ity.second;
+        num_per_v_level[l].push_back((E_)->size());
+      }
+    }
+    for (auto i = 1; i < 32; i++) {
+      if (num_per_v_level[i].size() == 0) {
+        out << "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" << std::endl;
+        continue;
+      }
+      parlay::sort_inplace(num_per_v_level[i]);
+      for (auto j = 0; j < 10; j++)
+        out << num_per_v_level[i][num_per_v_level[i].size() / 10 * j] << ",";
+      out << num_per_v_level[i][num_per_v_level[i].size() / 100 * 92] << ","
+          << num_per_v_level[i][num_per_v_level[i].size() / 100 * 94] << ","
+          << num_per_v_level[i][num_per_v_level[i].size() / 100 * 96] << ","
+          << num_per_v_level[i][num_per_v_level[i].size() / 100 * 98] << ",";
+      out << num_per_v_level[i][num_per_v_level[i].size() - 1] << ","
+          << num_per_v_level[i].size() << std::endl;
+    }
   }
 };
 template <typename Container> inline uint32_t SCCWN<Container>::lmax = 63;

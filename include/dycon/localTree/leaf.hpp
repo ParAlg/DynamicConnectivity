@@ -47,6 +47,7 @@ public:
   std::pair<vertex, edge_set *> getLevelEdgeSet(uint32_t l);
   static type_allocator<edge_set> *vector_alloc;
   static size_t getLeafSpace(leaf *node);
+  std::vector<std::pair<uint32_t, edge_set *>> *get_nghs_stat() { return &E; }
 
 private:
   std::vector<std::pair<uint32_t, edge_set *>> E;

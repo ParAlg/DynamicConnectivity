@@ -43,6 +43,7 @@ public:
   };
   localTree(localTree *Cu, localTree *Cv);
   ~localTree();
+  leaf *get_vertex() { return vertex; }
   void setBitMap(uint32_t l, bool val) { this->edgemap[l] = val; }
   uint32_t getLevel() { return this->level; }
   std::bitset<64> getMap() { return this->edgemap; }

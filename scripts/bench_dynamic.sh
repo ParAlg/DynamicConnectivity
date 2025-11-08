@@ -1,12 +1,10 @@
 #!/bin/bash
 declare -a undir_graph=(
-  # "Germany_sym"
+  "Household_lines_5_sym"
+  "Germany_sym"
   "RoadUSA_sym"
   "grid_1000_10000_03_sym"
-  # "Household_lines_5_sym"
-  # "CHEM_5_sym"
-  # "twitter_sym"
-  # "friendster_sym"
+  "CHEM_5_sym"
   "stackoverflow_sym"
   "com-orkut_sym"
   "soc-LiveJournal1_sym"
@@ -15,11 +13,13 @@ declare -a undir_graph=(
   "wiki-topcats_sym"
   "enwiki_sym"
   "pokec_sym"
+  "twitter_sym"
+  "friendster_sym"
 )
 
 declare num_batches=10
 
-declare num_queries=1000000
+declare num_queries=10
 
 declare source_dir="$(dirname $(pwd))"
 declare data_path="${source_dir}/data"
