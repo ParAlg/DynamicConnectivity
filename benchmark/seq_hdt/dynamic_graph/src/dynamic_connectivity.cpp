@@ -67,7 +67,7 @@ inline void ValidateVertex(Vertex v, uint32_t num_vertices) {
 using namespace detail;
 
 DynamicConnectivity::DynamicConnectivity(uint32_t num_vertices)
-    : num_vertices_{num_vertices} {
+    : num_vertices_{num_vertices}, succ_replace(0), split(0) {
   ASSERT_MSG_ALWAYS(num_vertices_ > 0,
                     "The number of vertices must be positive");
   const int8_t num_levels = FloorLog2(num_vertices_) + 1;
@@ -236,6 +236,7 @@ void DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge &edge,
           spanning_forests_[l].AddEdge(replacement_candidate);
         }
         spanning_forest.MarkEdge(replacement_candidate, true);
+        ++succ_replace;
         return; // Replacement edge found.
       }
     }
@@ -247,6 +248,7 @@ void DynamicConnectivity::ReplaceTreeEdge(const UndirectedEdge &edge,
     ReplaceTreeEdge(edge, level - 1);
   } else {
     // There is no replacement edge. `u` and `v` are disconnected.
+    ++split;
   }
 }
 

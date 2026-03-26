@@ -35,10 +35,16 @@ int main(int argc, char **argv) {
   uint32_t num_batches = P.getOptionIntValue("-b", 10);
   uint32_t num_queries = P.getOptionIntValue("-q", 1000);
   // cout << In << endl << Out << endl;
-  auto G = utils::break_sym_graph_from_bin(In);
+  auto G = utils::read_graph_from_file(In);
   vertex n = G.size();
-  auto E =
-      parlay::random_shuffle(parlay::remove_duplicates(utils::to_edges(G)));
+
+  // auto E = parlay::remove_duplicates_ordered(utils::to_edges(G),
+  //                                            [&](edge a, edge b) {
+  //                                              if (a.first == b.first)
+  //                                                return a.second < b.second;
+  //                                              return a.first < b.first;
+  //                                            });
+  auto E = utils::to_edges(G);
   vertex m = E.size();
   // cout << n << " " << m << " -b " << num_batches << " -q " << num_queries <<
   // endl;

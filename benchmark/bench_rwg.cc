@@ -11,15 +11,16 @@ int main(int argc, char **argv) {
   uint32_t num_testpoints = P.getOptionIntValue("-b", 10);
   uint32_t num_queries = P.getOptionIntValue("-q", 1000);
 
-  auto G = utils::break_sym_graph_from_bin(In);
+  auto G = utils::read_graph_from_file(In);
   vertex n = G.size();
 
-  auto E = parlay::remove_duplicates_ordered(utils::to_edges(G),
-                                             [&](edge a, edge b) {
-                                               if (a.first == b.first)
-                                                 return a.second < b.second;
-                                               return a.first < b.first;
-                                             });
+  // auto E = parlay::remove_duplicates_ordered(utils::to_edges(G),
+  //                                            [&](edge a, edge b) {
+  //                                              if (a.first == b.first)
+  //                                                return a.second < b.second;
+  //                                              return a.first < b.first;
+  //                                            });
+  auto E = utils::to_edges(G);
   vertex m = E.size();
   std::cout << n << std::endl << m << std::endl;
   E = parlay::random_shuffle(E);

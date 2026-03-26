@@ -141,6 +141,8 @@ public:
              (sizeof(std::pair<UndirectedEdge, detail::EdgeInfo>));
     return space;
   }
+  std::size_t succ_replace;
+  std::size_t split;
 
 private:
   void AddNonTreeEdge(const UndirectedEdge &edge);

@@ -2,8 +2,8 @@
 declare -a undir_graph=(
   # Social
 "stackoverflow_sym"
- "com-orkut_sym"
- "soc-LiveJournal1_sym"
+ "com_orkut_sym"
+ "soc_LiveJournal1_sym"
  "twitter_sym"
  "friendster_sym"
 #
